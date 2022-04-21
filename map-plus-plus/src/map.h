@@ -141,6 +141,7 @@ struct Vector_t {
   double z;
 }; typedef struct Vector_t Vector_map;
   
+typedef struct Vector_t Vector;
 
 struct Point_t {
   VarType x;

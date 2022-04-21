@@ -10,6 +10,6 @@
 #cp moody-2.0.1-Linux/lib/libmoody.so $FOAM_USER_LIBBIN
 
 # compile sixDoFRigidBodyMotionRestraints
-( cd src/sixDoFMooringRestraints && wclean libso )
+( cd src/sixDoFMooringRestraints && wclean )
 
 echo "Compilation clean!"
