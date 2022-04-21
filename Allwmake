@@ -1,26 +1,18 @@
-#!/bin/sh
+#!/bin/bash
 
 # compile MoorDyn v1
 echo "compile MoorDyn v1"
-cd MoorDyn1/compile/SO
-#rm *.o *.so
-make
-cp MoorDyn1.so $FOAM_USER_LIBBIN/
+(cd MoorDyn1/compileSO; make && cp MoorDyn1.so $FOAM_USER_LIBBIN)
 
 # compile MAP++
 echo "compile MAP++"
-cd ../../../map-plus-plus/src
-#rm *.o *.so
-make
-cp libmap-1.30.00.so $FOAM_USER_LIBBIN/
+(cd map-plus-plus/src; make && cp libmap-1.30.00.so $FOAM_USER_LIBBIN)
 
 # copy precompiled Moody library
-cp ../../../moody-2.0.1-Linux/lib/libmoody.so $FOAM_USER_LIBBIN/
+cp moody-2.0.1-Linux/lib/libmoody.so $FOAM_USER_LIBBIN
 
 # compile sixDoFRigidBodyMotionRestraints
 echo "compile mooring restraints"
-cd ../../../src/sixDoFMooringRestraints
-wclean
-wmake libso
+( cd src/sixDoFMooringRestraints && wmake libso )
 
 echo "Compilation done!"

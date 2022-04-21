@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# compile MoorDyn v1
+(cd MoorDyn1/compileSO; make clean)
+
+# compile MAP++
+(cd map-plus-plus/src; make clean)
+
+# copy precompiled Moody library
+#cp moody-2.0.1-Linux/lib/libmoody.so $FOAM_USER_LIBBIN
+
+# compile sixDoFRigidBodyMotionRestraints
+( cd src/sixDoFMooringRestraints && wclean libso )
+
+echo "Compilation clean!"
