@@ -1,0 +1,8 @@
+map3R/mapFoamInterface.C
+map3R/map3R.C
+
+moodyR/moodyR.C
+
+moorDynR1/moorDynR1.C
+
+LIB = $(FOAM_USER_LIBBIN)/libsixDoFMooring

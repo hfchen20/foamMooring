@@ -1,0 +1,23 @@
+$(OBJECTS_DIR)/map3R/mapFoamInterface.C.dep: \
+map3R/mapFoamInterface.C \
+map3R/mapFoamInterface.H \
+/home/hfchen/OpenFOAM/hfchen-v2012/map-plus-plus/src/../src/map.h \
+/home/hfchen/OpenFOAM/hfchen-v2012/map-plus-plus/src/mapsys.h \
+/home/hfchen/OpenFOAM/hfchen-v2012/map-plus-plus/src/simclist/simclist.h \
+/home/hfchen/OpenFOAM/hfchen-v2012/map-plus-plus/src/bstring/bstrlib.h \
+/home/hfchen/OpenFOAM/hfchen-v2012/map-plus-plus/src/cminpack/cminpack.h \
+/home/hfchen/OpenFOAM/hfchen-v2012/map-plus-plus/src/cminpack/cminpackP.h \
+/home/hfchen/OpenFOAM/hfchen-v2012/map-plus-plus/src/cminpack/minpack.h \
+/home/hfchen/OpenFOAM/hfchen-v2012/map-plus-plus/src/cminpack/cminpack.h \
+/home/hfchen/OpenFOAM/hfchen-v2012/map-plus-plus/src/MAP_Types.h \
+/home/hfchen/OpenFOAM/hfchen-v2012/map-plus-plus/src/maperror.h \
+/home/hfchen/OpenFOAM/hfchen-v2012/map-plus-plus/src/map.h \
+/home/hfchen/OpenFOAM/hfchen-v2012/map-plus-plus/src/lmroutines.hpp \
+/home/hfchen/OpenFOAM/hfchen-v2012/map-plus-plus/src/lapack/lapacke.h \
+/home/hfchen/OpenFOAM/hfchen-v2012/map-plus-plus/src/lapack/lapacke_mangling.h \
+/home/hfchen/OpenFOAM/hfchen-v2012/map-plus-plus/src/../src/mapinit.h \
+/home/hfchen/OpenFOAM/hfchen-v2012/map-plus-plus/src/../src/outputstream.h \
+/home/hfchen/OpenFOAM/hfchen-v2012/map-plus-plus/src/../src/mapapi.h \
+/home/hfchen/OpenFOAM/hfchen-v2012/map-plus-plus/src/../src/freedata.h \
+
+#END
