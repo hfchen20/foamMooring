@@ -1,10 +1,16 @@
 ## Dynamic mooring restraints for sixDoFRigidBodyMotion in OpenFOAM
 CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn with OpenFOAM
 
+![](tutorial/Animation_overset3d_h12t20.mp4)
+
 ## How to use
-Download the repo in $WM_PROJECT_USER_DIR, run Allwmake
-Add in controlDict:  libs    (sixDoFMooring); 
-Define mooring restraints sixDoFRigidBodyMotionCoeffs in dynamicmeshDict
+- Download the repo in $WM_PROJECT_USER_DIR, run Allwmake. MAP++ may require other dependent libraries.
+- Add in controlDict:  libs    (sixDoFMooring); 
+- Prepare mooring input file in folder "Mooring" 
+- Define mooring restraints sixDoFRigidBodyMotionCoeffs in dynamicmeshDict
+
+
+![Three mooring line codes](tutorial/comparison_3_mooring_codes.PNG)
 
 ## About OpenFOAM
 OpenFOAM is a free, open source CFD software [released and developed by OpenCFD Ltd since 2004](http://www.openfoam.com/history/).
