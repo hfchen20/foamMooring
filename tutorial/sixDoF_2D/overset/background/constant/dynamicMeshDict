@@ -1,0 +1,135 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2012                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      dynamicMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+motionSolverLibs    (sixDoFRigidBodyMotion);
+
+dynamicFvMesh       dynamicOversetFvMesh;
+
+solver          sixDoFRigidBodyMotion;
+
+sixDoFRigidBodyMotionCoeffs
+{
+
+	patches         (floatingObject);
+	innerDistance   100.0;
+	outerDistance   101.0;
+
+	//centreOfMass    (0.0 0.0 -0.0126);
+	centreOfMass    (0.0 0.0 -0.015);
+
+	// Cuboid dimensions
+	Lx              0.2;
+	Ly              0.2;
+	Lz              0.132;
+
+	// Density of the solid
+	//rhoSolid        500;
+
+	// Cuboid mass
+	mass            3.148; // #eval{ $rhoSolid*$Lx*$Ly*$Lz };
+
+	// Cuboid moment of inertia about the centre of mass
+	momentOfInertia ( 0.015 0.015 0.021 );
+
+	report          on;
+	accelerationRelaxation 0.8;
+	//accelerationDamping    0.9;
+
+	solver
+	{
+		type Newmark;
+	}
+	
+	constraints
+	{
+	    // translation contrained on a plane around CoR
+        fixedPlane
+        {
+            sixDoFRigidBodyMotionConstraint plane;
+            normal (0 1 0);
+        }
+        
+        // rotation constraint
+        fixedAxis
+        {
+            sixDoFRigidBodyMotionConstraint axis;
+            axis (0 1 0);
+        }
+	}	
+	
+	restraints
+	{
+
+        moorDynR1
+		{
+			sixDoFRigidBodyMotionRestraint moorDynR1;
+		}
+
+        /* Example mooring restraints as defined in libsixDoFMooring
+           map3R || moodyR || moorDynR1
+        
+        map3R
+		{
+			sixDoFRigidBodyMotionRestraint map3R;
+            inputFile                     "Mooring/esflOWC_4lines.map";
+            summaryFile                   "Mooring/esflOWC_summary.map";
+			waterDepth                    0.5;
+            refAttachmentPt
+            (
+                (-0.1      0.1    -0.077)
+                (-0.1     -0.1    -0.077)
+                ( 0.1      0.1    -0.077)
+                ( 0.1     -0.1    -0.077)    
+            );
+			numberOfSegments       20;
+			writeMooringVTK        true;
+		}
+        
+		moodyR
+		{
+			sixDoFRigidBodyMotionRestraint moodyR; // map3R, moodyR, moorDynR1
+            
+            inputFile              "Mooring/boxWu_exPoint.m";
+            couplingMode           "externalPoint";  // "externalPoint" or "externalRigidBody"
+			
+            //If couplingMode is "externalPoint", nCouplingDof = 3*refAttachmentPt.size()
+            nCouplingDof           6;
+            refAttachmentPt
+            (
+                (-0.1      0.1    -0.077)
+                (-0.1     -0.1    -0.077)
+                ( 0.1      0.1    -0.077)
+                ( 0.1     -0.1    -0.077)    
+            );
+            waveKinematics         false;
+            twoD                   true;
+		}
+        
+        openMoorR
+		{
+			sixDoFRigidBodyMotionRestraint openMoorR;
+            
+            inputFile              "Mooring/CaseEsflOWC.xml";
+            saveInterval           0.05;
+
+		}
+        */
+
+	}
+
+}
+
+// ************************************************************************* //

@@ -1,0 +1,84 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2012                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+libs            (overset fvMotionSolvers sixDoFMooring);
+
+application     overInterDyMFoam;
+
+startFrom       startTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         0.2;
+
+deltaT          0.0005;
+
+writeControl    adjustable;// adjustableRunTime; timeStep;
+
+writeInterval   0.05;
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  6;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable no; //yes;
+
+adjustTimeStep  yes;
+
+maxCo           0.5; // 5.0
+maxAlphaCo      0.5; // 2.0
+maxDeltaT       0.01;
+
+functions
+{
+    /*
+	sixDoF_History
+    {
+        type           sixDoFRigidBodyState;
+        libs           ("libsixDoFRigidBodyState.so");
+		
+		// https://www.cfd-online.com/Forums/main/234125-multiple-patches-toposet-setfields-overset-problem-sixdofrigidbodymotion.html
+        angleFormat    radians;//radians, degrees
+                
+        writeControl   timeStep;
+        writeInterval  5;
+    }
+    */
+	
+    interfaceHeight1
+    {
+        type            interfaceHeight;
+        
+        libs            ("libfieldFunctionObjects.so");
+        
+        locations       ((-2.74 0 0) (-0.05 0 0) (0.07 0 0) (0.55 0 0) (1.9 0 0) (2.9 0 0));
+        alpha           alpha.water;
+        
+        writeControl   timeStep;
+        writeInterval  5;
+    }
+}
+// ************************************************************************* //
