@@ -3,7 +3,7 @@ CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn w
 
 ![](tutorial/Animation_overset3d_h12t20.mp4)
 
-## How to use
+## How to use (tested on v2012)
 - Download the repo in $WM_PROJECT_USER_DIR, run Allwmake. MAP++ may require other dependent libraries.
 - Add in controlDict:  libs    (sixDoFMooring); 
 - Prepare mooring input file in folder "Mooring" 
@@ -13,8 +13,8 @@ CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn w
 ![Three mooring line codes](tutorial/comparison_3_mooring_codes.PNG)
 
 ## Reference
-[Haifei Chen, Matthew Hall (2022) CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn with OpenFOAM,
-Applied Ocean Research, 124, 103210, https://doi.org/10.1016/j.apor.2022.103210.](https://www.sciencedirect.com/science/article/pii/S0141118722001511)
+[Haifei Chen, Matthew Hall (2022). CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn with OpenFOAM,
+Applied Ocean Research, 124, 103210.](https://www.sciencedirect.com/science/article/pii/S0141118722001511)
 
 ## About OpenFOAM
 OpenFOAM is a free, open source CFD software [released and developed by OpenCFD Ltd since 2004](http://www.openfoam.com/history/).
