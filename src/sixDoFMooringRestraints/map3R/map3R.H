@@ -33,6 +33,10 @@ Description
     quasi-static cable model. In The Twenty-third International Offshore and Polar 
     Engineering Conference. International Society of Offshore and Polar Engineers, 2013
 
+    Chen, H., & Hall, M. (2022). CFD simulation of floating body motion with mooring dynamics: Coupling 
+    MoorDyn with OpenFOAM. Applied Ocean Research, 124, 103210.
+    https://doi.org/10.1016/j.apor.2022.103210
+
 SourceFiles
     map3R.C
 
