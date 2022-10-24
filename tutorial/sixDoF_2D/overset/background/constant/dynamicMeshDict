@@ -52,7 +52,7 @@ sixDoFRigidBodyMotionCoeffs
 	{
 		type Newmark;
 	}
-	
+
 	constraints
 	{
 	    // translation contrained on a plane around CoR
@@ -61,69 +61,67 @@ sixDoFRigidBodyMotionCoeffs
             sixDoFRigidBodyMotionConstraint plane;
             normal (0 1 0);
         }
-        
+
         // rotation constraint
         fixedAxis
         {
             sixDoFRigidBodyMotionConstraint axis;
             axis (0 1 0);
         }
-	}	
-	
+	}
+
 	restraints
 	{
 
-        moorDynR1
+        	moorDynR1
 		{
 			sixDoFRigidBodyMotionRestraint moorDynR1;
 		}
 
-        /* Example mooring restraints as defined in libsixDoFMooring
-           map3R || moodyR || moorDynR1
-        
-        map3R
+        	/* Example mooring restraints as defined in libsixDoFMooring
+           	map3R || moodyR || moorDynR1
+
+        	map3R
 		{
 			sixDoFRigidBodyMotionRestraint map3R;
-            inputFile                     "Mooring/esflOWC_4lines.map";
-            summaryFile                   "Mooring/esflOWC_summary.map";
+            		inputFile                     "Mooring/esflOWC_4lines.map";
+            		summaryFile                   "Mooring/esflOWC_summary.map";
 			waterDepth                    0.5;
-            refAttachmentPt
-            (
-                (-0.1      0.1    -0.077)
-                (-0.1     -0.1    -0.077)
-                ( 0.1      0.1    -0.077)
-                ( 0.1     -0.1    -0.077)    
-            );
+            		refAttachmentPt
+            		(
+                		(-0.1      0.1    -0.077)
+                		(-0.1     -0.1    -0.077)
+                		( 0.1      0.1    -0.077)
+                		( 0.1     -0.1    -0.077)
+            		);
 			numberOfSegments       20;
 			writeMooringVTK        true;
 		}
-        
+
 		moodyR
 		{
 			sixDoFRigidBodyMotionRestraint moodyR; // map3R, moodyR, moorDynR1
-            
-            inputFile              "Mooring/boxWu_exPoint.m";
-            couplingMode           "externalPoint";  // "externalPoint" or "externalRigidBody"
-			
-            //If couplingMode is "externalPoint", nCouplingDof = 3*refAttachmentPt.size()
-            nCouplingDof           6;
-            refAttachmentPt
-            (
-                (-0.1      0.1    -0.077)
-                (-0.1     -0.1    -0.077)
-                ( 0.1      0.1    -0.077)
-                ( 0.1     -0.1    -0.077)    
-            );
-            waveKinematics         false;
-            twoD                   true;
+            		inputFile              "Mooring/boxWu_exPoint.m";
+
+			couplingMode           "externalPoint";  // "externalPoint" or "externalRigidBody"
+			//If couplingMode is "externalPoint", nCouplingDof = 3*refAttachmentPt.size()
+            		nCouplingDof           6;
+            		refAttachmentPt
+            		(
+                		(-0.1      0.1    -0.077)
+                		(-0.1     -0.1    -0.077)
+                		( 0.1      0.1    -0.077)
+                		( 0.1     -0.1    -0.077)
+            		);
+            		waveKinematics         false;
+            		twoD                   true;
 		}
-        
-        openMoorR
+
+        	openMoorR
 		{
 			sixDoFRigidBodyMotionRestraint openMoorR;
-            
-            inputFile              "Mooring/CaseEsflOWC.xml";
-            saveInterval           0.05;
+            		inputFile              "Mooring/CaseEsflOWC.xml";
+            		saveInterval           0.05;
 
 		}
         */

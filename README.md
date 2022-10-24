@@ -12,9 +12,16 @@ CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn w
 
 ![Three mooring line codes](tutorial/comparison_3_mooring_codes.PNG)
 
+## Visualize mooring lines in Paraview
+- Write VTK files 'mooringN.vtk' for mooring lines where N denotes a time sequence number.
+- Prepare a vtk.series file 'mooring.vtk.series' to be loaded into Paraview.
+- A python script and example VTK files are provided in the tutorial to post-process MoorDyn output.
+- Then mooring tension could also be added to the VTK files.
+
+
 ## Reference
-[Haifei Chen, Matthew Hall (2022). CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn with OpenFOAM,
-Applied Ocean Research, 124, 103210.](https://www.sciencedirect.com/science/article/pii/S0141118722001511)
+[Chen, H., & Hall, M. (2022). CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn with OpenFOAM,
+Applied Ocean Research, 124, 103210. https://doi.org/10.1016/j.apor.2022.103210](https://www.sciencedirect.com/science/article/pii/S0141118722001511)
 
 ## About OpenFOAM
 OpenFOAM is a free, open source CFD software [released and developed by OpenCFD Ltd since 2004](http://www.openfoam.com/history/).

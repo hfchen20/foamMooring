@@ -43,16 +43,16 @@ sixDoFRigidBodyMotionCoeffs
 	// Cuboid moment of inertia about the centre of mass
 	momentOfInertia ( 0.015 0.015 0.021 );
 
-    report          on;
-    
-    accelerationRelaxation 0.8;
-    //accelerationDamping   0.95;
+    	report          on;
 
-    solver
-    {
-        type Newmark;
-    }
-	
+    	accelerationRelaxation 0.8;
+    	//accelerationDamping   0.95;
+
+    	solver
+    	{
+        	type Newmark;
+    	}
+
     constraints
     {
 	     // translation contrained on a plane around CoR
@@ -61,15 +61,15 @@ sixDoFRigidBodyMotionCoeffs
              sixDoFRigidBodyMotionConstraint plane;
              normal (0 1 0);
          }
-        
-        // rotation constraint
+
+	// rotation constraint
         fixedAxis
         {
             sixDoFRigidBodyMotionConstraint axis;
             axis (0 1 0);
         }
     }
-	
+
 	restraints
 	{
         moorDynR1
@@ -77,10 +77,9 @@ sixDoFRigidBodyMotionCoeffs
 			sixDoFRigidBodyMotionRestraint moorDynR1;
 		}
 
-        
         /* Example mooring restraints as defined in libsixDoFMooring
            map3R || moodyR || moorDynR1
-        
+
         map3R
 		{
 			sixDoFRigidBodyMotionRestraint map3R;
@@ -92,19 +91,19 @@ sixDoFRigidBodyMotionCoeffs
                 (-0.1      0.1    -0.077)
                 (-0.1     -0.1    -0.077)
                 ( 0.1      0.1    -0.077)
-                ( 0.1     -0.1    -0.077)    
+                ( 0.1     -0.1    -0.077)
             );
 			numberOfSegments       20;
 			writeMooringVTK        true;
 		}
-        
+
 		moodyR
 		{
 			sixDoFRigidBodyMotionRestraint moodyR; // map3R, moodyR, moorDynR1
-            
+
             inputFile              "Mooring/boxWu_exPoint.m";
             couplingMode           "externalPoint";  // "externalPoint" or "externalRigidBody"
-			
+
             //If couplingMode is "externalPoint", nCouplingDof = 3*refAttachmentPt.size()
             nCouplingDof           6;
             refAttachmentPt
@@ -112,16 +111,16 @@ sixDoFRigidBodyMotionCoeffs
                 (-0.1      0.1    -0.077)
                 (-0.1     -0.1    -0.077)
                 ( 0.1      0.1    -0.077)
-                ( 0.1     -0.1    -0.077)    
+                ( 0.1     -0.1    -0.077)
             );
             waveKinematics         false;
             twoD                   true;
 		}
-        
+
         openMoorR
 		{
 			sixDoFRigidBodyMotionRestraint openMoorR;
-            
+
             inputFile              "Mooring/CaseEsflOWC.xml";
             saveInterval           0.05;
 
