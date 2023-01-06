@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # MoorDyn v1
-(cd 3rdparty/MoorDyn_v1/compileSO; make clean)
+(cd modules/MoorDyn_v1/compileSO; make clean)
 
 # MoorDyn v2
-rm -rf 3rdparty/MoorDyn.build
+rm -rf modules/MoorDyn.build
 
 # compile MAP++
 (cd map-plus-plus/src; make clean)

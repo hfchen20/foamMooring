@@ -12,7 +12,7 @@ EXE_INC = \
     -I$(WM_PROJECT_USER_DIR)/foamMooring/map-plus-plus/src/cminpack \
     -I$(WM_PROJECT_USER_DIR)/foamMooring/map-plus-plus/src/lapack \
     -I$(WM_PROJECT_USER_DIR)/foamMooring/map-plus-plus/src/simclist \
-    -I$(FOAM_USER_LIBBIN)/../include
+    -I$(WM_PROJECT_USER_DIR)/foamMooring/src/include \
     -I$(FOAM_USER_LIBBIN)/../include/moordyn
 
 LIB_LIBS = \
@@ -24,6 +24,6 @@ LIB_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
     -lmap-1.30.00 \
     -lmoody \
+    -lmoordynv1 \
     -lmoordyn
-
 

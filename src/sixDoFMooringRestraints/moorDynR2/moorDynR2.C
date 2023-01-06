@@ -74,48 +74,51 @@ Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::moorDynR2
     initialized_ = false;
 
     // Create the MoorDyn system
-    int moordyn_err = MOORDYN_SUCCESS;
-    moordyn_ = MoorDyn_Create("Mooring/lines.txt");
-    if (!moordyn_) {
-        FatalError << "MoorDyn v2 cannot be created!" << exit(FatalError);
-    }
-    // In this release just a single floating body is accepted. In the
-    // future more bodies can be added, providing info about the body to
-    // be modelled
-    unsigned int n;
-    moordyn_err = MoorDyn_NCoupledDOF(moordyn_, &n);
-    if ((moordyn_err != MOORDYN_SUCCESS) || (n != 6)) {
-        FatalError << "6 Degrees Of Freedom were expected "
-                << "on the MoorDyn definition file" << exit(FatalError);
-    }
-    moordyn_err = MoorDyn_GetNumberBodies(moordyn_, &n);
-    if ((moordyn_err != MOORDYN_SUCCESS) || !n) {
-        FatalError << "At least one body was expected "
-                << "on the MoorDyn definition file" << exit(FatalError);
-    }
-    moordyn_body_ = NULL;
-    for (unsigned int i = 0; i < n; i++) {
-        MoorDynBody body = MoorDyn_GetBody(moordyn_, i + 1);
-        if (!body) {
-            FatalError << "Failure getting the MoorDyn body " << i + 1
-                    << exit(FatalError);
+    if (Pstream::master())
+    {
+        int moordyn_err = MOORDYN_SUCCESS;
+        moordyn_ = MoorDyn_Create("Mooring/lines_v2.txt");
+        if (!moordyn_) {
+            FatalError << "MoorDyn v2 cannot be created!" << exit(FatalError);
         }
-        int t;
-        moordyn_err = MoorDyn_GetBodyType(body, &t);
-        if (moordyn_err != MOORDYN_SUCCESS) {
-            FatalError << "Failure geeting the body " << i + 1
-                    << " type" << exit(FatalError);
+        // In this release just a single floating body is accepted. In the
+        // future more bodies can be added, providing info about the body to
+        // be modelled
+        unsigned int n;
+        moordyn_err = MoorDyn_NCoupledDOF(moordyn_, &n);
+        if ((moordyn_err != MOORDYN_SUCCESS) || (n != 6)) {
+            FatalError << "6 Degrees Of Freedom were expected "
+                    << "on the MoorDyn definition file" << exit(FatalError);
         }
-        if (t == -1) {
-            // Coupled body, see Body.hpp:143
-            moordyn_body_ = body;
-            break;
+        moordyn_err = MoorDyn_GetNumberBodies(moordyn_, &n);
+        if ((moordyn_err != MOORDYN_SUCCESS) || !n) {
+            FatalError << "At least one body was expected "
+                    << "on the MoorDyn definition file" << exit(FatalError);
+        }
+        moordyn_body_ = NULL;
+        for (unsigned int i = 0; i < n; i++) {
+            MoorDynBody body = MoorDyn_GetBody(moordyn_, i + 1);
+            if (!body) {
+                FatalError << "Failure getting the MoorDyn body " << i + 1
+                        << exit(FatalError);
+            }
+            int t;
+            moordyn_err = MoorDyn_GetBodyType(body, &t);
+            if (moordyn_err != MOORDYN_SUCCESS) {
+                FatalError << "Failure geeting the body " << i + 1
+                        << " type" << exit(FatalError);
+            }
+            if (t == -1) {
+                // Coupled body, see Body.hpp:143
+                moordyn_body_ = body;
+                break;
+            }
+        }
+        if (!moordyn_body_) {
+            FatalError << "No coupled body could be found" << exit(FatalError);
         }
     }
-    if (!moordyn_body_) {
-        FatalError << "No coupled body could be found" << exit(FatalError);
-    }
-
+    
     Info << "Create moorDynR2 using MoorDyn v2." << endl;
 
 }

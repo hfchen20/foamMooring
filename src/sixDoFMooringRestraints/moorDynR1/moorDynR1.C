@@ -127,11 +127,11 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR1::restrain
 
     if (!initialized_)
     {
-	// Initialize MoorDyn
-	//LinesInit(&CoM[0], &v[0]);
-	LinesInit(X, XD);
+        // Initialize MoorDyn
+        //LinesInit(&CoM[0], &v[0]);
+        LinesInit(X, XD);
         Info<< "MoorDyn module initialized!" << endl;
-	initialized_ = true;
+        initialized_ = true;
     }
 
     double Flines[6] = {0.0};

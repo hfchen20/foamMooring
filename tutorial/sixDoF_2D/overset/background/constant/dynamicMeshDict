@@ -73,13 +73,23 @@ sixDoFRigidBodyMotionCoeffs
 	restraints
 	{
 
-        	moorDynR2
+        	moorDynR1
 		{
-			sixDoFRigidBodyMotionRestraint moorDynR2;
+			sixDoFRigidBodyMotionRestraint moorDynR1;
 		}
 
         	/* Example mooring restraints as defined in libsixDoFMooring
-           	map3R || moodyR || moorDynR1
+           	moorDynR1 || moorDynR2 || map3R || moodyR 
+
+        moorDynR1
+		{
+			sixDoFRigidBodyMotionRestraint moorDynR1;
+		}
+
+		moorDynR2
+		{
+			sixDoFRigidBodyMotionRestraint moorDynR2;
+		}
 
         	map3R
 		{

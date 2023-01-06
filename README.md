@@ -16,7 +16,7 @@ CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn w
 - Write VTK files 'mooringN.vtk' for mooring lines where N denotes a time sequence number.
 - Prepare a vtk.series file 'mooring.vtk.series' to be loaded into Paraview.
 - A python script and example VTK files are provided in the tutorial to post-process MoorDyn output.
-- Then mooring tension could also be added to the VTK files.
+- The mooring tension could also be added to the VTK files.
 
 
 ## Reference
