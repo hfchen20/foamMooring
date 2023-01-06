@@ -81,3 +81,5 @@ doc/Doxygen/DTAGS
 # Ignore the test directory
 #/tutorialsTest
 
+# Ignore the compiled 3rd parties
+3rdparty/MoorDyn.build

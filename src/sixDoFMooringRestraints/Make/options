@@ -1,7 +1,6 @@
 EXE_INC = \
     -DWITH_LAPACK \
     -DDEBUG \
-    -DMoorDyn_EXPORTS \
     -DLINUX \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/fileFormats/lnInclude \
@@ -13,8 +12,8 @@ EXE_INC = \
     -I$(WM_PROJECT_USER_DIR)/foamMooring/map-plus-plus/src/cminpack \
     -I$(WM_PROJECT_USER_DIR)/foamMooring/map-plus-plus/src/lapack \
     -I$(WM_PROJECT_USER_DIR)/foamMooring/map-plus-plus/src/simclist \
-    -I$(WM_PROJECT_USER_DIR)/foamMooring/MoorDyn1
-	
+    -I$(FOAM_USER_LIBBIN)/../include
+    -I$(FOAM_USER_LIBBIN)/../include/moordyn
 
 LIB_LIBS = \
     -lfiniteVolume \
@@ -25,6 +24,6 @@ LIB_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
     -lmap-1.30.00 \
     -lmoody \
-    -l:MoorDyn1.so
+    -lmoordyn
 
 

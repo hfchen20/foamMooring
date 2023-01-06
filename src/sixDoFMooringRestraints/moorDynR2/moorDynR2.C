@@ -27,22 +27,20 @@ License
 /*---------------------------------------------------------------------------*\
 References
 
-    Chen, H., & Hall, M. (2022). CFD simulation of floating body motion with mooring dynamics: 
-        Coupling MoorDyn with OpenFOAM. Applied Ocean Research, 124, 103210.
-        https://doi.org/10.1016/j.apor.2022.103210
+    Chen, H., & Hall, M. (2022). CFD simulation of floating body motion with
+        mooring dynamics: Coupling MoorDyn with OpenFOAM. Applied Ocean
+        Research, 124, 103210. https://doi.org/10.1016/j.apor.2022.103210
 
 \*---------------------------------------------------------------------------*/
 
-#include "moorDynR1.H"
+#include "moorDynR2.H"
 #include "addToRunTimeSelectionTable.H"
 #include "sixDoFRigidBodyMotion.H"
 //#include "Time.H"
 #include "fvMesh.H"
 #include "OFstream.H"
+#include "error.H"
 #include "quaternion.H"
-
-// include MoorDyn header
-#include "MoorDynv1.h"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -50,12 +48,12 @@ namespace Foam
 {
 namespace sixDoFRigidBodyMotionRestraints
 {
-    defineTypeNameAndDebug(moorDynR1, 0);
+    defineTypeNameAndDebug(moorDynR2, 0);
 
     addToRunTimeSelectionTable
     (
         sixDoFRigidBodyMotionRestraint,
-        moorDynR1,
+        moorDynR2,
         dictionary
     );
 }
@@ -64,7 +62,7 @@ namespace sixDoFRigidBodyMotionRestraints
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-Foam::sixDoFRigidBodyMotionRestraints::moorDynR1::moorDynR1
+Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::moorDynR2
 (
     const word& name,
     const dictionary& sDoFRBMRDict
@@ -75,19 +73,62 @@ Foam::sixDoFRigidBodyMotionRestraints::moorDynR1::moorDynR1
     read(sDoFRBMRDict);
     initialized_ = false;
 
-    Info << "Create moorDynR1 using MoorDyn v1." << endl;
+    // Create the MoorDyn system
+    int moordyn_err = MOORDYN_SUCCESS;
+    moordyn_ = MoorDyn_Create("Mooring/lines.txt");
+    if (!moordyn_) {
+        FatalError << "MoorDyn v2 cannot be created!" << exit(FatalError);
+    }
+    // In this release just a single floating body is accepted. In the
+    // future more bodies can be added, providing info about the body to
+    // be modelled
+    unsigned int n;
+    moordyn_err = MoorDyn_NCoupledDOF(moordyn_, &n);
+    if ((moordyn_err != MOORDYN_SUCCESS) || (n != 6)) {
+        FatalError << "6 Degrees Of Freedom were expected "
+                << "on the MoorDyn definition file" << exit(FatalError);
+    }
+    moordyn_err = MoorDyn_GetNumberBodies(moordyn_, &n);
+    if ((moordyn_err != MOORDYN_SUCCESS) || !n) {
+        FatalError << "At least one body was expected "
+                << "on the MoorDyn definition file" << exit(FatalError);
+    }
+    moordyn_body_ = NULL;
+    for (unsigned int i = 0; i < n; i++) {
+        MoorDynBody body = MoorDyn_GetBody(moordyn_, i + 1);
+        if (!body) {
+            FatalError << "Failure getting the MoorDyn body " << i + 1
+                    << exit(FatalError);
+        }
+        int t;
+        moordyn_err = MoorDyn_GetBodyType(body, &t);
+        if (moordyn_err != MOORDYN_SUCCESS) {
+            FatalError << "Failure geeting the body " << i + 1
+                    << " type" << exit(FatalError);
+        }
+        if (t == -1) {
+            // Coupled body, see Body.hpp:143
+            moordyn_body_ = body;
+            break;
+        }
+    }
+    if (!moordyn_body_) {
+        FatalError << "No coupled body could be found" << exit(FatalError);
+    }
+
+    Info << "Create moorDynR2 using MoorDyn v2." << endl;
 
 }
 
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-Foam::sixDoFRigidBodyMotionRestraints::moorDynR1::~moorDynR1()
+Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::~moorDynR2()
 {
     if (initialized_)
     {
         // Close MoorDyn call
-        LinesClose();
+        MoorDyn_Close(moordyn_);
     }
 }
 
@@ -95,7 +136,7 @@ Foam::sixDoFRigidBodyMotionRestraints::moorDynR1::~moorDynR1()
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
 
 
-void Foam::sixDoFRigidBodyMotionRestraints::moorDynR1::restrain
+void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::restrain
 (
     const sixDoFRigidBodyMotion& motion,
     vector& restraintPosition,
@@ -103,9 +144,11 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR1::restrain
     vector& restraintMoment
 ) const
 {
+    int moordyn_err = MOORDYN_SUCCESS;
+
     scalar deltaT = motion.time().deltaTValue();
     scalar t = motion.time().value();
-    scalar tprev = t-deltaT;
+    scalar tprev = t - deltaT;
 
     point CoM = motion.centreOfMass();
     vector rotationAngle
@@ -127,11 +170,13 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR1::restrain
 
     if (!initialized_)
     {
-	// Initialize MoorDyn
-	//LinesInit(&CoM[0], &v[0]);
-	LinesInit(X, XD);
+        moordyn_err = MoorDyn_Init(moordyn_, X, XD);
+        if (moordyn_err != MOORDYN_SUCCESS) {
+            FatalError << "MoorDyn could not be initialized"
+                       << exit(FatalError);
+        }
         Info<< "MoorDyn module initialized!" << endl;
-	initialized_ = true;
+        initialized_ = true;
     }
 
     double Flines[6] = {0.0};
@@ -139,25 +184,27 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR1::restrain
     // Call LinesCalc() to obtain forces and moments, Flines(1x6)
     // LinesCalc(double X[], double XD[], double Flines[], double* t_in, double* dt_in)
 
-    Info<< "X[6]: " << vector(X[0], X[1], X[2]) << ", " << vector(X[3], X[4], X[5])
-        << endl;
+    Info << "X[6]: " << vector(X[0], X[1], X[2]) << ", "
+         << vector(X[3], X[4], X[5]) << endl;
 
-    Info<< "XD[6]: " << vector(XD[0], XD[1], XD[2]) << ", " << vector(XD[3], XD[4], XD[5])
-        << endl;
+    Info << "XD[6]: " << vector(XD[0], XD[1], XD[2]) << ", "
+         << vector(XD[3], XD[4], XD[5]) << endl;
 
-    //LinesCalc(&CoM[0], &v[0], Flines, &t, &deltaT);
-    LinesCalc(X, XD, Flines, &tprev, &deltaT);
-/*
-    Info<< "Mooring [force, moment] = [ "
-        << Flines[0] << " " << Flines[1] << " " << Flines[2] << ", "
-        << Flines[3] << " " << Flines[4] << " " << Flines[5] << " ]"
-        << endl;
-*/
+    moordyn_err = MoorDyn_Step(moordyn_, X, XD, Flines, &tprev, &deltaT);
+    if (moordyn_err != MOORDYN_SUCCESS) {
+        FatalError << "Error computing MoorDyn step " << tprev
+              << "s -> " << tprev + deltaT << "s" << exit(FatalError);
+    }
+    
+    // Info << "Mooring [force, moment] = [ "
+    //      << Flines[0] << " " << Flines[1] << " " << Flines[2] << ", "
+    //      << Flines[3] << " " << Flines[4] << " " << Flines[5] << " ]"
+    //      << endl;
 
     for(int i=0;i<3;i++)
     {
-        restraintForce[i]=Flines[i];
-        restraintMoment[i]=Flines[i+3];
+        restraintForce[i] = Flines[i];
+        restraintMoment[i] = Flines[i+3];
     }
 
     // Since moment is already calculated by LinesCalc, set to
@@ -166,14 +213,14 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR1::restrain
 
     if (motion.report())
     {
-        Info<< t << ": force " << restraintForce
-	    << ", moment " << restraintMoment
-            << endl;
+        Info << t << ": force " << restraintForce
+             << ", moment " << restraintMoment
+             << endl;
     }
 }
 
 
-bool Foam::sixDoFRigidBodyMotionRestraints::moorDynR1::read
+bool Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::read
 (
     const dictionary& sDoFRBMRDict
 )
@@ -184,7 +231,7 @@ bool Foam::sixDoFRigidBodyMotionRestraints::moorDynR1::read
 }
 
 
-void Foam::sixDoFRigidBodyMotionRestraints::moorDynR1::write
+void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::write
 (
     Ostream& os
 ) const
