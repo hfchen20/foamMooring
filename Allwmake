@@ -1,8 +1,33 @@
 #!/bin/bash
 
-# compile MoorDyn v1
+# compile the 3rd parties
+# =======================
+git submodule init
+git submodule update --remote
+cd 3rdparty
+
+# MoorDyn v1
 echo "compile MoorDyn v1"
-(cd MoorDyn1/compileSO; make && cp MoorDyn1.so $FOAM_USER_LIBBIN)
+cd MoorDyn_v1/compileSO
+make -j
+cp -f MoorDyn.so $FOAM_USER_LIBBIN/libmoordynv1.so
+cp -f ../MoorDyn.h $FOAM_USER_LIBBIN/../include/MoorDynv1.h
+cd ../..
+
+# MoorDyn v2
+echo "compile MoorDyn v2"
+mkdir MoorDyn.build
+cd MoorDyn.build
+cmake -DBUILD_TESTING=OFF -DEXTERNAL_EIGEN=OFF -DFORTRAN_WRAPPER=OFF -DMATLAB_WRAPPER=OFF -DPYTHON_WRAPPER=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$FOAM_USER_LIBBIN/.. ../MoorDyn
+make -j
+make install
+cd ..
+
+# compile MAP++
+
+# compile Moody
+
+cd ..
 
 # compile MAP++
 echo "compile MAP++"
