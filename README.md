@@ -1,7 +1,8 @@
-## Dynamic mooring restraints for sixDoFRigidBodyMotion in OpenFOAM
+## Dynamic mooring restraints for rigid body motion in OpenFOAM
 CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn with OpenFOAM
 
-![](tutorial/Animation_overset3d_h12t20.mp4)
+![One floater](tutorial/misc/Animation_overset3d_h12t20.mp4)
+![Two floaters](tutorial/misc/twoBody_moored.mp4)
 
 ## How to use (tested on v2012)
 - Download the repo in $WM_PROJECT_USER_DIR, run Allwmake. MAP++ may require other dependent libraries.
@@ -10,7 +11,7 @@ CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn w
 - Define mooring restraints sixDoFRigidBodyMotionCoeffs in dynamicMeshDict
 
 
-![Three mooring line codes](tutorial/comparison_3_mooring_codes.PNG)
+![Three mooring line codes](tutorial/misc/comparison_3_mooring_codes.PNG)
 
 ## Visualize mooring lines in Paraview
 - Write VTK files 'mooringN.vtk' for mooring lines where N denotes a time sequence number.
