@@ -83,3 +83,4 @@ doc/Doxygen/DTAGS
 
 # Ignore the compiled 3rd parties
 modules/MoorDyn.build
+map-plus-plus/src/libmap*.so

@@ -72,6 +72,8 @@ Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::moorDynR2
 {
     read(sDoFRBMRDict);
     initialized_ = false;
+    moordyn_backup_.t = 0.0;
+    moordyn_backup_.data = nullptr;
 
     // Create the MoorDyn system
     if (Pstream::master())
@@ -132,6 +134,8 @@ Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::~moorDynR2()
     {
         // Close MoorDyn call
         MoorDyn_Close(moordyn_);
+        if (moordyn_backup_.data)
+            free(moordyn_backup_.data);
     }
 }
 
@@ -180,6 +184,15 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::restrain
         }
         Info<< "MoorDyn module initialized!" << endl;
         initialized_ = true;
+        save_mooring(tprev);
+    } else if (tprev - moordyn_backup_.t >= 1.e-3 * deltaT) {
+        // We have successfully advanced forward in time
+        save_mooring(tprev);
+        Info<< "MoorDyn module saved at t = " << tprev << " s" << endl;
+    } else {
+        // We are repeating the same time step because the implicit scheme
+        load_mooring();
+        Info<< "MoorDyn module restored to t = " << moordyn_backup_.t << " s" << endl;
     }
 
     double Flines[6] = {0.0};
