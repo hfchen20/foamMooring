@@ -4,7 +4,7 @@
 # =======================
 git submodule init
 git submodule update --remote
-cd modules
+cd thirdParty
 
 # MoorDyn v1
 echo "compile MoorDyn v1"

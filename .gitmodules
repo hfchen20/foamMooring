@@ -1,8 +1,8 @@
-[submodule "modules/MoorDyn_v1"]
-	path = modules/MoorDyn_v1
+[submodule "thirdParty/MoorDyn_v1"]
+	path = thirdParty/MoorDyn_v1
 	url = https://github.com/mattEhall/MoorDyn.git
 	branch = master
-[submodule "modules/MoorDyn"]
-	path = modules/MoorDyn
+[submodule "thirdParty/MoorDyn"]
+	path = thirdParty/MoorDyn
 	url = https://github.com/sanguinariojoe/MoorDyn.git
-	branch = serialization
+	branch = v2
