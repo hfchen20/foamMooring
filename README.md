@@ -6,32 +6,47 @@ CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn w
 
 ## Compile foamMooring
 - Prerequisites: git, make, cmake. MAP++ may require other dependent libraries, such as `lapacke'.
-- Clone the repo in $WM_PROJECT_USER_DIR.
+- Clone the repo in `$WM_PROJECT_USER_DIR`.
 ```
 mkdir -p $WM_PROJECT_USER_DIR 
 cd $WM_PROJECT_USER_DIR 
 git clone https://gitlab.com/hfchen20/foamMooring.git 
 cd foamMooring 
 ```
-- Run Allwmake. If necessary, `mkdir -p $FOAM_USER_LIBBIN`
+- Run Allwmake. Upon successful compilation, there should be at least a `libsixDoFMooring.so` library in `$FOAM_USER_LIBBIN`.
 ```
 ./Allwmake
 ```
 
+- If there is difficulty in compiling Map++ and map3R, or if there is no interest in this quasi-static code, you could remove or comment out the corresponding entries in the make files. For [files](/src/sixDoFMooringRestraints/Make/files), remove
+    ```
+    map3R/mapFoamInterface.C
+    map3R/map3R.C
+    ```
+    For [options](/src/sixDoFMooringRestraints/Make/options), remove
+
+    ```
+        -llapacke \
+        -lmap-1.30.00 \
+    ```
+
 ## How to use (tested on v2012)
-- Add in controlDict
+- Add in `controlDict`
 ```
 libs    (sixDoFMooring); 
 ```
-- Prepare mooring input file in folder "Mooring" 
-* MoorDyn v1: lines.txt, 
-* MoorDyn v2: lines_v2.txt
-* Moody: boxWu_exPoint.m
-* MAP++: OWC_4line.map
+- Prepare a mooring input file in folder "Mooring". For example,
+   - MoorDyn v1: lines.txt
 
-- Define mooring restraints sixDoFRigidBodyMotionCoeffs in dynamicMeshDict
+   - MoorDyn v2: lines_v2.txt
+
+   - Moody: boxWu_exPoint.m
+
+   - Map++: OWC_4line.map
+
+- Define mooring restraints in `constant/dynamicMeshDict`
 ```
-// Example mooring restraints as defined in libsixDoFMooring, define one of
+// Example mooring restraints as defined in libsixDoFMooring, add one of
 //	moorDynR1 || moorDynR2 || map3R || moodyR 
 
 moorDynR1
@@ -63,7 +78,7 @@ map3R
 
 moodyR
 {
-	sixDoFRigidBodyMotionRestraint moodyR; // map3R, moodyR, moorDynR1
+	sixDoFRigidBodyMotionRestraint moodyR;
 	inputFile              "Mooring/boxWu_exPoint.m";
 
 	couplingMode           "externalPoint";  // "externalPoint" or "externalRigidBody"
@@ -79,9 +94,9 @@ moodyR
 	waveKinematics         false;
 	twoD                   true;
 }
-
 ```
 
+## Main features
 ![Three mooring line codes](tutorial/misc/comparison_3_mooring_codes.PNG)
 
 ## Visualize mooring lines in Paraview
