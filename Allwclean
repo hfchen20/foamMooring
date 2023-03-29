@@ -1,10 +1,12 @@
 #!/bin/bash
 
 # MoorDyn v1
-(cd modules/MoorDyn_v1/compileSO; make clean)
+(cd thirdParty/MoorDyn_v1/compileSO; make clean)
 
 # MoorDyn v2
-rm -rf modules/MoorDyn.build
+rm –r $FOAM_USER_LIBBIN/cmake  
+rm –r $FOAM_USER_LIBBIN/../include 
+rm -rf thirdParty/MoorDyn.build
 
 # compile MAP++
 (cd map-plus-plus/src; make clean)
