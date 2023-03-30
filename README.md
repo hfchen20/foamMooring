@@ -4,10 +4,6 @@ CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn w
 ![One floater](tutorial/misc/Animation_overset3d_h12t20.mp4){width=400 height=320px}
 ![Two floaters](tutorial/misc/twoBody_moored.mp4){width=400 height=320px}
 
-![Example Image1](https://drive.google.com/uc?export=view&id=1qwFgW-DSzC8BF5sjAJmnyXOt2R_NYqrP){width=400 height=320px}
-![Example Image2](https://drive.google.com/uc?id=1qwFgW-DSzC8BF5sjAJmnyXOt2R_NYqrP){width=400 height=320px}
-
-
 ## Compile foamMooring
 Prerequisites: git, make, cmake. MAP++ may require other dependent libraries, such as `lapacke`.
 - Clone the repo in `$WM_PROJECT_USER_DIR`.
@@ -28,7 +24,6 @@ Prerequisites: git, make, cmake. MAP++ may require other dependent libraries, su
     map3R/map3R.C
     ```
     For [options](/src/sixDoFMooringRestraints/Make/options), remove
-
     ```
     -llapacke \
     -lmap-1.30.00 \
@@ -40,7 +35,7 @@ Prerequisites: git, make, cmake. MAP++ may require other dependent libraries, su
 	```
 	libs    (sixDoFMooring); 
 	```
-- Prepare a mooring input file in folder "Mooring". For example,
+- Prepare a mooring input file in case subfolder "Mooring". For example,
    - MoorDyn v1: [lines.txt](tutorial/sixDoF_2D/overset/background/Mooring) (hard-coded)
 
    - MoorDyn v2: [lines_v2.txt](tutorial/sixDoF_2D/overset/background/Mooring) (hard-coded)
