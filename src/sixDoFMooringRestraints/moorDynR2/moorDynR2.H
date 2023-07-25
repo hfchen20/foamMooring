@@ -48,6 +48,8 @@ SourceFiles
 
 #include "sixDoFRigidBodyMotionRestraint.H"
 #include "MoorDyn2.h"
+#include "IFstream.H"
+#include "OFstream.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -67,9 +69,14 @@ class moorDynR2
 {
     // Private data
 
-	//- Initialize MoorDyn at the first time step ()
-        mutable bool initialized_;
+    //- Initialize MoorDyn at the first time step ()
+    mutable bool initialized_;
 
+    //- MoorDyn intput file
+    fileName inputFile_;
+
+    //- Write mooring line coordinates to VTK files
+    bool writeVTK_;
 
 public:
 
@@ -117,6 +124,53 @@ public:
 
         //- Write
         virtual void write(Ostream&) const;
+
+        //- write VTK files for mooring lines configuration
+        void writeVTK(const scalar& t) const;
+
+protected:
+    //- Check if a PVD file exists
+    inline bool has_pvd() const
+    {
+        IFstream is_file("moorDynR2.pvd");
+        return is_file.good();
+    }
+
+    //- Create an empty PVD file
+    inline void make_pvd() const
+    {
+        OFstream os("moorDynR2.pvd");
+        os << "<?xml version=\"1.0\"?>" << nl
+           << "<VTKFile type=\"Collection\" version=\"0.1\"" << nl
+           << "         byte_order=\"LittleEndian\"" << nl
+           << "         compressor=\"vtkZLibDataCompressor\">" << nl
+           << "  <Collection>" << nl
+           << "  </Collection>" << nl
+           << "</VTKFile>" << nl;
+    }
+
+    //- Read the PVD up to the part where new data whall be appended
+    inline std::vector<string> read_pvd() const
+    {
+        IFstream is("moorDynR2.pvd");
+        if (!is.good()) {
+            FatalError << "Error updating the PVD file: "
+                << "'moorDynR2.pvd' cannot be read"
+                << exit(FatalError);        
+        }
+        std::vector<string> lines;
+        while (true) {
+            string line;
+            is.getLine(line);
+            if (line.ends_with("</Collection>")) {
+                return lines;
+            }
+            lines.push_back(line);
+        }
+        FatalError << "Error updating the PVD file: "
+            << "'moorDynR2.pvd' is ill-formatted"
+            << exit(FatalError);        
+    }
 
 private:
 

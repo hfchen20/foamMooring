@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Stop if something fails
+set -e
+
 # compile the 3rd parties (modules)
 # =======================
 git submodule init
@@ -11,17 +14,19 @@ echo "compile MoorDyn v1"
 cd MoorDyn_v1/compileSO
 make -j
 mkdir -p $FOAM_USER_LIBBIN
-mkdir -p $FOAM_USER_LIBBIN/../include
+# mkdir -p $FOAM_USER_LIBBIN/../include
+mkdir -p $WM_PROJECT_USER_DIR/foamMooring/src/include
 cp -f MoorDyn.so $FOAM_USER_LIBBIN/libmoordynv1.so
-#cp -f ../MoorDyn.h $FOAM_USER_LIBBIN/../include/MoorDynv1.h
+# cp -f ../MoorDyn.h $FOAM_USER_LIBBIN/../include/MoorDynv1.h
 cp -f ../MoorDyn.h $WM_PROJECT_USER_DIR/foamMooring/src/include/MoorDynv1.h
 cd ../..
 
 # MoorDyn v2
 echo "compile MoorDyn v2"
-mkdir MoorDyn.build
+mkdir -p MoorDyn.build
 cd MoorDyn.build
-cmake -DBUILD_TESTING=OFF -DEXTERNAL_EIGEN=OFF -DFORTRAN_WRAPPER=OFF -DMATLAB_WRAPPER=OFF -DPYTHON_WRAPPER=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$FOAM_USER_LIBBIN/.. ../MoorDyn
+cmake -DBUILD_TESTING=OFF -DEXTERNAL_EIGEN=OFF -DFORTRAN_WRAPPER=OFF -DMATLAB_WRAPPER=OFF -DPYTHON_WRAPPER=OFF -DUSE_VTK=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$FOAM_USER_LIBBIN/.. ../MoorDyn
+CMAKE_RESULT=$?
 make -j
 make install
 cd ../..

@@ -28,11 +28,11 @@ Author:
 
 extern "C" {
 
-#include "../src/map.h"
-#include "../src/mapinit.h"
-#include "../src/outputstream.h"
-#include "../src/mapapi.h"
-#include "../src/freedata.h"
+#include "../../map-plus-plus/src/map.h"
+#include "../../map-plus-plus/src/mapinit.h"
+#include "../../map-plus-plus/src/outputstream.h"
+#include "../../map-plus-plus/src/mapapi.h"
+#include "../../map-plus-plus/src/freedata.h"
 
 }
 
