@@ -7,5 +7,7 @@ cd "${0%/*}" || exit                                # Run from this directory
 cleanCase0
 
 rm -rf 0/motionScale
+rm -rf moorDynR2.*
+rm -rf Mooring/*.out
 
 #------------------------------------------------------------------------------

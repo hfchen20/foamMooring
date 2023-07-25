@@ -72,9 +72,11 @@ sixDoFRigidBodyMotionCoeffs
 
 	restraints
 	{
-        moorDynR1
+		moorDynR2
 		{
-			sixDoFRigidBodyMotionRestraint moorDynR1;
+			sixDoFRigidBodyMotionRestraint moorDynR2;
+			inputFile                      "Mooring/lines_v2.txt";
+			writeMooringVTK                true;
 		}
 
         /* Example mooring restraints as defined in libsixDoFMooring
@@ -85,9 +87,11 @@ sixDoFRigidBodyMotionCoeffs
 			sixDoFRigidBodyMotionRestraint moorDynR1;
 		}
 
-        moorDynR2
+		moorDynR2
 		{
 			sixDoFRigidBodyMotionRestraint moorDynR2;
+			inputFile                      "Mooring/lines_v2.txt";
+			writeMooringVTK                true;
 		}
 
         map3R

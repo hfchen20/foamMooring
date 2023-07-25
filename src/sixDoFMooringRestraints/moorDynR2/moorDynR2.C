@@ -33,12 +33,13 @@ References
 
 \*---------------------------------------------------------------------------*/
 
+#include <iomanip>
+#include <vector>
 #include "moorDynR2.H"
 #include "addToRunTimeSelectionTable.H"
 #include "sixDoFRigidBodyMotion.H"
 //#include "Time.H"
 #include "fvMesh.H"
-#include "OFstream.H"
 #include "error.H"
 #include "quaternion.H"
 
@@ -185,10 +186,13 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::restrain
         Info<< "MoorDyn module initialized!" << endl;
         initialized_ = true;
         save_mooring(tprev);
+        Info<< "MoorDyn module saved at t = " << tprev << " s" << endl;
+        writeVTK(tprev);
     } else if (tprev - moordyn_backup_.t >= 1.e-3 * deltaT) {
         // We have successfully advanced forward in time
         save_mooring(tprev);
         Info<< "MoorDyn module saved at t = " << tprev << " s" << endl;
+        writeVTK(tprev);
     } else {
         // We are repeating the same time step because the implicit scheme
         load_mooring();
@@ -243,6 +247,12 @@ bool Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::read
 {
     sixDoFRigidBodyMotionRestraint::read(sDoFRBMRDict);
 
+    inputFile_ = sDoFRBMRCoeffs_.getOrDefault<fileName>(
+            "inputFile",
+            "Mooring/lines_v2.txt"
+        );
+    writeVTK_ = sDoFRBMRCoeffs_.getOrDefault<Switch>("writeMooringVTK", true);
+
     return true;
 }
 
@@ -252,7 +262,49 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::write
     Ostream& os
 ) const
 {
+    os.writeEntry("inputFile", inputFile_);
+    os.writeEntry("writeMooringVTK", writeVTK_);
 }
 
+void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::writeVTK(const scalar& t) const
+{
+    if (!writeVTK_)
+        return;
+
+    std::ostringstream vtk_oss;
+    unsigned int vtk_last = 0;
+    while (true) {
+        vtk_oss.str("");
+        vtk_oss.clear();
+        vtk_oss << "moorDynR2."
+                << std::setfill('0') << std::setw(6) << vtk_last
+                << ".vtm";
+        IFstream is_file(vtk_oss.str());
+        if (!is_file.good())
+            break;
+        vtk_last++;
+    }
+
+    int moordyn_err = MoorDyn_SaveVTK(moordyn_, vtk_oss.str().c_str());
+    if (moordyn_err != MOORDYN_SUCCESS) {
+        FatalError << "Error saving the VTK file for time " << t << " s"
+            << exit(FatalError);
+    }
+
+    // Update the vtp file
+    if (!has_pvd()) {
+        make_pvd();
+    }
+    auto lines = read_pvd();
+    OFstream os("moorDynR2.pvd");
+    for (auto line : lines) {
+        os << line.c_str() << nl;
+    }
+    os << "    <DataSet timestep=\"" << t
+       << "\" group=\"\" part=\"0\" "
+       << "file=\"" << vtk_oss.str().c_str() << "\"/>" << nl
+       << "  </Collection>" << nl
+       << "</VTKFile>" << nl;
+}
 
 // ************************************************************************* //
