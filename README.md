@@ -36,9 +36,9 @@ For [options](/src/sixDoFMooringRestraints/Make/options), remove
 libs    (sixDoFMooring); 
 ```
 - Prepare a mooring input file in case subfolder "Mooring". For example,
-   - MoorDyn v1: [lines.txt](tutorial/sixDoF_2D/overset/background/Mooring) (hard-coded)
+   - MoorDyn v1: [lines.txt](tutorial/sixDoF_2D/overset/background/Mooring) (filename hard-coded)
 
-   - MoorDyn v2: [lines_v2.txt](tutorial/sixDoF_2D/overset/background/Mooring) (hard-coded)
+   - MoorDyn v2: [lines_v2.txt](tutorial/sixDoF_2D/overset/background/Mooring)
 
    - Moody: [boxWu_exPoint.m](tutorial/sixDoF_2D/overset/background/Mooring)
 
