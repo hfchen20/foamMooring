@@ -18,7 +18,7 @@ cd foamMooring
 ./Allwmake
 ```
 
-- If there is difficulty in compiling Map++ and map3R, or if there is no interest in this quasi-static code, you could remove or comment out the corresponding entries in the make files. For [files](/src/sixDoFMooringRestraints/Make/files), remove
+- If there is difficulty in compiling Map++ and map3R (quasi-static mooring code), you could remove or comment out the corresponding entries in the Make files. For [files](/src/sixDoFMooringRestraints/Make/files), remove
 ```
 map3R/mapFoamInterface.C
 map3R/map3R.C
