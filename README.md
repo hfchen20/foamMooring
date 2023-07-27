@@ -7,34 +7,34 @@ CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn w
 ## Compile foamMooring
 Prerequisites: git, make, cmake. MAP++ may require other dependent libraries, such as `lapacke`.
 - Clone the repo in `$WM_PROJECT_USER_DIR`.
-	```
-	mkdir -p $WM_PROJECT_USER_DIR 
-	cd $WM_PROJECT_USER_DIR 
-	git clone https://gitlab.com/hfchen20/foamMooring.git 
-	cd foamMooring 
-	```
+```
+mkdir -p $WM_PROJECT_USER_DIR 
+cd $WM_PROJECT_USER_DIR 
+git clone https://gitlab.com/hfchen20/foamMooring.git 
+cd foamMooring 
+```
 - Run Allwmake. Upon successful compilation, there should be at least a `libsixDoFMooring.so` library in `$FOAM_USER_LIBBIN`.
-	```
-	./Allwmake
-	```
+```
+./Allwmake
+```
 
 - If there is difficulty in compiling Map++ and map3R, or if there is no interest in this quasi-static code, you could remove or comment out the corresponding entries in the make files. For [files](/src/sixDoFMooringRestraints/Make/files), remove
-    ```
-    map3R/mapFoamInterface.C
-    map3R/map3R.C
-    ```
-    For [options](/src/sixDoFMooringRestraints/Make/options), remove
-    ```
-    -llapacke \
-    -lmap-1.30.00 \
-    ```
+```
+map3R/mapFoamInterface.C
+map3R/map3R.C
+```
+For [options](/src/sixDoFMooringRestraints/Make/options), remove
+```
+-llapacke \
+-lmap-1.30.00 \
+```
 
-## How to use (tested on v2012)
+## How to use (tested on v2012, v2212)
 - Prepare an OpenFOAM case as usual. The floating body motion can be accommodated by either deforming mesh `interFoam` or overset grid `overInterDyMFoam`.
 - Add in `controlDict`
-	```
-	libs    (sixDoFMooring); 
-	```
+```
+libs    (sixDoFMooring); 
+```
 - Prepare a mooring input file in case subfolder "Mooring". For example,
    - MoorDyn v1: [lines.txt](tutorial/sixDoF_2D/overset/background/Mooring) (hard-coded)
 
@@ -45,56 +45,59 @@ Prerequisites: git, make, cmake. MAP++ may require other dependent libraries, su
    - MAP++: [esflOWC_4lines.map](tutorial/sixDoF_2D/overset/background/Mooring)
 
 - Define mooring restraints in `constant/dynamicMeshDict`
-	```
-	// Example mooring restraints as defined in libsixDoFMooring, add one of
-	//	moorDynR1 || moorDynR2 || map3R || moodyR 
+```
+// Example mooring restraints as defined in libsixDoFMooring, add one of
+//	moorDynR1 || moorDynR2 || map3R || moodyR 
 
-	moorDynR1
-	{
-		sixDoFRigidBodyMotionRestraint moorDynR1;
-	}
+moorDynR1
+{
+	sixDoFRigidBodyMotionRestraint moorDynR1;
+}
 
-	moorDynR2
-	{
-		sixDoFRigidBodyMotionRestraint moorDynR2;
-	}
+moorDynR2
+{
+	sixDoFRigidBodyMotionRestraint moorDynR2;
+	inputFile                      "Mooring/lines_v2.txt";
+	writeMooringVTK                true;
 
-	map3R
-	{
-		sixDoFRigidBodyMotionRestraint map3R;
-		inputFile                     "Mooring/esflOWC_4lines.map";
-		summaryFile                   "Mooring/esflOWC_summary.map";
-		waterDepth                    0.5;
-		refAttachmentPt
-		(
-			(-0.1      0.1    -0.077)
-			(-0.1     -0.1    -0.077)
-			( 0.1      0.1    -0.077)
-			( 0.1     -0.1    -0.077)
-		);
-		numberOfSegments       20;
-		writeMooringVTK        true;
-	}
+}
 
-	moodyR
-	{
-		sixDoFRigidBodyMotionRestraint moodyR;
-		inputFile              "Mooring/boxWu_exPoint.m";
+map3R
+{
+	sixDoFRigidBodyMotionRestraint map3R;
+	inputFile                     "Mooring/esflOWC_4lines.map";
+	summaryFile                   "Mooring/esflOWC_summary.map";
+	waterDepth                    0.5;
+	refAttachmentPt
+	(
+		(-0.1      0.1    -0.077)
+		(-0.1     -0.1    -0.077)
+		( 0.1      0.1    -0.077)
+		( 0.1     -0.1    -0.077)
+	);
+	numberOfSegments       20;
+	writeMooringVTK        true;
+}
 
-		couplingMode           "externalPoint";  // "externalPoint" or "externalRigidBody"
-		//If couplingMode is "externalPoint", nCouplingDof = 3*refAttachmentPt.size()
-		nCouplingDof           6;
-		refAttachmentPt
-		(
-			(-0.1      0.1    -0.077)
-			(-0.1     -0.1    -0.077)
-			( 0.1      0.1    -0.077)
-			( 0.1     -0.1    -0.077)
-		);
-		waveKinematics         false;
-		twoD                   true;
-	}
-	```
+moodyR
+{
+	sixDoFRigidBodyMotionRestraint moodyR;
+	inputFile              "Mooring/boxWu_exPoint.m";
+
+	couplingMode           "externalPoint";  // "externalPoint" or "externalRigidBody"
+	//If couplingMode is "externalPoint", nCouplingDof = 3*refAttachmentPt.size()
+	nCouplingDof           6;
+	refAttachmentPt
+	(
+		(-0.1      0.1    -0.077)
+		(-0.1     -0.1    -0.077)
+		( 0.1      0.1    -0.077)
+		( 0.1     -0.1    -0.077)
+	);
+	waveKinematics         false;
+	twoD                   true;
+}
+```
 
 ## Main features
 ![Three mooring line codes](tutorial/misc/comparison_3_mooring_codes.PNG)
