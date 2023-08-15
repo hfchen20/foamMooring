@@ -5,7 +5,7 @@ CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn w
 ![Two floaters](tutorial/misc/twoBody_moored.mp4){width=400 height=320px}
 
 ## Compile foamMooring
-Prerequisites: git, make, cmake, ![VTK](merge_requests/3) if turning on USE_VTK=ON when compiling MoorDyn v2. MAP++ may require other dependent libraries, such as `lapacke`.
+Prerequisites: git, make, cmake, and ![VTK](https://gitlab.com/hfchen20/foamMooring/-/merge_requests/3) if turning on USE_VTK=ON when compiling MoorDyn v2. MAP++ may require other dependent libraries, such as `lapacke`.
 - Clone the repo in `$WM_PROJECT_USER_DIR`.
 ```
 mkdir -p $WM_PROJECT_USER_DIR 
@@ -107,6 +107,7 @@ moodyR
 - Prepare a vtk.series file 'mooring.vtk.series' to be loaded into Paraview.
 - A python script and example VTK files are provided in the tutorial to post-process MoorDyn output.
 - The mooring tension could also be added to the VTK files.
+- MoorDyn v2 has a built-in functionality to write XML-based ![VTK files](https://gitlab.com/hfchen20/foamMooring/-/merge_requests/3).
 
 ## Reference
 [Chen, H., & Hall, M. (2022). CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn with OpenFOAM,
