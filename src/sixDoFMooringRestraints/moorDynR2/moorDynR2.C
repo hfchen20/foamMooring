@@ -80,7 +80,7 @@ Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::moorDynR2
     if (Pstream::master())
     {
         int moordyn_err = MOORDYN_SUCCESS;
-        moordyn_ = MoorDyn_Create("Mooring/lines_v2.txt");
+        moordyn_ = MoorDyn_Create(inputFile_.c_str());
         if (!moordyn_) {
             FatalError << "MoorDyn v2 cannot be created!" << exit(FatalError);
         }
