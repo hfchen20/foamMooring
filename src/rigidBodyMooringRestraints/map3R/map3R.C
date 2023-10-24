@@ -5,7 +5,7 @@
     \\  /    A nd           | www.openfoam.com
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
-    Copyright (C) 2019-2020 OpenCFD Ltd.
+    Copyright (C) 2016 OpenFOAM Foundation
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -24,56 +24,52 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*\
-References
 
-    Chen, H., & Hall, M. (2022). CFD simulation of floating body motion with mooring dynamics: Coupling 
-        MoorDyn with OpenFOAM. Applied Ocean Research, 124, 103210.
-        https://doi.org/10.1016/j.apor.2022.103210
-
-\*---------------------------------------------------------------------------*/
 #include "map3R.H"
+#include "rigidBodyModel.H"
 #include "addToRunTimeSelectionTable.H"
-#include "sixDoFRigidBodyMotion.H"
 #include "Time.H"
 #include "fvMesh.H"
 #include "OFstream.H"
 #include "uniformDimensionedFields.H"
 #include "foamVtkSeriesWriter.H"
-
 #include "mapFoamInterface.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
 {
-namespace sixDoFRigidBodyMotionRestraints
+namespace RBD
+{
+namespace restraints
 {
     defineTypeNameAndDebug(map3R, 0);
 
     addToRunTimeSelectionTable
     (
-        sixDoFRigidBodyMotionRestraint,
+        restraint,
         map3R,
         dictionary
     );
+}
 }
 }
 
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-Foam::sixDoFRigidBodyMotionRestraints::map3R::map3R
+Foam::RBD::restraints::map3R::map3R
 (
     const word& name,
-    const dictionary& sDoFRBMRDict
+    const dictionary& dict,
+    const rigidBodyModel& model
 )
 :
-    sixDoFRigidBodyMotionRestraint(name, sDoFRBMRDict),
+    restraint(name, dict, model),
     map_()
 {
-    read(sDoFRBMRDict);
-    
+    read(dict);
+
     initialized_ = false;
     nLines_ = 0;
     nFairleads_ = 0;
@@ -82,7 +78,14 @@ Foam::sixDoFRigidBodyMotionRestraints::map3R::map3R
     curTime_ = -1;
     iteration_ = 0;
 
-    Info << "Create map3R (quasi-static mooring code MAP++) ..." << endl;
+    Info<< "Create map3R (quasi-static mooring code MAP++) ..." << endl;
+    
+    // If different bodies are present
+    if (coeffs_.found("bodies") )
+    {
+        // size of bodies_ = nAttachments_
+        Info<< "Multiple bodies specified in map3R restraint: " << bodies_ << endl;
+    }
 
     if (writeVTK_)
     {
@@ -96,13 +99,13 @@ Foam::sixDoFRigidBodyMotionRestraints::map3R::map3R
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-Foam::sixDoFRigidBodyMotionRestraints::map3R::~map3R()
+Foam::RBD::restraints::map3R::~map3R()
 {
     if (initialized_)
     {
         // Close MAP++
         map_.closeMAP();
-        
+            
         vtk::seriesWriter writer;
         writer.scan("Mooring/VTK/map3.vtk");
         
@@ -114,9 +117,7 @@ Foam::sixDoFRigidBodyMotionRestraints::map3R::~map3R()
 }
 
 
-// * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
-
-void Foam::sixDoFRigidBodyMotionRestraints::map3R::initializeMAP(const Time& time) const
+void Foam::RBD::restraints::map3R::initializeMAP(const Time& time) const
 {
     // Look up for environmental parameters: g, water density rho, 
     // water depth: read in from Restraints dict
@@ -165,13 +166,13 @@ void Foam::sixDoFRigidBodyMotionRestraints::map3R::initializeMAP(const Time& tim
     {
         mps_.reset( new OFstream(outputFile_) );
         // Writing header
-        mps_() << "Time history of fairlead tension (compts) from MAP++. Total # fairleads: " << nFairleads_ << endl;
+        mps_() << "Time history of fairlead forces (cmpts) from MAP++. Total # fairleads: " << nFairleads_ << endl;
     }
 
     if (writeVTK_)
     {
         mkDir("Mooring/VTK");
-        if (!sDoFRBMRCoeffs_.found("nodesPerLine"))
+        if (!coeffs_.found("nodesPerLine"))
         {
             nodesPerLine_ = List<label>(nLines_, nNodes_);
         }
@@ -185,20 +186,18 @@ void Foam::sixDoFRigidBodyMotionRestraints::map3R::initializeMAP(const Time& tim
     }
 }
 
-void Foam::sixDoFRigidBodyMotionRestraints::map3R::restrain
+// * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
+
+void Foam::RBD::restraints::map3R::restrain
 (
-    const sixDoFRigidBodyMotion& motion,
-    vector& restraintPosition,
-    vector& restraintForce,
-    vector& restraintMoment
+    scalarField& tau,
+    Field<spatialVector>& fx,
+    const rigidBodyModelState& state
 ) const
 {
-    const Time& time = motion.time();
+    scalar t = state.t();
+    const Time& time = model_.time();
 
-    scalar t = time.value();
-
-    point CoR = motion.centreOfRotation();
-    
     if (t == curTime_)
     {
         iteration_++;
@@ -215,127 +214,79 @@ void Foam::sixDoFRigidBodyMotionRestraints::map3R::restrain
         iteration_ = 1;
 
         initializeMAP(time);
-        
         initialized_ = true;
     }
+
+    pointField fairPos = vectorField(nFairleads_, vector::zero);
+    vectorField fairForce = vectorField(nFairleads_, vector::zero);
     
-    vectorField fairForce = vectorField(nLines_, vector::zero);
-    
-    tmp<pointField> tpoints = motion.transform(refAttachmentPt_);
-    pointField fairPos = tpoints();
-    
+    for (int ii = 0; ii<refAttachmentPt_.size(); ++ii)
+    {
+        // Transform the body points to global
+        fairPos[ii] = bodyPoint(refAttachmentPt_[ii], bodyIDs_[ii]);
+    }
+
     // Call updateMAP to calculate new mooring configuration
     map_.updateMAP(t, &fairPos[0][0], &fairForce[0][0]);
-    
-    // Sum forces and calculate moments manualy since MAP does not return the moments
-    for(int pt=0; pt<nLines_; pt++)
-    {
-        restraintForce += fairForce[pt];
-        
-        restraintMoment += (fairPos[pt] - CoR) ^ fairForce[pt];
-    }
-    
-    // Since moment is already calculated as above, set to
-    // centreOfRotation to be sure of no spurious moment
-    restraintPosition = motion.centreOfRotation();
 
-    if (motion.report())
+    // Sum forces and calculate moments
+    for(int pt=0; pt<refAttachmentPt_.size(); pt++)
     {
-        Info<< t << ": force " << restraintForce
-            << ", moment " << restraintMoment
-            << endl;
+        vector force = fairForce[pt];
+
+        vector moment = fairPos[pt] ^ force;
+
+        // Accumulate the force for the restrained body
+        //fx[bodyIndex_] += spatialVector(moment, force);
+        fx[bodyIndices_[pt]] += spatialVector(moment, force);
+
+        Info<< " attachmentPt[" << pt << "] " << fairPos[pt]
+            << " force " << force
+            << " moment " << moment
+            << endl;   
     }
     
-    if (iteration_ == outerCorrector_)
+    if (writeForces_ && iteration_ == outerCorrector_)
     {
-        if (writeForces_)
+        // Write forces to file
+        mps_() << t;
+        for(int pt=0; pt<nLines_; pt++)
         {
-            // Write forces to file
-            mps_() << t;
-            for(int pt=0; pt<nLines_; pt++)
-            {
-                vector fi = fairForce[pt];
-                mps_() << "\t" << fi[0] << "\t" << fi[1] << "\t" << fi[2];
-            }       
-            mps_() << endl;
-        }
-        
-        if (writeVTK_)
+            vector fi = fairForce[pt];
+            mps_() << "\t" << fi[0] << "\t" << fi[1] << "\t" << fi[2];
+        }       
+        mps_() << endl;
+    }
+
+    if (writeVTK_ && iteration_ == outerCorrector_)
+    {
+        if (t >= vtkStartTime_ && time.outputTime())
         {
-            if (time.outputTime() && t >= vtkStartTime_)
-            {
-                Info<< "Write mooring VTK ..." << endl;
-                writeVTK(time);
-            }
+            Info<< "Write mooring VTK ..." << endl;
+            writeVTK(time);
         }
     }
-    
 }
 
-
-bool Foam::sixDoFRigidBodyMotionRestraints::map3R::read
-(
-    const dictionary& sDoFRBMRDict
-)
+void Foam::RBD::restraints::map3R::updateMAPState(const Time& time) const
 {
-    sixDoFRigidBodyMotionRestraint::read(sDoFRBMRDict);
-    sDoFRBMRCoeffs_.readEntry("inputFile", inputFile_);
-    sDoFRBMRCoeffs_.readEntry("summaryFile", summaryFile_);
-    sDoFRBMRCoeffs_.readEntry("outputFile", outputFile_);
-    sDoFRBMRCoeffs_.readEntry("waterDepth", depth_);
-    sDoFRBMRCoeffs_.readEntry("refAttachmentPt", refAttachmentPt_);
+    pointField fairPos = vectorField(nFairleads_, vector::zero);
+    vectorField fairForce = vectorField(nFairleads_, vector::zero);
     
-    writeForces_ = sDoFRBMRCoeffs_.getOrDefault<Switch>("writeMooringForces", true);
-    writeVTK_ = sDoFRBMRCoeffs_.getOrDefault<Switch>("writeMooringVTK", true);
-    
-    if (writeVTK_)
+    for (int ii = 0; ii<refAttachmentPt_.size(); ++ii)
     {
-        vtkStartTime_ = sDoFRBMRCoeffs_.getOrDefault<scalar>("vtkStartTime", 0);
-        nNodes_ = sDoFRBMRCoeffs_.getOrDefault<label>("nNodes", 10);
-
-        if (sDoFRBMRCoeffs_.found("nodesPerLine"))
-        {
-            sDoFRBMRCoeffs_.readEntry("nodesPerLine", nodesPerLine_);
-        }
-
-        outerCorrector_ = sDoFRBMRCoeffs_.getOrDefault<scalar>("outerCorrector", 3);
+        // Transform the body points to global
+        fairPos[ii] = bodyPoint(refAttachmentPt_[ii], bodyIDs_[ii]);
     }
 
-    return true;
+    // Call updateMAP to calculate new mooring configuration
+    map_.updateMAP(time.value(), &fairPos[0][0], &fairForce[0][0]);
 }
 
-
-void Foam::sixDoFRigidBodyMotionRestraints::map3R::write
-(
-    Ostream& os
-) const
-{
-    os.writeEntry("inputFile", inputFile_);
-    os.writeEntry("summaryFile", summaryFile_);
-    os.writeEntry("outputFile", outputFile_);
-    os.writeEntry("waterDepth", depth_);
-    os.writeEntry("refAttachmentPt", refAttachmentPt_);
-    os.writeEntry("writeMooringForces", writeForces_);
-    os.writeEntry("writeMooringVTK", writeVTK_);
-    
-    if (writeVTK_)
-    {
-        os.writeEntry("vtkStartTime", vtkStartTime_);
-        if (sDoFRBMRCoeffs_.found("nNodes"))
-        {
-            os.writeEntry("nNodes", nNodes_);
-        }
-        if (sDoFRBMRCoeffs_.found("nodesPerLine"))
-        {
-            os.writeEntry("nodesPerLine", nodesPerLine_);
-        }
-    }
-}
-
-
-void Foam::sixDoFRigidBodyMotionRestraints::map3R::writeVTK(const Time& time) const
+void Foam::RBD::restraints::map3R::writeVTK(const Time& time) const
 {
     double coord[max(nodesPerLine_)][3];
+    //pointField coord(nodesPerLine_, Zero);
     
     fileName name("Mooring/VTK/map3_");
     // OFstream mps(name + time.timeName() + "_.vtk");
@@ -376,8 +327,94 @@ void Foam::sixDoFRigidBodyMotionRestraints::map3R::writeVTK(const Time& time) co
         
         start_node += nodesPerLine_[i];
     }
-
 }
 
+bool Foam::RBD::restraints::map3R::read
+(
+    const dictionary& dict
+)
+{
+    restraint::read(dict);
+
+    coeffs_.readEntry("inputFile", inputFile_);
+    coeffs_.readEntry("summaryFile", summaryFile_);
+    coeffs_.readEntry("outputFile", outputFile_);
+    coeffs_.readEntry("waterDepth", depth_);
+    coeffs_.readEntry("refAttachmentPt", refAttachmentPt_);
+    writeForces_ = coeffs_.getOrDefault<Switch>("writeMooringForces", true);
+    writeVTK_ = coeffs_.getOrDefault<Switch>("writeMooringVTK", false);
+
+    if (writeVTK_)
+    {
+        vtkStartTime_ = coeffs_.getOrDefault<scalar>("vtkStartTime", 0);
+        nNodes_ = coeffs_.getOrDefault<label>("nNodes", 10);
+
+        if (coeffs_.found("nodesPerLine"))
+        {
+            coeffs_.lookup("nodesPerLine") >> nodesPerLine_;
+            //coeffs_.readEntry("nodesPerLine", nodesPerLine_);
+        }
+
+        outerCorrector_ = coeffs_.getOrDefault<scalar>("outerCorrector", 3);
+    }
+
+    scalar nAttachments = refAttachmentPt_.size();
+
+    // Initialise the sizes of bodyIDs, and bodyIndices
+    bodyIDs_ = List<label>(nAttachments, bodyID_);
+    bodyIndices_ = List<label>(nAttachments, bodyIndex_);
+    
+    // If different bodies are attached to moody moorings:
+    if (coeffs_.found("bodies"))
+    {
+        coeffs_.lookup("bodies") >> bodies_;
+        // size of bodies_ = nAttachments_
+    
+        for(int ii=0; ii<nAttachments; ii++) 			
+        {
+            bodyIDs_[ii] = model_.bodyID(bodies_[ii]);
+            bodyIndices_[ii] = model_.master(bodyIDs_[ii]);
+        }
+    }
+    
+    return true;
+}
+
+
+void Foam::RBD::restraints::map3R::write
+(
+    Ostream& os
+) const
+{
+    restraint::write(os);
+
+    os.writeEntry("inputFile", inputFile_);
+    os.writeEntry("summaryFile", summaryFile_);
+    os.writeEntry("outputFile", outputFile_);
+    os.writeEntry("waterDepth", depth_);
+    //os.writeEntry("numberOfLines", nLines_);
+
+    if (int(bodies_.size())>0)
+    {
+        os.writeEntry("bodies",bodies_);
+    }
+    os.writeEntry("refAttachmentPt", refAttachmentPt_);
+    os.writeEntry("writeMooringForces", writeForces_);
+    os.writeEntry("writeMooringVTK", writeVTK_);
+
+    if (writeVTK_)
+    {
+        os.writeEntry("vtkStartTime", vtkStartTime_);
+        //os.writeEntry("vtkInterval", vtkInterval_);
+        if (coeffs_.found("nNodes"))
+        {
+            os.writeEntry("nNodes", nNodes_);
+        }
+        if (coeffs_.found("nodesPerLine"))
+        {
+            os.writeEntry("nodesPerLine", nodesPerLine_);
+        }
+    }
+}
 
 // ************************************************************************* //

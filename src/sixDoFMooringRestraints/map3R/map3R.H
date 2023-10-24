@@ -56,8 +56,6 @@ SourceFiles
 
 namespace Foam
 {
-// Forward declarations
-class fvMesh;
 
 namespace sixDoFRigidBodyMotionRestraints
 {
@@ -80,6 +78,9 @@ class map3R
     
     //- MAP summary file
     fileName summaryFile_;
+
+    //- MAP mooring output file
+    fileName outputFile_;
     
     //- Water depth
     scalar depth_;
@@ -87,24 +88,46 @@ class map3R
     //- Number of mooring lines, = # fairleads
     mutable scalar nLines_;
 
-    //- Number of segments per line, assuming each line has same number of segments
-    scalar nSegments_;
+    //- Number of mooring fairleads
+    mutable scalar nFairleads_;
 
-    //- Write mooring line coordinates to VTK files
-    bool writeVTK_;
-
-    //- Initialize MoorDyn at the first time step ()
+    //- MAP++ InitializeD
     mutable bool initialized_;
     
     //- Fairlead initial position, relative to body center of rotation
     // size equal to nLines_
     pointField refAttachmentPt_;
     
-    //- Instantaneous fairlead position
-    //pointField fairPos_;
+    //-  Write mooring fairlead forces to file
+    bool writeForces_;
+        
+   //- Write mooring line coordinates to VTK files
+    bool writeVTK_;
+
+    //- Start time to write VTK, default to runTime.start
+    scalar vtkStartTime_;
+
+    //- Sequence number to be included in vtk filename
+    mutable label vtkCounter_;
+
+    //- nodes # for all lines
+    label nNodes_;
+
+    //- List of nodes # per mooring line
+    //scalarField nodesPerLine_;
+    mutable List<label> nodesPerLine_;
+
+    //- Current time, to count iteration
+    mutable scalar curTime_;
+
+    //- Iteration count, write VTK for the last iteration only
+    mutable label iteration_;
     
-    //- Fairlead force
-    //vectorField fairForce_;
+    //- Outer corrector, times mooring states updated each time step
+    label outerCorrector_;
+    
+    //- Output stream for mooring fairlead forces
+    mutable autoPtr<OFstream> mps_;
 
 
 public:
@@ -153,9 +176,12 @@ public:
 
         //- Write
         virtual void write(Ostream&) const;
+        
+        //- Initialize MAP++ & assign some variables
+        void initializeMAP(const Time&) const;
 
-	//- write VTK files for mooring lines configuration
-        void writeVTK(fvMesh&) const;
+	    //- write VTK files for mooring lines configuration
+        void writeVTK(const Time&) const;
 };
 
 

@@ -9,4 +9,4 @@ moorDynR2/moorDynR2.C
 
 linearSpringGroup/linearSpringGroup.C
 
-LIB = $(FOAM_USER_LIBBIN)/libsixDoFMooring
+LIB = $(FOAM_USER_LIBBIN)/librigidBodyMooring
