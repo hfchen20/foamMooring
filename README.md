@@ -5,7 +5,7 @@ CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn w
 ![Two floaters](tutorial/misc/twoBody_moored.mp4){width=400 height=320px}
 
 ## Compile foamMooring
-Prerequisites: git, make, cmake, and [VTK](https://gitlab.com/hfchen20/foamMooring/-/merge_requests/3) if turning on USE_VTK=ON when compiling MoorDyn v2. MAP++ may require other dependent libraries, such as `lapacke`.
+Prerequisites: git, make, cmake, and [VTK](https://gitlab.com/hfchen20/foamMooring/-/merge_requests/3) if USE_VTK=ON when compiling MoorDyn v2. MAP++ may require other dependent libraries, such as `lapacke`.
 - Clone the repo in `$WM_PROJECT_USER_DIR`.
 ```
 mkdir -p $WM_PROJECT_USER_DIR 
@@ -109,12 +109,14 @@ moodyR
 - The mooring tension could also be added to the VTK files.
 - MoorDyn v2 has a built-in functionality to write XML-based [VTK files](https://gitlab.com/hfchen20/foamMooring/-/merge_requests/3).
 
-## Reference
-[Chen, H., & Hall, M. (2022). CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn with OpenFOAM,
-Applied Ocean Research, 124, 103210. https://doi.org/10.1016/j.apor.2022.103210](https://www.sciencedirect.com/science/article/pii/S0141118722001511)
+## References
+- Chen, H., & Hall, M. (2022). CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn with OpenFOAM,
+Applied Ocean Research, 124, 103210. [https://doi.org/10.1016/j.apor.2022.103210](https://www.sciencedirect.com/science/article/pii/S0141118722001511)
 
-## About OpenFOAM
+## OpenFOAM® Disclaimer
+
+This offering is not approved or endorsed by OpenCFD Limited, producer and distributor of the OpenFOAM software via www.openfoam.com, and owner of the OPENFOAM® and OpenCFD® trade marks. This offering is not approved or endorsed by any software packages mentioned above or their respective owners, and should not be considered as such.
+
 OpenFOAM is a free, open source CFD software [released and developed by OpenCFD Ltd since 2004](http://www.openfoam.com/history/).
-It has a large user base across most areas of engineering and science, from both commercial and academic organisations.
-OpenFOAM has an extensive range of features to solve anything from complex fluid flows involving chemical reactions, turbulence and heat transfer, to acoustics, solid mechanics and electromagnetics.
-[See documentation](http://www.openfoam.com/documentation)
+It has a large user base across most areas of engineering and science, from both commercial and academic organisations. [See documentation](http://www.openfoam.com/documentation)
+

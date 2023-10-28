@@ -57,6 +57,10 @@ doc/Doxygen/DTAGS
 /*.html
 /doc/*.html
 
+# mkdocs build dir
+site/
+public/
+
 # Untracked configuration/preferences files
 /etc/prefs.csh
 /etc/prefs.sh
