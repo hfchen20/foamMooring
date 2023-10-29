@@ -7,12 +7,9 @@ How to embed videos hosted in the repo sub-directory?
 ![Two floaters](https://gitlab.com/hfchen20/foamMooring/-/blob/master/tutorial/misc/twoBody_moored.mp4?ref_type=heads){width=400px height=320px}
 
 <!-- <figure class="video-container">
-<iframe width="560" height="315" src="https://gitlab.com/hfchen20/foamMooring/-/blob/52452ea6852f4c73c9f26e5618a422184702fbda/tutorial/misc/Animation_overset3d_h12t20.mp4" frameborder="0" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://gitlab.com/hfchen20/foamMooring/-/raw/52452ea6852f4c73c9f26e5618a422184702fbda/tutorial/misc/Animation_overset3d_h12t20.mp4" frameborder="0" allowfullscreen></iframe>
 </figure>
  -->
-
-<iframe width="560" height="315" src="https://gitlab.com/hfchen20/foamMooring/-/raw/52452ea6852f4c73c9f26e5618a422184702fbda/tutorial/misc/Animation_overset3d_h12t20.mp4" frameborder="0" allowfullscreen></iframe>
-
 
 ## Example cases
 - individually moored
