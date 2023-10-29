@@ -1,8 +1,8 @@
 ## Dynamic mooring restraints for rigid body motion in OpenFOAM
 CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn with OpenFOAM
 
-![One floater](tutorial/misc/Animation_overset3d_h12t20.mp4){width=400 height=320px}
-![Two floaters](tutorial/misc/twoBody_moored.mp4){width=400 height=320px}
+![One floater](tutorial/misc/Animation_overset3d_h12t20.mp4){width=400px height=320px}
+![Two floaters](tutorial/misc/twoBody_moored.mp4){width=400px height=320px}
 
 ## Compile foamMooring
 Prerequisites: git, make, cmake, and [VTK](https://gitlab.com/hfchen20/foamMooring/-/merge_requests/3) if USE_VTK=ON when compiling MoorDyn v2. MAP++ may require other dependent libraries, such as `lapacke`.
@@ -112,6 +112,8 @@ moodyR
 ## References
 - Chen, H., & Hall, M. (2022). CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn with OpenFOAM,
 Applied Ocean Research, 124, 103210. [https://doi.org/10.1016/j.apor.2022.103210](https://www.sciencedirect.com/science/article/pii/S0141118722001511)
+
+<iframe width="560" height="315" src="https://gitlab.com/hfchen20/foamMooring/-/raw/52452ea6852f4c73c9f26e5618a422184702fbda/tutorial/misc/Animation_overset3d_h12t20.mp4" frameborder="0" allowfullscreen></iframe>
 
 ## OpenFOAM® Disclaimer
 

@@ -1,5 +1,5 @@
 site_name: foamMooring
-site_url: "https://pages.gitlab.io/hfchen20/foamMooring/"
+site_url: https://hfchen20.gitlab.io/foamMooring/
 repo_url: https://gitlab.com/hfchen20/foamMooring/
 copyright: Copyright &copy; 2023 Haifei Chen
 plugins:
