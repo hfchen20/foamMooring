@@ -2,15 +2,21 @@
 
 A mooring restraints package for simulating rigid body motions in OpenFOAM
 
+:star: Consider starring the repository if you find it useful. :star:
+
+!!! note
+    UNDER CONSTRUCTION!
+
 ---
 
 ## Overview
 
-* Works for two rigid body motion libraries `sixDoFRigidBodyMotion` and `rigidBodyMotion`
-* Mooring models of restraints include MAP++, MoorDyn, Moody, linear springs
-* Most restraints support runtime generation of legacy VTK files (including vtk.series)
-* Tested on v2012, v2212, v2306, mostly with `overInterDyMFoam`
-* Should also work with `waveFoam` and `olaFlow`
+- Works for two rigid body motion libraries `sixDoFRigidBodyMotion` and `rigidBodyMotion`
+- Mooring models of restraints include MAP++, MoorDyn, Moody, linear springs
+- Most restraints support runtime generation of legacy VTK files (including vtk.series)
+- No need to change and re-compile of built-in motion libraries and flow solvers
+- Tested on v2012, v2212, v2306, mostly with overset grid solver `overInterDyMFoam`
+- Should also work with `interFoam` (deforming mesh) and other variants `waveFoam` and `olaFlow`
 
 ## Code structure
 ![Flowchart of foamMooring](img/flowchart_foamMooring.svg)

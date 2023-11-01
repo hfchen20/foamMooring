@@ -1,6 +1,8 @@
 ## Dynamic mooring restraints for rigid body motion in OpenFOAM
 CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn with OpenFOAM
 
+:star: Consider starring the repository if you find it useful. :star:
+
 ![One floater](tutorial/misc/Animation_overset3d_h12t20.mp4){width=400px height=320px}
 ![Two floaters](tutorial/misc/twoBody_moored.mp4){width=400px height=320px}
 
@@ -58,8 +60,7 @@ moorDynR2
 {
 	sixDoFRigidBodyMotionRestraint moorDynR2;
 	inputFile                      "Mooring/lines_v2.txt";
-	writeMooringVTK                true;
-
+	writeMooringVTK                false; // true if you compile v2 with VTK support
 }
 
 map3R

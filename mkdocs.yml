@@ -12,7 +12,7 @@ theme:
     - search.suggest
     - search.highlight
     #- navigation.tabs
-    #- navigation.top
+    - navigation.top
     - navigation.footer
     - content.code.copy
   palette:
@@ -41,9 +41,13 @@ nav:
 extra:
   analytics:
     provider: google
-    property: G-XXXXXXXXXX
+    property: G-6E841MLKH9
 markdown_extensions:
   - admonition
   - attr_list
   - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
 
