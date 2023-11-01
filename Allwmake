@@ -38,8 +38,11 @@ echo "compile MAP++"
 # copy precompiled Moody library
 cp moody-2.0.1-Linux/lib/libmoody.so $FOAM_USER_LIBBIN
 
-# compile sixDoFRigidBodyMotionRestraints
-echo "compile mooring restraints"
+# compile mooring restraints
+echo "compile sixDoF mooring restraints"
 ( cd src/sixDoFMooringRestraints && wmake libso )
+
+echo "compile rigid body mooring restraints"
+( cd src/rigidBodyMooringRestraints && wmake libso )
 
 echo "Compilation done!"

@@ -3,10 +3,18 @@ CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn w
 
 :star: Consider starring the repository if you find it useful. :star:
 
+Documentation website: https://hfchen20.gitlab.io/foamMooring/ 
+
+<!-- GitHub mirror: https://github.com/hfchen20/foamMooring -->
+
 ![One floater](tutorial/misc/Animation_overset3d_h12t20.mp4){width=400px height=320px}
 ![Two floaters](tutorial/misc/twoBody_moored.mp4){width=400px height=320px}
+![Two floaters with shared moorings](tutorial/misc/twinFB_shared_mooring.ogv){width=600px height=320px} 
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/nKYjpl760iU?si=-2vMFo7eMvSuQZnF" title="twinFB shared mooring" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 ## Compile foamMooring
+
 Prerequisites: git, make, cmake, and [VTK](https://gitlab.com/hfchen20/foamMooring/-/merge_requests/3) if USE_VTK=ON when compiling MoorDyn v2. MAP++ may require other dependent libraries, such as `lapacke`.
 - Clone the repo in `$WM_PROJECT_USER_DIR`.
 ```
@@ -15,12 +23,12 @@ cd $WM_PROJECT_USER_DIR
 git clone https://gitlab.com/hfchen20/foamMooring.git 
 cd foamMooring 
 ```
-- Run Allwmake. Upon successful compilation, there should be at least a `libsixDoFMooring.so` library in `$FOAM_USER_LIBBIN`.
+- Run `Allwmake`. Upon successful compilation, there should be at least two libraries, `libsixDoFMooring.so` and `librigidBodyMooring.so`, in `$FOAM_USER_LIBBIN`.
 ```
 ./Allwmake
 ```
 
-- If there is difficulty in compiling Map++ and map3R (quasi-static mooring code), you could remove or comment out the corresponding entries in the Make files. For [files](/src/sixDoFMooringRestraints/Make/files), remove
+- If there is difficulty in compiling Map++ and map3R (quasi-static mooring code), you could skip compiling MAP++ in `Allwmake` and remove/ comment out the corresponding entries in the Make files. For [files](/src/sixDoFMooringRestraints/Make/files), remove
 ```
 map3R/mapFoamInterface.C
 map3R/map3R.C
@@ -32,12 +40,13 @@ For [options](/src/sixDoFMooringRestraints/Make/options), remove
 ```
 
 ## How to use (tested on v2012, v2212)
+
 - Prepare an OpenFOAM case as usual. The floating body motion can be accommodated by either deforming mesh `interFoam` or overset grid `overInterDyMFoam`.
 - Add in `controlDict`
 ```
-libs    (sixDoFMooring); 
+libs    (sixDoFMooring); // or (rigidBodyMooring)
 ```
-- Prepare a mooring input file in case subfolder "Mooring". For example,
+- Prepare a mooring input file in case subfolder "Mooring". For example, for sixDoFMooring 
    - MoorDyn v1: [lines.txt](tutorial/sixDoF_2D/overset/background/Mooring) (filename hard-coded)
 
    - MoorDyn v2: [lines_v2.txt](tutorial/sixDoF_2D/overset/background/Mooring)
@@ -101,9 +110,11 @@ moodyR
 ```
 
 ## Main features
+
 ![Three mooring line codes](tutorial/misc/comparison_3_mooring_codes.PNG)
 
 ## Visualize mooring lines in Paraview
+
 - Write VTK files 'mooringN.vtk' for mooring lines where N denotes a time sequence number.
 - Prepare a vtk.series file 'mooring.vtk.series' to be loaded into Paraview.
 - A python script and example VTK files are provided in the tutorial to post-process MoorDyn output.
@@ -111,6 +122,7 @@ moodyR
 - MoorDyn v2 has a built-in functionality to write XML-based [VTK files](https://gitlab.com/hfchen20/foamMooring/-/merge_requests/3).
 
 ## References
+
 - Chen, H., & Hall, M. (2022). CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn with OpenFOAM,
 Applied Ocean Research, 124, 103210. [https://doi.org/10.1016/j.apor.2022.103210](https://www.sciencedirect.com/science/article/pii/S0141118722001511)
 
