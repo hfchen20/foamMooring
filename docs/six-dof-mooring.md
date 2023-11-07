@@ -48,7 +48,7 @@ libs    (sixDoFMooring);
 
 - Define mooring restraints in `constant/dynamicMeshDict`
 ```
-// Example mooring restraints as defined in libsixDoFMooring, add one of
+// Example mooring restraints available in libsixDoFMooring
 //	moorDynR1 || moorDynR2 || map3R || moodyR 
 ```
 
@@ -82,12 +82,33 @@ moorDynR1
 }
 
 // MoorDyn v2
-moorDynR2
+moorDynR2_pt
 {
-	sixDoFRigidBodyMotionRestraint moorDynR2;
-	inputFile                      "Mooring/lines_v2.txt";
-	writeMooringVTK                true;
+	sixDoFRigidBodyMotionRestraint   moorDynR2;
+	inputFile          "Mooring/lines_v2_point.txt";
+	couplingMode       "POINT";
+	refAttachmentPt
+	(
+		(-0.25      0.3725    -0.0652)
+		(-0.25     -0.3725    -0.0652)
+		( 0.25      0.3725    -0.0652)
+		( 0.25     -0.3725    -0.0652)  
+	);
+	writeMooringVTK    true;
+	vtkPrefix          "mdv2_pt";
+	vtkStartTime       0;
+	outerCorrector     3;
+}
 
+moorDynR2_bd
+{
+	sixDoFRigidBodyMotionRestraint  moorDynR2;
+	inputFile          "Mooring/lines_v2_body.txt";
+	couplingMode       "BODY";
+	writeMooringVTK    true;
+	vtkPrefix          "mdv2_body";
+	vtkStartTime       0;
+	outerCorrector     3;
 }
 ```
 

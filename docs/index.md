@@ -12,7 +12,7 @@ A mooring restraints package for simulating rigid body motions in OpenFOAM
 ## Overview
 
 - Works for two rigid body motion libraries `sixDoFRigidBodyMotion` and `rigidBodyMotion`
-- Mooring models of restraints include MAP++, MoorDyn, Moody, linear springs
+- Mooring models of restraints include MAP++, MoorDyn, Moody, groups of linear springs
 - Most restraints support runtime generation of legacy VTK files (including vtk.series)
 - No need to change and re-compile of built-in motion libraries and flow solvers
 - Tested on v2012, v2212, v2306, mostly with overset grid solver `overInterDyMFoam`
@@ -25,7 +25,7 @@ Three mooring analysis codes, a quasi-static mooring model MAP++ (Masciola et al
 
 - Both MAP++ and MoorDyn are open-source, with the latter under continuous developments. 
 - Moody is an in-house code but a precompiled library is released for coupling with other codes.
-- A rewrite of `linearSpring`, `linearSpringGroup` enables definition of a couple identical springs and runtime generation of VTK files.
+- A rewrite of `linearSpring`, `linearSpringGroup` simplifies definition of a group of identical springs and enables runtime generation of tension & VTK files.
 
 Mooring Model | sixDoFMooring | rigidBodyMooring
 :------------ |:-------------:|:-----------:
@@ -53,9 +53,9 @@ Moody is a finite element mooring dynamics model developed with the special inte
 ## Citations
 - Chen, H., & Hall, M. (2022). CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn with OpenFOAM,
 Applied Ocean Research, 124, 103210. [https://doi.org/10.1016/j.apor.2022.103210](https://www.sciencedirect.com/science/article/pii/S0141118722001511)
+- Chen, H., Medina, T. A., & Cercos-Pita, J. L. CFD simulation of multiple moored floating structures using OpenFOAM: An open-access mooring restraints library. [preprint at http://dx.doi.org/10.13140/RG.2.2.34206.10569](http://dx.doi.org/10.13140/RG.2.2.34206.10569)
 
-
-## OpenFOAM® Disclaimer
+## Disclaimer
 
 This offering is not approved or endorsed by OpenCFD Limited, producer and distributor of the OpenFOAM software via www.openfoam.com, and owner of the OPENFOAM® and OpenCFD® trade marks. This offering is not approved or endorsed by any software packages mentioned above or their respective owners, and should not be considered as such.
 

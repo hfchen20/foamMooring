@@ -1,5 +1,5 @@
 ## Prerequisites
-- [git](https://git-scm.com/), to clone foamMooring and MoorDyn repos.
+- [git](https://git-scm.com/), to clone foamMooring and submodules (MoorDyn v1 & v2).
 - Make, to compile MoorDyn and MAP++.
 - [CMake](https://cmake.org/), to help compile MoorDyn v2.
 - [VTK](https://gitlab.com/hfchen20/foamMooring/-/merge_requests/3) if USE_VTK=ON when compiling MoorDyn v2. 
@@ -17,12 +17,12 @@ cd $WM_PROJECT_USER_DIR
 git clone https://gitlab.com/hfchen20/foamMooring.git 
 cd foamMooring 
 ```
-- Run Allwmake. Upon successful compilation, there should be at least two libraries, `libsixDoFMooring.so` and `librigidBodyMooring.so`, in `$FOAM_USER_LIBBIN`.
+- Run `Allwmake`. Upon successful compilation, there should be at least two libraries, `libsixDoFMooring.so` and `librigidBodyMooring.so`, in `$FOAM_USER_LIBBIN`.
 ```
 ./Allwmake
 ```
 
-- If there is difficulty in compiling MAP++ and map3R (quasi-static mooring code), you could remove or comment out the corresponding entries in the Make files. 
+- You can selectively compile part of the library. If there is difficulty in compiling MAP++ and map3R (quasi-static mooring code),  you could skip compiling MAP++ in `Allwmake` and remove/comment out the corresponding entries in the Make files.
 
 For `Make/files``, remove
 ```

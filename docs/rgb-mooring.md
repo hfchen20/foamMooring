@@ -11,7 +11,7 @@ While the built-in six-DoF motions solver calculates the body motion one by one,
 - The joints velocity and position are then integrated using the Newmark-β scheme. 
 - The bodies state is finally updated to correspond to the current joints state. 
 
-## Mooring restraints for interconnected bodies
+## Coupling mode for interconnected bodies
 
 For the `rigidBodyMotion` restraints, only the point coupling mode is valid as the mooring restraining moments requested by the multibody dynamics formulation should be in global coordinate system. Multiple bodies interconnected with shared moorings or hinges can be simulated.
 
@@ -29,8 +29,220 @@ libs    (rigidBodyMooring);
 ```
 - Prepare a mooring input file in case subfolder "Mooring". 
 
-- Define mooring restraints in `constant/dynamicMeshDict`
+- Define mooring restraints in `constant/dynamicMeshDict`. Add one of `moorDynR1 || moorDynR2 || map3R || moodyR || linearSpringGroup`.
+
+### moorDynR1 & moorDynR2
+
 ```
-// Example mooring restraints as defined in librigidBodyMooring, add one of
-//	moorDynR1 || moorDynR2 || map3R || moodyR 
+moorDynR1
+{
+    type               moorDynR1;
+    body               floatingObject;
+    refAttachmentPt
+    (
+        (-0.1      0.1    -0.062)
+        (-0.1     -0.1    -0.062)
+        ( 0.1      0.1    -0.062)
+        ( 0.1     -0.1    -0.062)
+    );
+}
+
+moorDynR2_pt
+{
+    type               moorDynR2;
+    body               floatingObject;
+    couplingMode       "POINT";
+    inputFile          "Mooring/lines_v2_point.txt";
+    refAttachmentPt
+    (
+        (-0.25      0.3725    -0.0652)
+        (-0.25     -0.3725    -0.0652)
+        ( 0.25      0.3725    -0.0652)
+        ( 0.25     -0.3725    -0.0652)  
+    );
+    writeMooringVTK    true;
+    vtkPrefix         "mdv2_pt";
+    vtkStartTime       0;
+    outerCorrector     3;
+}
+
+```
+
+### map3R
+
+```
+map3R
+{
+    type                map3R;
+    body                floatingObject;
+    inputFile           "Mooring/esflOWC_4lines.map";
+    summaryFile         "Mooring/esflOWC_summary.map";
+    outputFile          "Mooring/mapForces.map";
+    waterDepth          0.5;
+    writeMooringForces  true;
+
+    refAttachmentPt
+    (
+        (-0.1      0.1    -0.062)
+        (-0.1     -0.1    -0.062)
+        ( 0.1      0.1    -0.062)
+        ( 0.1     -0.1    -0.062)
+    );
+}
+```
+
+### moodyR
+
+```
+moodyR
+{
+    type               moodyR;
+    body               floatingObject;
+
+    inputFile         "Mooring/Liang_typeC.m";
+    refAttachmentPt
+    (
+        (-0.25      0.3725    -0.0652)
+        (-0.25     -0.3725    -0.0652)
+        ( 0.25      0.3725    -0.0652)
+        ( 0.25     -0.3725    -0.0652)    
+    );
+}
+```
+
+### linearSpringGroup
+
+```
+linearSpringGroup
+{
+    type                linearSpringGroup;
+    body                box;
+
+    anchor
+    (
+        (-5.8646  5.9 0.0779)
+        (-5.8646 -5.9 0.0779)
+        ( 5.9354  5.9 0.0779)
+        ( 5.9354 -5.9 0.0779)
+    );
+
+    refAttachmentPt
+    (
+        (-0.435  0.435 0)
+        (-0.435 -0.435 0)
+        ( 0.435  0.435 0)
+        ( 0.435 -0.435 0)
+    );
+
+    numberOfSprings        4;
+
+    // identicalSprings = true, specify a scalar for stiffness, damping, restLength
+    // otherwise, specify a list of scalars for each spring (x, x, x, x)
+    identicalSprings      true;
+
+    stiffness              28;
+    damping                0;
+    restLength             7.014391404;
+
+    writeForce             true;
+    writeVTK               true;
+    compression            false; // false = no spring force when compressed
+    frelax                 0.8;
+}
+```
+
+## Multiple bodies
+
+- Use keyword `bodies` to specify all the bodies each point in `refAttachmentPt` is attached to. Order matters. 
+- Support interconnected bodies (shared moorings).
+
+### moorDynR2
+```
+moorDynR2_point
+{
+    type               moorDynR2;
+    body               box1;
+
+    couplingMode       "POINT";
+
+    inputFile          "Mooring/lines_v2_pointCoupling.txt";
+    bodies             (box1 box1 box1 box1 box2 box2 box2 box2);
+
+    refAttachmentPt
+    (
+        (-0.25      0.3725    -0.0729)
+        (-0.25     -0.3725    -0.0729)
+        ( 0.25      0.3725    -0.0729)
+        ( 0.25     -0.3725    -0.0729)
+
+        (-0.25      0.3725    -0.0729)
+        (-0.25     -0.3725    -0.0729)
+        ( 0.25      0.3725    -0.0729)
+        ( 0.25     -0.3725    -0.0729)
+    );
+
+    writeMooringVTK    true;
+    vtkStartTime       0;
+    outerCorrector     3;
+}
+```
+
+### map3R
+```
+map3R
+{
+    type               map3R;
+    body               box1;
+
+    bodies             (box1 box1 box1 box1 box2 box2 box2 box2);
+
+    inputFile          "Mooring/twinFB.map";
+    summaryFile        "Mooring/twinFB_summary.map";
+    outputFile         "Mooring/mapForces.map";
+    waterDepth         0.514;
+    writeMooringForces true;
+    writeMooringVTK    true;
+    vtkStartTime       0;
+    outerCorrector     3;
+    nNodes             6; //# nodes for all lines
+    nodesPerLine       (12 12 12 12 12 12 12 12);
+
+    refAttachmentPt
+    (
+        (-0.25      0.3725    -0.0729)
+        (-0.25     -0.3725    -0.0729)
+        ( 0.25      0.3725    -0.0729)
+        ( 0.25     -0.3725    -0.0729)
+
+        (-0.25      0.3725    -0.0729)
+        (-0.25     -0.3725    -0.0729)
+        ( 0.25      0.3725    -0.0729)
+        ( 0.25     -0.3725    -0.0729)
+    );
+}
+```
+
+### moodyR
+```
+moodyR
+{
+    type               moodyR;
+    body               box1;
+
+    bodies            (box1 box1 box1 box1 box2 box2 box2 box2);
+
+    inputFile         "Mooring/Chen2022_twinFB.m";
+    refAttachmentPt
+    (
+        (-0.25      0.3725    -0.0729)
+        (-0.25     -0.3725    -0.0729)
+        ( 0.25      0.3725    -0.0729)
+        ( 0.25     -0.3725    -0.0729)
+
+        (-0.25      0.3725    -0.0729)
+        (-0.25     -0.3725    -0.0729)
+        ( 0.25      0.3725    -0.0729)
+        ( 0.25     -0.3725    -0.0729)
+    );
+}
 ```

@@ -16,7 +16,9 @@ Dynamic mooring restraints for rigid body motion in OpenFOAM
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/nKYjpl760iU?si=-2vMFo7eMvSuQZnF" title="twinFB shared mooring" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
-## Example applications
+## Prospective applications
+- Floating Offshore Wind Turbine, wind farm
+- Wave Energy Converter, WEC arrays
 - Multiple individually moored floating bodies
 - Multiple floating bodies with shared moorings
 - Towed-system dynamics
