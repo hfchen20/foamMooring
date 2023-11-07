@@ -8,15 +8,15 @@ Two options are available to visualize the mooring lines simulated by MoorDyn:
 
 Detailed steps for option 1 are:
 
-- Write VTK files 'mooringN.vtk' for mooring lines where N denotes a time sequence number.
-- Prepare a vtk.series file 'mooring.vtk.series' to be loaded into Paraview.
-- A Python script and example VTK files are provided in the tutorial to post-process MoorDyn output.
+- Write VTK files `mooringN.vtk` for mooring lines where `N` denotes a time sequence number.
+- Prepare a `vtk.series` file `mooring.vtk.series` to be loaded into Paraview.
+- A [Python script](https://gitlab.com/hfchen20/foamMooring/-/blob/master/tutorial/visualize_moorings_in_paraview/postMoorDyn_VTK.py) and example VTK files are provided in the tutorial to post-process MoorDyn output.
 - The mooring tension could also be added to the VTK files, if tension output is enabled in MoorDyn input file.
 
 Option 2 (legacy VTK) requires certain entries in each mooring restraint's definition in `dynamicMeshDict`.
 
 - The most important entry is `outerCorrector`, which should be consistent with `PIMPLE` settings in `system/fvSolution`.
-- A VTK file is written during the last iteration of the outer loop.
+- A VTK file is written during the last iteration of the outer loop, per OpenFOAM's `writeInterval`.
 - At the end of the simulation, a `vtk.series` file is generated for visualization in ParaView.
 
 ```

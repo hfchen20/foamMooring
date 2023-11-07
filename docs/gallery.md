@@ -22,6 +22,8 @@ Dynamic mooring restraints for rigid body motion in OpenFOAM
 - Multiple individually moored floating bodies
 - Multiple floating bodies with shared moorings
 - Towed-system dynamics
+- Gap resonance
+- Vessel stability during lifting operations
 
 ### An individually moored twin floating breakwater
 ![individually moored](img/twinFB_slack_mooring.jpeg){ width="800" }

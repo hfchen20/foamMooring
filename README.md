@@ -3,7 +3,8 @@ CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn w
 
 :star: Consider starring the repository if you find it useful. :star:
 
-Documentation website: https://hfchen20.gitlab.io/foamMooring/ 
+Documentation website: https://hfchen20.gitlab.io/foamMooring/
+
 GitHub mirror: https://github.com/hfchen20/foamMooring
 
 ![One floater](tutorial/misc/Animation_overset3d_h12t20.mp4){width=400px height=320px}

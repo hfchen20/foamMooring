@@ -119,7 +119,7 @@ moodyR
 	sixDoFRigidBodyMotionRestraint moodyR;
 	inputFile              "Mooring/boxWu_exPoint.m";
 
-	couplingMode           "externalPoint"; // "externalPoint", "externalRigidBody"
+	couplingMode           "externalPoint"; // "externalRigidBody"
 	nCouplingDof           6;
 	refAttachmentPt
 	(
