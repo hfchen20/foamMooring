@@ -1,12 +1,16 @@
 # Welcome to foamMooring
 
-A mooring restraints package for simulating rigid body motions in OpenFOAM
+A mooring restraints library for simulating rigid body motions in OpenFOAM
 
 ---
 
-:star: Consider starring the repository if you find it useful. :star:
+GitLab repo: [https://gitlab.com/hfchen20/foamMooring](https://hfchen20.gitlab.io/foamMooring/)
 
-GitHub mirror: https://github.com/hfchen20/foamMooring
+GitHub mirror: [https://github.com/hfchen20/foamMooring](https://github.com/hfchen20/foamMooring)
+
+Documentation: [https://hfchen20.gitlab.io/foamMooring](https://hfchen20.gitlab.io/foamMooring)
+
+:star: Consider starring the repository if you find it useful. :star:
 
 !!! note
     UNDER CONSTRUCTION!
@@ -40,6 +44,10 @@ MoorDyn v2    | moorDynR2    | moorDynR2
 Moody         | moodyR       | moodyR
 linearSpring  | linearSpringGroup  | linearSpringGroup
 
+!!! note
+    `waves2FoamMooring` is available, which should be compatible with most recent versions of OpenFOAM!
+
+    Extending on `mooringLine` in [waves2Foam](https://github.com/ogoe/waves2Foam/tree/master/src/waves2FoamMooring/mooringLine), this restraint, `waves2FoamMooring`, enables defintion of multiple (inhomogenous) mooring lines and runtime generation of VTK files for visualization.
 
 ## Main features of MAP++, MoorDyn, Moody
 
@@ -48,7 +56,6 @@ The Mooring Analysis Program (MAP++) is an open-source project developed by the 
 MoorDyn is a lumped-mass mooring analysis library. Each mooring line is discretized into a number of equal-length segments, each segment connecting two neighboring nodes. All the line mass and external forces acting on the line, including buoyancy, seabed contact force, and hydrodynamic drag and inertia forces based on Morison’s equation, are lumped at a finite number of nodes. Massless springs are conceived to connect the adjacent nodes representing the internal tension and damping forces. 
 
 Moody is a finite element mooring dynamics model developed with the special intent of capturing and resolving snap loads. It uses an hp-adaptive discontinuous Galerkin method; the high-order formulation makes engineering accuracy achievable using only a few high order elements. Unlike the lumped-mass formulation, this model is derived first and foremost from the governing equations of motion for an elastic cable.
-
 
 ![Three mooring line codes](img/comparison_3_mooring_codes.PNG)
 

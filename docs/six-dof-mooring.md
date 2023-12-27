@@ -132,3 +132,43 @@ moodyR
 	twoD                   true;
 }
 ```
+
+### waves2FoamMooring
+```
+catenaryLine
+{            
+	sixDoFRigidBodyMotionRestraint  waves2FoamMooring;
+	anchor
+	(
+		(-0.889    0.3725    -0.6)
+		(-0.889   -0.3725    -0.6)
+		( 0.889    0.3725    -0.6)
+		( 0.889   -0.3725    -0.6)  
+	);
+	refAttachmentPt
+	(
+		(-0.25     0.3725   -0.16)
+		(-0.25    -0.3725   -0.16)
+		( 0.25     0.3725   -0.16)
+		( 0.25    -0.3725   -0.16)  
+	);
+
+	identicalProperties true; // default true; if false, specify a list 
+	                          // for mass, e.g. (0.149 0.149 0.149 0.149)
+	                          // and line length, e.g. (0.809 0.809 0.809 0.809)
+	massPerLength       0.149; // Wet mass/unit length
+	lineLength          0.809; // Length of the mooring line
+
+	gravityVector       (0 0 -9.81); // Gravity vector
+
+	writeForce          true; // optional, default false
+	writeVTK            true; // optional, default false
+
+	//nNodes              10; // optional, default 10
+	//nodesPerLine        (8 6 7 9); // optional, if absent, all lines having the same
+	                                 // (nNodes);  if present, overwrite nNodes 
+	//vtkPrefix           "wfoamMoor"; // optional, default restraint name
+	//vtkStartTime        0; // optional, default 0
+	//outerCorrector      3; // optional, default 3
+}
+```

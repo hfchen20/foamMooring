@@ -9,4 +9,7 @@ moorDynR2/moorDynR2.C
 
 linearSpringGroup/linearSpringGroup.C
 
+waves2FoamMooring/catenaryShape.C
+waves2FoamMooring/waves2FoamMooring.C
+
 LIB = $(FOAM_USER_LIBBIN)/libsixDoFMooring
