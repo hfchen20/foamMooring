@@ -47,7 +47,7 @@ linearSpring  | linearSpringGroup  | linearSpringGroup
 !!! note
     `waves2FoamMooring` is available, which should be compatible with most recent versions of OpenFOAM!
 
-    Extending on `mooringLine` in [waves2Foam](https://github.com/ogoe/waves2Foam/tree/master/src/waves2FoamMooring/mooringLine), this restraint, `waves2FoamMooring`, enables defintion of multiple (inhomogenous) mooring lines and runtime generation of VTK files for visualization.
+    Extending on `mooringLine` in [waves2Foam](https://github.com/ogoe/waves2Foam/tree/master/src/waves2FoamMooring/mooringLine), this restraint, `waves2FoamMooring`, enables definition of multiple (inhomogeneous) mooring lines and runtime generation of VTK files for visualization.
 
 ## Main features of MAP++, MoorDyn, Moody
 

@@ -31,218 +31,215 @@ libs    (rigidBodyMooring);
 
 - Define mooring restraints in `constant/dynamicMeshDict`. Add one of `moorDynR1 || moorDynR2 || map3R || moodyR || linearSpringGroup`.
 
-### MoorDyn
+=== "MAP++"
 
-```
-moorDynR1
-{
-    type               moorDynR1;
-    body               floatingObject;
-    refAttachmentPt
-    (
-        (-0.1      0.1    -0.062)
-        (-0.1     -0.1    -0.062)
-        ( 0.1      0.1    -0.062)
-        ( 0.1     -0.1    -0.062)
-    );
-}
+    ```
+    map3R
+    {
+        type                map3R;
+        body                floatingObject;
+        inputFile           "Mooring/esflOWC_4lines.map";
+        summaryFile         "Mooring/esflOWC_summary.map";
+        outputFile          "Mooring/mapForces.map";
+        waterDepth          0.5;
+        writeMooringForces  true;
 
-moorDynR2_pt
-{
-    type               moorDynR2;
-    body               floatingObject;
-    couplingMode       "POINT";
-    inputFile          "Mooring/lines_v2_point.txt";
-    refAttachmentPt
-    (
-        (-0.25      0.3725    -0.0652)
-        (-0.25     -0.3725    -0.0652)
-        ( 0.25      0.3725    -0.0652)
-        ( 0.25     -0.3725    -0.0652)  
-    );
-    writeMooringVTK    true;
-    vtkPrefix         "mdv2_pt";
-    vtkStartTime       0;
-    outerCorrector     3;
-}
+        refAttachmentPt
+        (
+            (-0.1      0.1    -0.062)
+            (-0.1     -0.1    -0.062)
+            ( 0.1      0.1    -0.062)
+            ( 0.1     -0.1    -0.062)
+        );
+    }
+    ```
 
-```
+=== "MoorDyn"
 
-### MAP++
+    ```
+    moorDynR1
+    {
+        type               moorDynR1;
+        body               floatingObject;
+        refAttachmentPt
+        (
+            (-0.1      0.1    -0.062)
+            (-0.1     -0.1    -0.062)
+            ( 0.1      0.1    -0.062)
+            ( 0.1     -0.1    -0.062)
+        );
+    }
 
-```
-map3R
-{
-    type                map3R;
-    body                floatingObject;
-    inputFile           "Mooring/esflOWC_4lines.map";
-    summaryFile         "Mooring/esflOWC_summary.map";
-    outputFile          "Mooring/mapForces.map";
-    waterDepth          0.5;
-    writeMooringForces  true;
+    moorDynR2_pt
+    {
+        type               moorDynR2;
+        body               floatingObject;
+        couplingMode       "POINT";
+        inputFile          "Mooring/lines_v2_point.txt";
+        refAttachmentPt
+        (
+            (-0.25      0.3725    -0.0652)
+            (-0.25     -0.3725    -0.0652)
+            ( 0.25      0.3725    -0.0652)
+            ( 0.25     -0.3725    -0.0652)  
+        );
+        writeMooringVTK    true;
+        vtkPrefix         "mdv2_pt";
+        vtkStartTime       0;
+        outerCorrector     3;
+    }
+    ```
 
-    refAttachmentPt
-    (
-        (-0.1      0.1    -0.062)
-        (-0.1     -0.1    -0.062)
-        ( 0.1      0.1    -0.062)
-        ( 0.1     -0.1    -0.062)
-    );
-}
-```
+=== "Moody"
 
-### Moody
+    ```
+    moodyR
+    {
+        type               moodyR;
+        body               floatingObject;
 
-```
-moodyR
-{
-    type               moodyR;
-    body               floatingObject;
+        inputFile         "Mooring/Liang_typeC.m";
+        refAttachmentPt
+        (
+            (-0.25      0.3725    -0.0652)
+            (-0.25     -0.3725    -0.0652)
+            ( 0.25      0.3725    -0.0652)
+            ( 0.25     -0.3725    -0.0652)    
+        );
+    }
+    ```
 
-    inputFile         "Mooring/Liang_typeC.m";
-    refAttachmentPt
-    (
-        (-0.25      0.3725    -0.0652)
-        (-0.25     -0.3725    -0.0652)
-        ( 0.25      0.3725    -0.0652)
-        ( 0.25     -0.3725    -0.0652)    
-    );
-}
-```
+=== "linearSpringGroup"
 
-### linearSpringGroup
+    ```
+    linearSpringGroup
+    {
+        type                linearSpringGroup;
+        body                box;
 
-```
-linearSpringGroup
-{
-    type                linearSpringGroup;
-    body                box;
+        anchor
+        (
+            (-5.8646  5.9 0.0779)
+            (-5.8646 -5.9 0.0779)
+            ( 5.9354  5.9 0.0779)
+            ( 5.9354 -5.9 0.0779)
+        );
 
-    anchor
-    (
-        (-5.8646  5.9 0.0779)
-        (-5.8646 -5.9 0.0779)
-        ( 5.9354  5.9 0.0779)
-        ( 5.9354 -5.9 0.0779)
-    );
+        refAttachmentPt
+        (
+            (-0.435  0.435 0)
+            (-0.435 -0.435 0)
+            ( 0.435  0.435 0)
+            ( 0.435 -0.435 0)
+        );
 
-    refAttachmentPt
-    (
-        (-0.435  0.435 0)
-        (-0.435 -0.435 0)
-        ( 0.435  0.435 0)
-        ( 0.435 -0.435 0)
-    );
+        numberOfSprings        4;
 
-    numberOfSprings        4;
+        // if true, specify a scalar for stiffness, damping, restLength
+        // otherwise, specify a scalarList for each spring (x, x, x, x)
+        identicalSprings      true;
+        stiffness              28;
+        damping                0;
+        restLength             7.014391404;
 
-    // identicalSprings = true, specify a scalar for stiffness, damping, restLength
-    // otherwise, specify a list of scalars for each spring (x, x, x, x)
-    identicalSprings      true;
+        writeForce             true;
+        writeVTK               true;
+        compression            false; // false = no spring force when compressed
+        frelax                 0.8;
+    }
+    ```
 
-    stiffness              28;
-    damping                0;
-    restLength             7.014391404;
-
-    writeForce             true;
-    writeVTK               true;
-    compression            false; // false = no spring force when compressed
-    frelax                 0.8;
-}
-```
-
-## Multiple bodies
+## Multiple moored bodies
 
 - Use keyword `bodies` to specify all the bodies each point in `refAttachmentPt` is attached to. Order matters. 
 - Support interconnected bodies (shared moorings).
 
-### MoorDyn
-```
-moorDynR2_point
-{
-    type               moorDynR2;
-    body               box1;
+=== "MAP++"
+    ```
+    map3R
+    {
+        type               map3R;
+        body               box1;
 
-    couplingMode       "POINT";
+        bodies             (box1 box1 box1 box1 box2 box2 box2 box2);
 
-    inputFile          "Mooring/lines_v2_pointCoupling.txt";
-    bodies             (box1 box1 box1 box1 box2 box2 box2 box2);
+        inputFile          "Mooring/twinFB.map";
+        summaryFile        "Mooring/twinFB_summary.map";
+        outputFile         "Mooring/mapForces.map";
+        waterDepth         0.514;
+        writeMooringForces true;
+        writeMooringVTK    true;
+        vtkStartTime       0;
+        outerCorrector     3;
+        nNodes             6; //# nodes for all lines
+        nodesPerLine       (12 12 12 12 12 12 12 12);
 
-    refAttachmentPt
-    (
-        (-0.25      0.3725    -0.0729)
-        (-0.25     -0.3725    -0.0729)
-        ( 0.25      0.3725    -0.0729)
-        ( 0.25     -0.3725    -0.0729)
+        refAttachmentPt
+        (
+            (-0.25      0.3725    -0.0729)
+            (-0.25     -0.3725    -0.0729)
+            ( 0.25      0.3725    -0.0729)
+            ( 0.25     -0.3725    -0.0729)
 
-        (-0.25      0.3725    -0.0729)
-        (-0.25     -0.3725    -0.0729)
-        ( 0.25      0.3725    -0.0729)
-        ( 0.25     -0.3725    -0.0729)
-    );
+            (-0.25      0.3725    -0.0729)
+            (-0.25     -0.3725    -0.0729)
+            ( 0.25      0.3725    -0.0729)
+            ( 0.25     -0.3725    -0.0729)
+        );
+    }
+    ```
+=== "MoorDyn"
+    ```
+    moorDynR2_point
+    {
+        type               moorDynR2;
+        body               box1;
 
-    writeMooringVTK    true;
-    vtkStartTime       0;
-    outerCorrector     3;
-}
-```
+        couplingMode       "POINT";
 
-### MAP++
-```
-map3R
-{
-    type               map3R;
-    body               box1;
+        inputFile          "Mooring/lines_v2_pointCoupling.txt";
+        bodies             (box1 box1 box1 box1 box2 box2 box2 box2);
 
-    bodies             (box1 box1 box1 box1 box2 box2 box2 box2);
+        refAttachmentPt
+        (
+            (-0.25      0.3725    -0.0729)
+            (-0.25     -0.3725    -0.0729)
+            ( 0.25      0.3725    -0.0729)
+            ( 0.25     -0.3725    -0.0729)
 
-    inputFile          "Mooring/twinFB.map";
-    summaryFile        "Mooring/twinFB_summary.map";
-    outputFile         "Mooring/mapForces.map";
-    waterDepth         0.514;
-    writeMooringForces true;
-    writeMooringVTK    true;
-    vtkStartTime       0;
-    outerCorrector     3;
-    nNodes             6; //# nodes for all lines
-    nodesPerLine       (12 12 12 12 12 12 12 12);
+            (-0.25      0.3725    -0.0729)
+            (-0.25     -0.3725    -0.0729)
+            ( 0.25      0.3725    -0.0729)
+            ( 0.25     -0.3725    -0.0729)
+        );
 
-    refAttachmentPt
-    (
-        (-0.25      0.3725    -0.0729)
-        (-0.25     -0.3725    -0.0729)
-        ( 0.25      0.3725    -0.0729)
-        ( 0.25     -0.3725    -0.0729)
+        writeMooringVTK    true;
+        vtkStartTime       0;
+        outerCorrector     3;
+    }
+    ```
 
-        (-0.25      0.3725    -0.0729)
-        (-0.25     -0.3725    -0.0729)
-        ( 0.25      0.3725    -0.0729)
-        ( 0.25     -0.3725    -0.0729)
-    );
-}
-```
+=== "Moody"
+    ```
+    moodyR
+    {
+        type               moodyR;
+        body               box1;
 
-### Moody
-```
-moodyR
-{
-    type               moodyR;
-    body               box1;
+        bodies            (box1 box1 box1 box1 box2 box2 box2 box2);
 
-    bodies            (box1 box1 box1 box1 box2 box2 box2 box2);
+        inputFile         "Mooring/Chen2022_twinFB.m";
+        refAttachmentPt
+        (
+            (-0.25      0.3725    -0.0729)
+            (-0.25     -0.3725    -0.0729)
+            ( 0.25      0.3725    -0.0729)
+            ( 0.25     -0.3725    -0.0729)
 
-    inputFile         "Mooring/Chen2022_twinFB.m";
-    refAttachmentPt
-    (
-        (-0.25      0.3725    -0.0729)
-        (-0.25     -0.3725    -0.0729)
-        ( 0.25      0.3725    -0.0729)
-        ( 0.25     -0.3725    -0.0729)
-
-        (-0.25      0.3725    -0.0729)
-        (-0.25     -0.3725    -0.0729)
-        ( 0.25      0.3725    -0.0729)
-        ( 0.25     -0.3725    -0.0729)
-    );
-}
-```
+            (-0.25      0.3725    -0.0729)
+            (-0.25     -0.3725    -0.0729)
+            ( 0.25      0.3725    -0.0729)
+            ( 0.25     -0.3725    -0.0729)
+        );
+    }
+    ```

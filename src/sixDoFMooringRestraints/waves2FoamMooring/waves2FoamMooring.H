@@ -68,7 +68,10 @@ SourceFiles
 
 Author
     Niels G. Jacobsen, Deltares
+
+Modifications    
     Haifei Chen - December 2023
+      Added support for multiple lines and VTK files generation at runtime
 
 \*---------------------------------------------------------------------------*/
 

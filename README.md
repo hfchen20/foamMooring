@@ -35,7 +35,7 @@ cd foamMooring
 ./Allwmake
 ```
 
-- You can selectively compile part of the library. If there is difficulty in compiling Map++ and map3R (quasi-static mooring code), you could skip compiling MAP++ in `Allwmake` and remove/comment out the corresponding entries in the Make files. For [files](/src/sixDoFMooringRestraints/Make/files), remove
+- You can selectively compile part of the library. If there is difficulty in compiling MAP++ and map3R (quasi-static mooring code), you could skip compiling MAP++ in `Allwmake` and remove/comment out the corresponding entries in the Make files. For [files](/src/sixDoFMooringRestraints/Make/files), remove
 ```
 map3R/mapFoamInterface.C
 map3R/map3R.C
@@ -45,6 +45,9 @@ For [options](/src/sixDoFMooringRestraints/Make/options), remove
 -llapacke \
 -lmap-1.30.00 \
 ```
+
+## Code structure
+![Code structure](docs/img/flowchart_foamMooring.svg)
 
 ## How to use (tested on v2012, v2212)
 
@@ -116,9 +119,6 @@ moodyR
 	twoD                   true;
 }
 ```
-
-## Code structure
-![Code structure](docs/img/flowchart_foamMooring.svg)
 
 ## Main features of mooring models
 

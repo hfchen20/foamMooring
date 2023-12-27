@@ -52,123 +52,126 @@ libs    (sixDoFMooring);
 //	moorDynR1 || moorDynR2 || map3R || moodyR 
 ```
 
-### MAP++
+=== "MAP++"
 
-```
-map3R
-{
-	sixDoFRigidBodyMotionRestraint map3R;
-	inputFile                     "Mooring/esflOWC_4lines.map";
-	summaryFile                   "Mooring/esflOWC_summary.map";
-	waterDepth                    0.5;
-	refAttachmentPt
-	(
-		(-0.1      0.1    -0.077)
-		(-0.1     -0.1    -0.077)
-		( 0.1      0.1    -0.077)
-		( 0.1     -0.1    -0.077)
-	);
-	numberOfSegments       20;
-	writeMooringVTK        true;
-}
-```
+	```
+	map3R
+	{
+		sixDoFRigidBodyMotionRestraint map3R;
+		inputFile                     "Mooring/esflOWC_4lines.map";
+		summaryFile                   "Mooring/esflOWC_summary.map";
+		waterDepth                    0.5;
+		refAttachmentPt
+		(
+			(-0.1      0.1    -0.077)
+			(-0.1     -0.1    -0.077)
+			( 0.1      0.1    -0.077)
+			( 0.1     -0.1    -0.077)
+		);
+		numberOfSegments       20;
+		writeMooringVTK        true;
+	}
+	```
 
-### MoorDyn
-```
-// MoorDyn v1
-moorDynR1
-{
-	sixDoFRigidBodyMotionRestraint moorDynR1;
-}
+=== "MoorDyn"
 
-// MoorDyn v2
-moorDynR2_pt
-{
-	sixDoFRigidBodyMotionRestraint   moorDynR2;
-	inputFile          "Mooring/lines_v2_point.txt";
-	couplingMode       "POINT";
-	refAttachmentPt
-	(
-		(-0.25      0.3725    -0.0652)
-		(-0.25     -0.3725    -0.0652)
-		( 0.25      0.3725    -0.0652)
-		( 0.25     -0.3725    -0.0652)  
-	);
-	writeMooringVTK    true;
-	vtkPrefix          "mdv2_pt";
-	vtkStartTime       0;
-	outerCorrector     3;
-}
+	```
+	// MoorDyn v1
+	moorDynR1
+	{
+		sixDoFRigidBodyMotionRestraint moorDynR1;
+	}
 
-moorDynR2_bd
-{
-	sixDoFRigidBodyMotionRestraint  moorDynR2;
-	inputFile          "Mooring/lines_v2_body.txt";
-	couplingMode       "BODY";
-	writeMooringVTK    true;
-	vtkPrefix          "mdv2_body";
-	vtkStartTime       0;
-	outerCorrector     3;
-}
-```
+	// MoorDyn v2
+	moorDynR2_pt
+	{
+		sixDoFRigidBodyMotionRestraint   moorDynR2;
+		inputFile          "Mooring/lines_v2_point.txt";
+		couplingMode       "POINT";
+		refAttachmentPt
+		(
+			(-0.25      0.3725    -0.0652)
+			(-0.25     -0.3725    -0.0652)
+			( 0.25      0.3725    -0.0652)
+			( 0.25     -0.3725    -0.0652)  
+		);
+		writeMooringVTK    true;
+		vtkPrefix          "mdv2_pt";
+		vtkStartTime       0;
+		outerCorrector     3;
+	}
 
-### Moody
-```
-moodyR
-{
-	sixDoFRigidBodyMotionRestraint moodyR;
-	inputFile              "Mooring/boxWu_exPoint.m";
+	moorDynR2_bd
+	{
+		sixDoFRigidBodyMotionRestraint  moorDynR2;
+		inputFile          "Mooring/lines_v2_body.txt";
+		couplingMode       "BODY";
+		writeMooringVTK    true;
+		vtkPrefix          "mdv2_body";
+		vtkStartTime       0;
+		outerCorrector     3;
+	}
+	```
 
-	couplingMode           "externalPoint"; // "externalRigidBody"
-	nCouplingDof           6;
-	refAttachmentPt
-	(
-		(-0.1      0.1    -0.077)
-		(-0.1     -0.1    -0.077)
-		( 0.1      0.1    -0.077)
-		( 0.1     -0.1    -0.077)
-	);
-	waveKinematics         false;
-	twoD                   true;
-}
-```
+=== "Moody"
 
-### waves2FoamMooring
-```
-catenaryLine
-{            
-	sixDoFRigidBodyMotionRestraint  waves2FoamMooring;
-	anchor
-	(
-		(-0.889    0.3725    -0.6)
-		(-0.889   -0.3725    -0.6)
-		( 0.889    0.3725    -0.6)
-		( 0.889   -0.3725    -0.6)  
-	);
-	refAttachmentPt
-	(
-		(-0.25     0.3725   -0.16)
-		(-0.25    -0.3725   -0.16)
-		( 0.25     0.3725   -0.16)
-		( 0.25    -0.3725   -0.16)  
-	);
+	```
+	moodyR
+	{
+		sixDoFRigidBodyMotionRestraint moodyR;
+		inputFile              "Mooring/boxWu_exPoint.m";
 
-	identicalProperties true; // default true; if false, specify a list 
-	                          // for mass, e.g. (0.149 0.149 0.149 0.149)
-	                          // and line length, e.g. (0.809 0.809 0.809 0.809)
-	massPerLength       0.149; // Wet mass/unit length
-	lineLength          0.809; // Length of the mooring line
+		couplingMode           "externalPoint"; // "externalRigidBody"
+		nCouplingDof           6;
+		refAttachmentPt
+		(
+			(-0.1      0.1    -0.077)
+			(-0.1     -0.1    -0.077)
+			( 0.1      0.1    -0.077)
+			( 0.1     -0.1    -0.077)
+		);
+		waveKinematics         false;
+		twoD                   true;
+	}
+	```
 
-	gravityVector       (0 0 -9.81); // Gravity vector
+=== "waves2FoamMooring"
 
-	writeForce          true; // optional, default false
-	writeVTK            true; // optional, default false
+	```
+	catenaryLine
+	{            
+		sixDoFRigidBodyMotionRestraint  waves2FoamMooring;
+		anchor
+		(
+			(-0.889    0.3725    -0.6)
+			(-0.889   -0.3725    -0.6)
+			( 0.889    0.3725    -0.6)
+			( 0.889   -0.3725    -0.6)  
+		);
+		refAttachmentPt
+		(
+			(-0.25     0.3725   -0.16)
+			(-0.25    -0.3725   -0.16)
+			( 0.25     0.3725   -0.16)
+			( 0.25    -0.3725   -0.16)  
+		);
 
-	//nNodes              10; // optional, default 10
-	//nodesPerLine        (8 6 7 9); // optional, if absent, all lines having the same
-	                                 // (nNodes);  if present, overwrite nNodes 
-	//vtkPrefix           "wfoamMoor"; // optional, default restraint name
-	//vtkStartTime        0; // optional, default 0
-	//outerCorrector      3; // optional, default 3
-}
-```
+		identicalProperties true; // default true; if false, specify a list 
+								// for mass, e.g. (0.149 0.149 0.149 0.149)
+								// and line length, e.g. (0.809 0.809 0.809 0.809)
+		massPerLength       0.149; // Wet mass/unit length
+		lineLength          0.809; // Length of the mooring line
+
+		gravityVector       (0 0 -9.81); // Gravity vector
+
+		writeForce          true; // optional, default false
+		writeVTK            true; // optional, default false
+
+		//nNodes              10; // optional, default 10
+		//nodesPerLine        (8 6 7 9); // optional, if absent, all lines having the same
+										// (nNodes);  if present, overwrite nNodes 
+		//vtkPrefix           "wfoamMoor"; // optional, default restraint name
+		//vtkStartTime        0; // optional, default 0
+		//outerCorrector      3; // optional, default 3
+	}
+	```
