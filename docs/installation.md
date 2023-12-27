@@ -1,7 +1,7 @@
 ## Prerequisites
 - [git](https://git-scm.com/), to clone foamMooring and submodules (MoorDyn v1 & v2).
 - Make, to compile MoorDyn and MAP++.
-- [CMake](https://cmake.org/), to help compile MoorDyn v2.
+- [CMake](https://cmake.org/), to build MoorDyn v2.
 - [VTK](https://gitlab.com/hfchen20/foamMooring/-/merge_requests/3) if USE_VTK=ON when compiling MoorDyn v2. 
 - [lapacke](https://www.netlib.org/lapack/lapacke.html), required by MAP++.
 ```
@@ -22,15 +22,15 @@ cd foamMooring
 ./Allwmake
 ```
 
-- You can selectively compile part of the library. If there is difficulty in compiling MAP++ and map3R (quasi-static mooring code),  you could skip compiling MAP++ in `Allwmake` and remove/comment out the corresponding entries in the Make files.
+- You can selectively compile part of the library. If there is difficulty in compiling MAP++ and map3R (quasi-static mooring code),  you could skip compiling MAP++ in `Allwmake` and remove the corresponding entries in the Make files.
 
-For `Make/files``, remove
+For `Make/files`, remove
 ```
 map3R/mapFoamInterface.C
 map3R/map3R.C
 ```
 
-For `Make/options``, remove
+For `Make/options`, remove
 ```
 -llapacke \
 -lmap-1.30.00 \

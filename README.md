@@ -1,11 +1,20 @@
-## Dynamic mooring restraints for rigid body motion in OpenFOAM
-CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn with OpenFOAM
+## A mooring restraints library for simulating rigid body motions in OpenFOAM
+
+Documentation: https://hfchen20.gitlab.io/foamMooring/
+
+GitHub mirror: https://github.com/hfchen20/foamMooring
 
 :star: Consider starring the repository if you find it useful. :star:
 
-Documentation website: https://hfchen20.gitlab.io/foamMooring/
+## Overview
 
-GitHub mirror: https://github.com/hfchen20/foamMooring
+- Works for two rigid body motion libraries `sixDoFRigidBodyMotion` and `rigidBodyMotion`.
+- Mooring models of restraints include MAP++, MoorDyn, Moody, groups of linear springs.
+- Most restraints support runtime generation of legacy VTK files (including vtk.series).
+- You can compile only part of the library (i.e., certain restraints) if that suits your needs.
+- No need to change and re-compile of built-in motion libraries and flow solvers.
+- Tested on v2012, v2212, v2306, mostly with overset grid solver `overInterDyMFoam`.
+- Should also work with `interFoam` (deforming mesh) and other variants `waveFoam` and `olaFlow`.
 
 ![One floater](tutorial/misc/Animation_overset3d_h12t20.mp4){width=400px height=320px}
 ![Two floaters](tutorial/misc/twoBody_moored.mp4){width=400px height=320px}
@@ -39,7 +48,7 @@ For [options](/src/sixDoFMooringRestraints/Make/options), remove
 
 ## How to use (tested on v2012, v2212)
 
-Refer to [documention website](https://hfchen20.gitlab.io/foamMooring/) for more examples.
+Refer to [documentation](https://hfchen20.gitlab.io/foamMooring/) for more examples.
 
 - Prepare an OpenFOAM case as usual. The floating body motion can be accommodated by either deforming mesh `interFoam` or overset grid `overInterDyMFoam`.
 - Add in `controlDict`
@@ -108,7 +117,10 @@ moodyR
 }
 ```
 
-## Main features
+## Code structure
+![Code structure](docs/img/flowchart_foamMooring.svg)
+
+## Main features of mooring models
 
 ![Three mooring line codes](tutorial/misc/comparison_3_mooring_codes.PNG)
 
@@ -116,7 +128,7 @@ moodyR
 
 - Write VTK files 'mooringN.vtk' for mooring lines where N denotes a time sequence number.
 - Prepare a vtk.series file 'mooring.vtk.series' to be loaded into Paraview.
-- A python script and example VTK files are provided in the tutorial to post-process MoorDyn output.
+- A Python script and example VTK files are provided in the tutorial to post-process MoorDyn output.
 - The mooring tension could also be added to the VTK files.
 - MoorDyn v2 has a built-in functionality to write XML-based [VTK files](https://gitlab.com/hfchen20/foamMooring/-/merge_requests/3).
 

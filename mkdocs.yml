@@ -1,6 +1,6 @@
 site_name: foamMooring
-site_url: https://hfchen20.gitlab.io/foamMooring/
-repo_url: https://gitlab.com/hfchen20/foamMooring/
+site_url: https://hfchen20.gitlab.io/foamMooring
+repo_url: https://gitlab.com/hfchen20/foamMooring
 copyright: Copyright &copy; 2023 Haifei Chen
 plugins:
   - search
@@ -36,12 +36,17 @@ nav:
   - Mesh motion: mesh_motion.md
   - sixDoFMooring: six-dof-mooring.md
   - rigidBodyMooring: rgb-mooring.md
-  - References: references.md
   - Utilities: utilities.md
+  - References: references.md
 extra:
   analytics:
     provider: google
     property: G-6E841MLKH9
+  social:
+    - icon: fontawesome/brands/gitlab
+      link: https://gitlab.com/hfchen20
+    - icon: fontawesome/brands/github
+      link: https://github.com/hfchen20
 markdown_extensions:
   - admonition
   - attr_list

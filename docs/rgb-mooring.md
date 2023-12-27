@@ -31,7 +31,7 @@ libs    (rigidBodyMooring);
 
 - Define mooring restraints in `constant/dynamicMeshDict`. Add one of `moorDynR1 || moorDynR2 || map3R || moodyR || linearSpringGroup`.
 
-### moorDynR1 & moorDynR2
+### MoorDyn
 
 ```
 moorDynR1
@@ -68,7 +68,7 @@ moorDynR2_pt
 
 ```
 
-### map3R
+### MAP++
 
 ```
 map3R
@@ -91,7 +91,7 @@ map3R
 }
 ```
 
-### moodyR
+### Moody
 
 ```
 moodyR
@@ -156,7 +156,7 @@ linearSpringGroup
 - Use keyword `bodies` to specify all the bodies each point in `refAttachmentPt` is attached to. Order matters. 
 - Support interconnected bodies (shared moorings).
 
-### moorDynR2
+### MoorDyn
 ```
 moorDynR2_point
 {
@@ -187,7 +187,7 @@ moorDynR2_point
 }
 ```
 
-### map3R
+### MAP++
 ```
 map3R
 {
@@ -222,7 +222,7 @@ map3R
 }
 ```
 
-### moodyR
+### Moody
 ```
 moodyR
 {

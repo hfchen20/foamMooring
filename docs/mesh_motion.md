@@ -6,8 +6,8 @@ Settings        | Deforming Mesh | Overset Mesh
 --------------- | -------------- | ----------
 flow sovler     | *interFoam*  | *overInterDyMFoam*
 dynamicFvMesh   |  *dynamicMotionSolverFvMesh* | *dynamicOversetFvMesh*
-**six-DoF mooring** | *sixDoFRigidBodyMotion* | *sixDoFRigidBodyMotion* 
-**rgb mooring**     | *rigidBodyMotion*  | *rigidBodyMotion* |
+**sixDoFMooring** | *sixDoFRigidBodyMotion* | *sixDoFRigidBodyMotion* 
+**rigidBodyMooring** | *rigidBodyMotion*  | *rigidBodyMotion* |
 
 The mesh deformation or mesh morphing technique is the classical method to accommodate body motion in the computational domain without topological changes. It is suitable for small amplitude body motions, as large motions (translation or rotation) may continuously squeeze and stretch the computational cells, resulting in deteriorated mesh quality and thus adversely affecting simulation results.
 

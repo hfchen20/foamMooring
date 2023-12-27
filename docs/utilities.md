@@ -4,8 +4,9 @@
 Two options are available to visualize the mooring lines simulated by MoorDyn: 
 
 1. post-processing MoorDyn lines output after runtime, and 
-2. generating VTK files during runtime. 
+2. generating VTK files (legacy format or XML format) during runtime. 
 
+### Legacy VTK
 Detailed steps for option 1 are:
 
 - Write VTK files `mooringN.vtk` for mooring lines where `N` denotes a time sequence number.
@@ -16,8 +17,8 @@ Detailed steps for option 1 are:
 Option 2 (legacy VTK) requires certain entries in each mooring restraint's definition in `dynamicMeshDict`.
 
 - The most important entry is `outerCorrector`, which should be consistent with `PIMPLE` settings in `system/fvSolution`.
-- A VTK file is written during the last iteration of the outer loop, per OpenFOAM's `writeInterval`.
-- At the end of the simulation, a `vtk.series` file is generated for visualization in ParaView.
+- A VTK file is written during the last iteration of the outer loop, per OpenFOAM's `writeInterval` defined in `system/controlDict`.
+- At the end of the simulation, a `vtk.series` file is generated automatically for visualization in ParaView.
 
 ```
 writeMooringVTK    true; // optional, default false
@@ -31,7 +32,9 @@ outerCorrector     3; // optional, default 3
     
     MoorDyn v2 has a built-in functionality to write XML-based [VTK files](https://gitlab.com/hfchen20/foamMooring/-/merge_requests/3).
     
-Option 2 (XML format VTK) requires installation of [`vtk` library](https://gitlab.com/hfchen20/foamMooring/-/merge_requests/3) and `USE_VTK=ON` when compiling MoorDyn v2. This generates VTK files every time step, for the moment.
+### XML format VTK
+
+Option 2 (XML format VTK) requires installation of [`vtk` library](https://gitlab.com/hfchen20/foamMooring/-/merge_requests/3) and `USE_VTK=ON` when compiling MoorDyn v2. This generates VTK files every time step, for the time being.
 
 
 ## Post-process rigid body motions
