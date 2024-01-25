@@ -20,7 +20,6 @@ GitHub mirror: https://github.com/hfchen20/foamMooring
 ![One floater](tutorial/misc/Animation_overset3d_h12t20.mp4){width=400px height=320px}
 ![Two floaters](tutorial/misc/twoBody_moored.mp4){width=400px height=320px}
 ![Two floaters with shared moorings](tutorial/misc/twinFB_shared_mooring.ogv){width=600px height=320px}
-![Two floaters with shared moorings](https://youtu.be/nKYjpl760iU?feature=shared){width=600px height=320px}
 
 ## Compile foamMooring
 
