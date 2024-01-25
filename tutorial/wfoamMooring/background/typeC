@@ -1,0 +1,30 @@
+#!/bin/bash
+#PBS -lnodes=1:ppn=32
+#PBS -lwalltime=48:00:00
+
+# Change to directory the PBS script was submitted from
+cd $PBS_O_WORKDIR
+
+module load gcc/12.1.0-crtl
+module load openfoam/2212-4crh
+module load netlib-lapack/3.10.1-tdua 
+module load gsl/2.7.1-bhqt 
+
+export LD_LIBRARY_PATH=$LIBRARY_PATH:$LD_LIBRARY_PATH 
+
+decomposePar &> log.decomposePar
+srun --mpi=pmi2 overInterDyMFoam -parallel &> log.overInterDyMFoam
+
+#srun --mpi=pmi2 waveOverFoam -parallel &> log.waveOverFoam
+
+cp -r Mooring Mooring-copy
+
+postRigidBody -noZero -decomposed &> log.postRigidBody 
+
+# remove parenthesis () in history.dat
+sed -i "s/(/ /g" history/history.dat 
+sed -i "s/)/ /g" history/history.dat
+
+sed -i "s/(/ /g" postProcessing/*/0/*.dat 
+sed -i "s/)/ /g" postProcessing/*/0/*.dat 
+###################################################

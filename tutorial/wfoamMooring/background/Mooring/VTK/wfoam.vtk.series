@@ -1,0 +1,7 @@
+{
+  "file-series-version" : "1.0",
+  "files" : [
+    { "name" : "wfoam_1.vtk", "time" : 0.01 },
+    { "name" : "wfoam_2.vtk", "time" : 0.02 }
+  ]
+}

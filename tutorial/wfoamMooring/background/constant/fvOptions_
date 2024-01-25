@@ -1,0 +1,32 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2212                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      fvOptions;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+multiphaseStabilizedTurbulence1
+{
+    type            multiphaseStabilizedTurbulence;
+    active          no;
+
+    multiphaseStabilizedTurbulenceCoeffs
+    {
+        // Optional coefficients
+        lambda2         0.1;   // A value of 0 sets the nut correction to 0
+        Cmu             0.09;  // from k-epsilon model
+        C               1.51;  // model coefficient from k-omega model
+        alpha           1.36;  // 1/Prt
+    }
+}
+
+// ************************************************************************* //

@@ -26,6 +26,7 @@ Documentation: [https://hfchen20.gitlab.io/foamMooring](https://hfchen20.gitlab.
 - No need to change and re-compile of built-in motion libraries and flow solvers.
 - Tested on v2012, v2212, v2306, mostly with overset grid solver `overInterDyMFoam`.
 - Should also work with `interFoam` (deforming mesh) and other variants `waveFoam` and `olaFlow`.
+- Even `overPimpleDyMFoam` ...
 
 ## Code structure
 ![Flowchart of foamMooring](img/flowchart_foamMooring.svg)
@@ -43,6 +44,7 @@ MoorDyn v1    | moorDynR1    | moorDynR1
 MoorDyn v2    | moorDynR2    | moorDynR2
 Moody         | moodyR       | moodyR
 linearSpring  | linearSpringGroup  | linearSpringGroup
+quasi-static  | waves2FoamMooring  | NA
 
 !!! note
     `waves2FoamMooring` is available, which should be compatible with most recent versions of OpenFOAM!

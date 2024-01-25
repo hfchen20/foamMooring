@@ -1,0 +1,150 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2212                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      dynamicMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dynamicFvMesh       dynamicOversetFvMesh;
+
+solvers
+{
+    sixDoFRigidBodyMotionCoeffs
+    {
+        motionSolverLibs    (sixDoFRigidBodyMotion);
+        motionSolver          sixDoFRigidBodyMotion;
+        
+        cellSet          c1;
+
+        patches         (floatingObject);
+        innerDistance   100.0;
+        outerDistance   101.0;
+
+        centreOfMass    (0.0 0.0 -0.0948);
+
+        // Cuboid mass
+        mass            58.09;
+
+        // Cuboid moment of inertia about the centre of mass
+        momentOfInertia ( 1 2.441 1 );
+
+        report          on;
+        accelerationRelaxation 0.6;
+        //accelerationDamping    0.9;
+
+        solver
+        {
+            type Newmark;
+        }
+
+        constraints
+        {
+            // translation contrained on a plane around CoR
+            fixedPlane
+            {
+                sixDoFRigidBodyMotionConstraint plane;
+                normal (0 1 0);
+            }
+
+            // rotation constraint
+            fixedAxis
+            {
+                sixDoFRigidBodyMotionConstraint axis;
+                axis (0 1 0);
+            }
+        }
+
+        restraints
+        {
+            wfoam
+            {
+                sixDoFRigidBodyMotionRestraint  waves2FoamMooring;
+                anchor
+                (
+                    (-0.889    0.3725    -0.6)
+                    (-0.889   -0.3725    -0.6)
+                    ( 0.889    0.3725    -0.6)
+                    ( 0.889   -0.3725    -0.6)  
+                );
+                refAttachmentPt
+                (
+                    (-0.25     0.3725   -0.16)
+                    (-0.25    -0.3725   -0.16)
+                    ( 0.25     0.3725   -0.16)
+                    ( 0.25    -0.3725   -0.16)  
+                );
+                identicalProperties true; // if false, specify a list for mass and line length
+                massPerLength       0.149; // Wet mass/unit length, dryMass=0.177
+                lineLength          0.809; // Length of the mooring line
+                gravityVector       (0 0 -9.81); // Gravity vector
+                writeForce          true;
+                writeVTK            true;
+                //nNodes              10;
+                //nodesPerLine        (8 6 7 9);
+                //vtkPrefix           "wfoamMoor";
+                //vtkStartTime        0;
+                //outerCorrector      3;
+            }
+
+            /*
+            moorDynR_v1
+            {
+                sixDoFRigidBodyMotionRestraint moorDynR1;
+            }
+            
+            moorDynR2_bd
+            {
+                sixDoFRigidBodyMotionRestraint  moorDynR2;
+                couplingMode       "BODY";
+                inputFile          "Mooring/lines_v2_body.txt";
+                writeMooringVTK    true;
+                vtkPrefix          "mdv2_body";
+                vtkStartTime       0;
+                outerCorrector     3;
+            }
+
+            moorDynR2_pt
+            {
+                sixDoFRigidBodyMotionRestraint   moorDynR2;
+                couplingMode       "POINT";
+                inputFile          "Mooring/lines_v2_point.txt";
+                refAttachmentPt
+                (
+                    (-0.25      0.3725    -0.0652)
+                    (-0.25     -0.3725    -0.0652)
+                    ( 0.25      0.3725    -0.0652)
+                    ( 0.25     -0.3725    -0.0652)  
+                );
+                writeMooringVTK    true;
+                vtkPrefix          "mdv2_pt";
+                vtkStartTime       0;
+                outerCorrector     3;
+            }
+            
+            moodyR
+            {
+                type               moodyR;
+                body               floatingObject;
+                inputFile         "Mooring/Liang_typeC.m";
+                refAttachmentPt
+                (
+                    (-0.25      0.3725    -0.0652)
+                    (-0.25     -0.3725    -0.0652)
+                    ( 0.25      0.3725    -0.0652)
+                    ( 0.25     -0.3725    -0.0652)    
+                );
+            }
+            */
+        }
+    }
+}
+// ************************************************************************* //

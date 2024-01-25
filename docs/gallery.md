@@ -16,6 +16,8 @@ Dynamic mooring restraints for rigid body motion in OpenFOAM
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/nKYjpl760iU?si=-2vMFo7eMvSuQZnF" title="twinFB shared mooring" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
+<iframe width="560" height="315" src="https://www.youtube.com/embed/7R-5XIySEQo?si=A3g7hN9QgviUt492" title="Floating breakwater with cross mooring" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
 ## Prospective applications
 - Floating Offshore Wind Turbine, wind farm
 - Wave Energy Converter, WEC arrays

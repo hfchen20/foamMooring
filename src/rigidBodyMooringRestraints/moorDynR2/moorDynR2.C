@@ -115,6 +115,9 @@ Foam::RBD::restraints::moorDynR2::moorDynR2
         {   
             Info<< "Coupling mode: " << couplingMode_ << ", expecting nCouplingDof=6 * nCoupledBodies"
                 << endl;
+            WarningInFunction
+                << "The 'BODY' coupling mode may NOT work as intended."
+                << endl;
             if (nCouplingDof_ != 6 * bodies_.size())
             {
                 FatalErrorInFunction
@@ -127,7 +130,7 @@ Foam::RBD::restraints::moorDynR2::moorDynR2
         else
         {
             FatalErrorInFunction
-                << "Two coupling modes supported only: 'POINT' or 'BODY' "
+                << "Two coupling modes supported only: 'POINT' or 'BODY'. Recommend to use 'POINT'."
                 << exit(FatalError);
         }
 
@@ -342,7 +345,9 @@ bool Foam::RBD::restraints::moorDynR2::read
     restraint::read(dict);
 
     coeffs_.readEntry("inputFile", fname_);
-    coeffs_.readEntry("couplingMode", couplingMode_);
+    //coeffs_.readEntry("couplingMode", couplingMode_);
+    couplingMode_ = coeffs_.getOrDefault<word>("couplingMode", "POINT");
+
     if (couplingMode_ == word("POINT"))
     {
         coeffs_.readEntry("refAttachmentPt", refAttachmentPt_);
@@ -375,7 +380,8 @@ bool Foam::RBD::restraints::moorDynR2::read
         if (coeffs_.found("bodies"))
         {
             coeffs_.lookup("bodies") >> bodies_;
-            
+
+            /*
             {
                 // remove duplicate body names
                 List<word> tmpBodies;
@@ -391,7 +397,8 @@ bool Foam::RBD::restraints::moorDynR2::read
                 bodyIDs_.setSize(bodies_.size());
                 bodyIndices_.setSize(bodies_.size());
             }
-            
+            */
+
             for(int ii=0; ii<bodies_.size(); ii++)
             {
                 bodyIDs_[ii] = model_.bodyID(bodies_[ii]);
@@ -406,7 +413,7 @@ bool Foam::RBD::restraints::moorDynR2::read
     {
         vtkPrefix_ = coeffs_.getOrDefault<word>("vtkPrefix", "mdV2");
         vtkStartTime_ = coeffs_.getOrDefault<scalar>("vtkStartTime", 0);
-        outerCorrector_ = coeffs_.getOrDefault<scalar>("outerCorrector", 1);
+        outerCorrector_ = coeffs_.getOrDefault<scalar>("outerCorrector", 3);
     }
 
     return true;
@@ -443,21 +450,11 @@ void Foam::RBD::restraints::moorDynR2::writeVTK(const Time& time) const
     MoorDyn_GetNumberLines(moordyn_, &nLines);
 
     labelList nodesPerLine(nLines, -1);
-
-    //List<pointField> coord(nLines, Zero);
     for(int i=0; i<int(nLines); i++)
     {
         MoorDynLine line = MoorDyn_GetLine(moordyn_, i+1);
         MoorDyn_GetLineN(line, &nSeg);
         nodesPerLine[i] = nSeg+1;
-        
-        //coord[i].setSize(nSeg+1);
-        //for(int p=0; p<nodesPerLine[i]; p++)
-        //{
-        //    double r[3];
-        //    MoorDyn_GetLineNodePos(line, p, r);
-        //    coord[i][p] = r;
-        //}
     }
 
     double coord[max(nodesPerLine)][3];

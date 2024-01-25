@@ -104,7 +104,7 @@ void Foam::RBD::restraints::moorDynR1::restrain
     scalar deltaT = state.deltaT();
     scalar tprev = state.t() - deltaT;
 	
-	const spatialTransform CofR(model_.X0(bodyID_));
+    const spatialTransform CofR(model_.X0(bodyID_));
     const spatialVector vCofR(model_.v(bodyID_, Zero));
 	
     point CoR = CofR.r();
@@ -128,11 +128,11 @@ void Foam::RBD::restraints::moorDynR1::restrain
 
     if (!initialized_)
     {
-		// Initialize MoorDyn
-		//LinesInit(&CoM[0], &v[0]);
-		LinesInit(X, XD);
+        // Initialize MoorDyn
+        //LinesInit(&CoM[0], &v[0]);
+        LinesInit(X, XD);
         Info<< "MoorDyn module initialized!" << endl;
-		initialized_ = true;
+        initialized_ = true;
     }
 	
     scalar nFair = refAttachmentPt_.size();
@@ -160,7 +160,7 @@ void Foam::RBD::restraints::moorDynR1::restrain
     FairleadsCalc2(&fairPos[0][0], &fairVel[0][0], &fairForce[0][0], &tprev, &deltaT);
 
     //FairleadsCalc(double **rFairIn, double **rdFairIn, double ** fFairIn, double* t_in, double *dt_in)
-	//FairleadsCalc(&fairPos[0], &fairVel[0], &fairForce[0], &tprev, &deltaT);
+    //FairleadsCalc(&fairPos[0], &fairVel[0], &fairForce[0], &tprev, &deltaT);
 
     // Sum forces and calculate moments
     for(int pt=0; pt<nFair; pt++)
@@ -179,8 +179,6 @@ void Foam::RBD::restraints::moorDynR1::restrain
             << endl;   
     }
 
-    // Accumulate the force for the restrained body
-    //fx[bodyIndex_] += spatialVector(moment, force);
 }
 
 
@@ -223,7 +221,7 @@ void Foam::RBD::restraints::moorDynR1::write
     restraint::write(os);
 
     if (int(bodies_.size())>0)
-	   	os.writeEntry("bodies",bodies_);
+        os.writeEntry("bodies",bodies_);
     os.writeEntry("refAttachmentPt", refAttachmentPt_);
 }
 

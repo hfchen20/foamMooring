@@ -1,0 +1,18 @@
+#!/bin/sh
+cd "${0%/*}" || exit                                # Run from this directory
+. ${WM_PROJECT_DIR:?}/bin/tools/RunFunctions        # Tutorial run functions
+#------------------------------------------------------------------------------
+
+#./Allrun.pre
+(cd background && runApplication $(getApplication))
+
+# Serial
+#runApplication $(getApplication)
+
+# Parallel
+
+#cd background
+#runApplication decomposePar
+#runParallel  $(getApplication)
+
+#------------------------------------------------------------------------------

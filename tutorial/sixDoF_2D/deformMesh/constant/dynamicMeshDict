@@ -26,22 +26,22 @@ sixDoFRigidBodyMotionCoeffs
     innerDistance   0.05;
     outerDistance   0.35;
 
-	//centreOfMass    (0.0 0.0 -0.0126);
-	centreOfMass    (0.0 0.0 -0.016);
+    //centreOfMass    (0.0 0.0 -0.0126);
+    centreOfMass    (0.0 0.0 -0.016);
 
-	// Cuboid dimensions
-	Lx              0.2;
-	Ly              0.2;
-	Lz              0.132;
+    // Cuboid dimensions
+    Lx              0.2;
+    Ly              0.2;
+    Lz              0.132;
 
-	// Density of the solid
-	//rhoSolid        500;
+    // Density of the solid
+    //rhoSolid        500;
 
-	// Cuboid mass
-	mass            3.148; // #eval{ $rhoSolid*$Lx*$Ly*$Lz };
+    // Cuboid mass
+    mass            3.148; // #eval{ $rhoSolid*$Lx*$Ly*$Lz };
 
-	// Cuboid moment of inertia about the centre of mass
-	momentOfInertia ( 0.015 0.015 0.021 );
+    // Cuboid moment of inertia about the centre of mass
+    momentOfInertia ( 0.015 0.015 0.021 );
 
     report          on;
 
@@ -55,18 +55,18 @@ sixDoFRigidBodyMotionCoeffs
 
     constraints
     {
-	     // translation contrained on a plane around CoR
-         fixedPlane
-         {
-             sixDoFRigidBodyMotionConstraint plane;
-             normal (0 1 0);
-         }
+        // translation contrained on a plane around CoR
+        fixedPlane
+        {
+            sixDoFRigidBodyMotionConstraint plane;
+            normal (0 1 0);
+        }
 
-	    // rotation constraint
+        // rotation constraint
         fixedAxis
         {
-            sixDoFRigidBodyMotionConstraint axis;
-            axis (0 1 0);
+        sixDoFRigidBodyMotionConstraint axis;
+        axis (0 1 0);
         }
     }
 
@@ -75,8 +75,8 @@ sixDoFRigidBodyMotionCoeffs
         moorDynR2
         {
             sixDoFRigidBodyMotionRestraint moorDynR2;
-            inputFile "Mooring/lines_v2.txt";
-            writeMooringVTK true;
+            inputFile                      "Mooring/lines_v2.txt";
+            writeMooringVTK                true;
         }
 
         /* Example mooring restraints as defined in libsixDoFMooring
