@@ -14,9 +14,9 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-motionSolverLibs    (sixDoFRigidBodyMotion);
-
 dynamicFvMesh       dynamicOversetFvMesh;
+
+motionSolverLibs    (sixDoFRigidBodyMotion);
 
 solver          sixDoFRigidBodyMotion;
 
@@ -115,7 +115,7 @@ sixDoFRigidBodyMotionCoeffs
 		{
 			type               moorDynR2;
 			couplingMode       "BODY";
-			inputFile          "Mooring/lines_v2_body.txt";
+			inputFile          "Mooring/lines_v2.txt";
 			writeMooringVTK    true;
 			vtkPrefix         "mdv2_body";
 			vtkStartTime       0;
@@ -135,16 +135,18 @@ sixDoFRigidBodyMotionCoeffs
 				( 0.1      0.1    -0.077)
 				( 0.1     -0.1    -0.077)
 			);
-			numberOfSegments       20;
-			writeMooringVTK        true;
+			writeMooringForces     true;
+            outputFile             "Mooring/mapForces.dat";
+            writeMooringVTK        true;
+            //nNodes                 10;
+            //nodesPerLine           (10 10 10 10);
 		}
 
 		moodyR
 		{
 			sixDoFRigidBodyMotionRestraint moodyR;
 			inputFile              "Mooring/boxWu_exPoint.m";
-
-			couplingMode           "externalPoint";  // "externalPoint" or "externalRigidBody"
+			couplingMode           "externalPoint";  // or "externalRigidBody"
 			//If couplingMode is "externalPoint", nCouplingDof = 3*refAttachmentPt.size()
 			nCouplingDof           6;
 			refAttachmentPt

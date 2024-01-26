@@ -1,16 +1,16 @@
 /*--------------------------------*- C++ -*----------------------------------*\
-  =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Version:  dev
-     \\/     M anipulation  |
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2012                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
 FoamFile
 {
     version     2.0;
     format      ascii;
     class       dictionary;
-    object      motionProperties;
+    object      dynamicMeshDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -116,7 +116,7 @@ sixDoFRigidBodyMotionCoeffs
         {
             type               moorDynR2;
             couplingMode       "BODY";
-            inputFile          "Mooring/lines_v2_body.txt";
+            inputFile          "Mooring/lines_v2.txt";
             writeMooringVTK    true;
             vtkPrefix         "mdv2_body";
             vtkStartTime       0;
@@ -142,11 +142,9 @@ sixDoFRigidBodyMotionCoeffs
 
         moodyR
         {
-            sixDoFRigidBodyMotionRestraint moodyR; // map3R, moodyR, moorDynR1
-
+            sixDoFRigidBodyMotionRestraint moodyR;
             inputFile              "Mooring/boxWu_exPoint.m";
-            couplingMode           "externalPoint";  // "externalPoint" or "externalRigidBody"
-
+            couplingMode           "externalPoint";  // or "externalRigidBody"
             //If couplingMode is "externalPoint", nCouplingDof = 3*refAttachmentPt.size()
             nCouplingDof           6;
             refAttachmentPt
