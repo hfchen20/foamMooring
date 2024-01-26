@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  v2012                                 |
+|  \\    /   O peration     | Version:  v2212                                 |
 |   \\  /    A nd           | Website:  www.openfoam.com                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -14,9 +14,9 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-motionSolverLibs    (sixDoFRigidBodyMotion);
-
 dynamicFvMesh       dynamicOversetFvMesh;
+
+motionSolverLibs    (sixDoFRigidBodyMotion);
 
 solver          sixDoFRigidBodyMotion;
 
@@ -123,7 +123,7 @@ sixDoFRigidBodyMotionCoeffs
         {
             type               moorDynR2;
             couplingMode       "BODY";
-            inputFile          "Mooring/lines_v2_body.txt";
+            inputFile          "Mooring/lines_v2.txt";
             writeMooringVTK    true;
             vtkPrefix         "mdv2_body";
             vtkStartTime       0;
@@ -132,11 +132,9 @@ sixDoFRigidBodyMotionCoeffs
             
 		moodyR
 		{
-			sixDoFRigidBodyMotionRestraint moodyR; // map3R, moodyR, moorDynR1
-            
+			sixDoFRigidBodyMotionRestraint moodyR;
             inputFile              "Mooring/boxWu_exPoint.m";
-            couplingMode           "externalPoint";  // "externalPoint" or "externalRigidBody"
-			
+            couplingMode           "externalPoint";  // or "externalRigidBody"
             //If couplingMode is "externalPoint", nCouplingDof = 3*refAttachmentPt.size()
             nCouplingDof           6;
             refAttachmentPt

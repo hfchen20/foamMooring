@@ -119,10 +119,10 @@ solvers
                 inputFile          "Mooring/lines_v2_point.txt";
                 refAttachmentPt
                 (
-                    (-0.25      0.3725    -0.0652)
-                    (-0.25     -0.3725    -0.0652)
-                    ( 0.25      0.3725    -0.0652)
-                    ( 0.25     -0.3725    -0.0652)  
+                    (-0.25     0.3725   -0.16)
+                    (-0.25    -0.3725   -0.16)
+                    ( 0.25     0.3725   -0.16)
+                    ( 0.25    -0.3725   -0.16)  
                 );
                 writeMooringVTK    true;
                 vtkPrefix          "mdv2_pt";
@@ -133,14 +133,16 @@ solvers
             moodyR
             {
                 type               moodyR;
-                body               floatingObject;
                 inputFile         "Mooring/Liang_typeC.m";
+                couplingMode      "externalPoint"; // or "externalRigidBody"
+                //If couplingMode is "externalPoint", nCouplingDof = 3*refAttachmentPt.size()
+                //nCouplingDof           6;
                 refAttachmentPt
                 (
-                    (-0.25      0.3725    -0.0652)
-                    (-0.25     -0.3725    -0.0652)
-                    ( 0.25      0.3725    -0.0652)
-                    ( 0.25     -0.3725    -0.0652)    
+                    (-0.25     0.3725   -0.16)
+                    (-0.25    -0.3725   -0.16)
+                    ( 0.25     0.3725   -0.16)
+                    ( 0.25    -0.3725   -0.16)  
                 );
             }
             */
