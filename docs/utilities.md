@@ -22,7 +22,7 @@ Option 2 (legacy VTK) requires certain entries in each mooring restraint's defin
 
 ```
 writeMooringVTK    true; // optional, default false
-vtkPrefix         "mdv2_pt"; // optional, default depends on the undelying mooring model
+vtkPrefix         "mdv2_pt"; // optional, default depends on the underlying mooring model
 vtkStartTime       0; // optional, default 0
 outerCorrector     3; // optional, default 3
 ```

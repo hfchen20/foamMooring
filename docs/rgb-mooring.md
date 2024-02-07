@@ -40,9 +40,7 @@ libs    (rigidBodyMooring);
         body                floatingObject;
         inputFile           "Mooring/esflOWC_4lines.map";
         summaryFile         "Mooring/esflOWC_summary.map";
-        outputFile          "Mooring/mapForces.map";
         waterDepth          0.5;
-        writeMooringForces  true;
 
         refAttachmentPt
         (
@@ -51,6 +49,12 @@ libs    (rigidBodyMooring);
             ( 0.1      0.1    -0.062)
             ( 0.1     -0.1    -0.062)
         );
+
+        writeMooringForces     true;
+        outputFile             "Mooring/mapForces.dat";
+        writeMooringVTK        true;
+        //nNodes                 10;
+        //nodesPerLine           (10 10 10 10);
     }
     ```
 

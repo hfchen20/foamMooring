@@ -68,8 +68,12 @@ libs    (sixDoFMooring);
 			( 0.1      0.1    -0.077)
 			( 0.1     -0.1    -0.077)
 		);
-		numberOfSegments       20;
-		writeMooringVTK        true;
+        
+        writeMooringForces     true;
+        outputFile             "Mooring/mapForces.dat";
+        writeMooringVTK        true;
+        //nNodes                 10;
+        //nodesPerLine           (10 10 10 10);
 	}
 	```
 
@@ -90,10 +94,10 @@ libs    (sixDoFMooring);
 		couplingMode       "POINT";
 		refAttachmentPt
 		(
-			(-0.25      0.3725    -0.0652)
-			(-0.25     -0.3725    -0.0652)
-			( 0.25      0.3725    -0.0652)
-			( 0.25     -0.3725    -0.0652)  
+            (-0.25     0.3725   -0.16)
+            (-0.25    -0.3725   -0.16)
+            ( 0.25     0.3725   -0.16)
+            ( 0.25    -0.3725   -0.16)
 		);
 		writeMooringVTK    true;
 		vtkPrefix          "mdv2_pt";
