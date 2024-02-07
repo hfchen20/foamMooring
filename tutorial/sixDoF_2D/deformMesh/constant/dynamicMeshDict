@@ -65,8 +65,8 @@ sixDoFRigidBodyMotionCoeffs
         // rotation constraint
         fixedAxis
         {
-        sixDoFRigidBodyMotionConstraint axis;
-        axis (0 1 0);
+            sixDoFRigidBodyMotionConstraint axis;
+            axis (0 1 0);
         }
     }
 

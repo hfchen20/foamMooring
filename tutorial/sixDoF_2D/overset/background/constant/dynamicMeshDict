@@ -95,7 +95,7 @@ sixDoFRigidBodyMotionCoeffs
 
     moorDynR2_pt
     {
-      type               moorDynR2;
+      sixDoFRigidBodyMotionRestraint  moorDynR2;
       couplingMode       "POINT";
       inputFile          "Mooring/lines_v2_point.txt";
       refAttachmentPt
@@ -113,7 +113,7 @@ sixDoFRigidBodyMotionCoeffs
 
     moorDynR2_bd
     {
-      type               moorDynR2;
+      sixDoFRigidBodyMotionRestraint  moorDynR2;
       couplingMode       "BODY";
       inputFile          "Mooring/lines_v2.txt";
       writeMooringVTK    true;
@@ -147,7 +147,8 @@ sixDoFRigidBodyMotionCoeffs
       sixDoFRigidBodyMotionRestraint moodyR;
       inputFile              "Mooring/boxWu_exPoint.m";
       couplingMode           "externalPoint";  // or "externalRigidBody"
-      //If couplingMode is "externalPoint", nCouplingDof = 3*refAttachmentPt.size()
+      // If couplingMode is "externalPoint"
+      //   nCouplingDof = 3*refAttachmentPt.size()
       nCouplingDof           6;
       refAttachmentPt
       (
@@ -160,9 +161,7 @@ sixDoFRigidBodyMotionCoeffs
       twoD                   true;
     }
     */
-
   }
-
 }
 
 // ************************************************************************* //
