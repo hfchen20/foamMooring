@@ -71,14 +71,14 @@ class moorDynR1
         pointField refAttachmentPt_;
 
         //- List of body names for each attachment point. Default is empty list.
-		// Allow for multiple bodies to be attached to the same moodyR restraint:
+		// Allow for multiple bodies to be attached to the same restraint
         List<word> bodies_;		
-				
-		//- List of body IDs for each attachment point. Default is bodyID_ for all.
-		List<label> bodyIDs_;		
-		
-		//- List of body indices for each attachment point. Default is bodyID_ for all.
-		List<label> bodyIndices_;
+                
+        //- List of body IDs for each attachment point. Default is bodyID_ for all.
+        List<label> bodyIDs_;		
+
+        //- List of body indices for each attachment point. Default is bodyID_ for all.
+        List<label> bodyIndices_;
 
         mutable bool initialized_;
 
@@ -127,17 +127,17 @@ public:
         
         //- Transform body point for a given bodyID
         // Necessary to resolve restraints associated with multiple bodies
-		inline point bodyPoint(const point& p, const label bodyID) const
-		{
-			return (model_.X0(bodyID).inv() && spatialVector(Zero, p)).l();
-		}
+        inline point bodyPoint(const point& p, const label bodyID) const
+        {
+            return (model_.X0(bodyID).inv() && spatialVector(Zero, p)).l();
+        }
 
         //- Transform body point velocity for a given bodyID
         // Necessary to resolve restraints associated with multiple bodies
-		inline spatialVector bodyPointVelocity(const point& p, const label bodyID) const
-		{
-			return model_.v(bodyID, p);
-		}
+        inline spatialVector bodyPointVelocity(const point& p, const label bodyID) const
+        {
+            return model_.v(bodyID, p);
+        }
 
         //- Update properties from given dictionary
         virtual bool read(const dictionary& dict);

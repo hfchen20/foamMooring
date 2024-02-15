@@ -68,13 +68,6 @@ References
         // If bodies present, refAttachmentPt are associated with multiple bodies
         bodies (bodyA bodyA bodyA bodyB);
         // bodies.size == refAttachmentPt.size
-        refAttachmentPt
-        (
-            (-0.1      0.1    -0.077)
-            (-0.1     -0.1    -0.077)
-            ( 0.1      0.1    -0.077)
-            ( 0.1     -0.1    -0.077)
-        );
         
         // which one is better?
         bodies (bodyA bodyB);
@@ -122,15 +115,15 @@ class moodyR
         //- Moody input filename
         fileName fname_;
 
-		//- List of body names for each attachment point. Default is empty list.
-		// Allow for multiple bodies to be attached to the same moodyR restraint:
+        //- List of body names for each attachment point. Default is empty list.
+        // Allow for multiple bodies to be attached to the same moodyR restraint:
         List<word> bodies_;		
-				
-		//- List of body IDs for each attachment point. Default is bodyID_ for all.
-		List<label> bodyIDs_;		
-		
-		//- List of body indices for each attachment point. Default is bodyID_ for all.
-		List<label> bodyIndices_;
+                
+        //- List of body IDs for each attachment point. Default is bodyID_ for all.
+        List<label> bodyIDs_;		
+
+        //- List of body indices for each attachment point. Default is bodyID_ for all.
+        List<label> bodyIndices_;
 
         //- Reference point of attachment to the solid body
         pointField refAttachmentPt_;
@@ -183,12 +176,12 @@ public:
             const rigidBodyModelState& state
         ) const;
 
-		// Transform of the previous state body point for a given bodyID
+        // Transform of the previous state body point for a given bodyID
         // Necessary to resolve restraints associated with multiple bodies
-		inline point bodyPoint(const point& p,const label bodyID) const
-		{
-			return (model_.X0(bodyID).inv() && spatialVector(Zero, p)).l();
-		}
+        inline point bodyPoint(const point& p,const label bodyID) const
+        {
+            return (model_.X0(bodyID).inv() && spatialVector(Zero, p)).l();
+        }
 
         //- Update properties from given dictionary
         virtual bool read(const dictionary& dict);

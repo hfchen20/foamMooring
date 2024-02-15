@@ -3,7 +3,8 @@ Class
     mapFoamInterface
 
 Description
-    Interface class between quasi-static mooring code MAP++ and map3R (sixDoFRigidBodyMotionRestraints).
+    Interface class between quasi-static mooring code MAP++ and map3R 
+    (sixDoFRigidBodyMotionRestraints).
 
 SourceFiles
     mapFoamInterface.C

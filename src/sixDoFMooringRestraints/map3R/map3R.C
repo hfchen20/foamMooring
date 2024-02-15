@@ -27,8 +27,8 @@ License
 /*---------------------------------------------------------------------------*\
 References
 
-    Chen, H., & Hall, M. (2022). CFD simulation of floating body motion with mooring dynamics: Coupling 
-        MoorDyn with OpenFOAM. Applied Ocean Research, 124, 103210.
+    Chen, H., & Hall, M. (2022). CFD simulation of floating body motion with mooring dynamics: 
+        Coupling MoorDyn with OpenFOAM. Applied Ocean Research, 124, 103210.
         https://doi.org/10.1016/j.apor.2022.103210
 
 \*---------------------------------------------------------------------------*/
@@ -82,7 +82,7 @@ Foam::sixDoFRigidBodyMotionRestraints::map3R::map3R
     curTime_ = -1;
     iteration_ = 0;
 
-    Info << "Create map3R (quasi-static mooring code MAP++) ..." << endl;
+    Info<< "Create map3R (quasi-static mooring code MAP++) ..." << endl;
 
     if (writeVTK_)
     {

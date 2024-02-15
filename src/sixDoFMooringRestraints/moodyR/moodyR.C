@@ -76,18 +76,19 @@ Foam::sixDoFRigidBodyMotionRestraints::moodyR::moodyR
     
     initialized_ = false;
 
-    Info << "Create moodyR, a mooring dynamics restraint (Palm et al. 2017)" << endl;
+    Info<< "Create moodyR, a mooring dynamics restraint (Palm et al. 2017)" << endl;
     
     if (mode_ == word("externalPoint"))
     {
         nCouplingDof_ = 3 * refAttachmentPt_.size();
-        Info << "\tCoupling mode: " << mode_ << ", nCouplingDof = " << nCouplingDof_ 
-             << endl;
+        Info<< "\tCoupling mode: " << mode_ << ", nCouplingDof = " << nCouplingDof_ 
+            << endl;
     }
     else
     {
-        Info << "Coupling mode (default) externalRigidBody. nCouplingDof = 6 (Mooring system initialization error lingering)"
-             << endl;
+        Info<< "Coupling mode (default) externalRigidBody. "
+            << "nCouplingDof = 6 (Mooring system initialization error lingering)"
+            << endl;
     }
 
 }
@@ -151,46 +152,48 @@ void Foam::sixDoFRigidBodyMotionRestraints::moodyR::restrain
            X[ii+3] = rotationAngle[ii];
         }
     }
-    
-    Info<< "\n\ttprev = " << tprev << ", X[6]/fairPosition: " << fairPos << endl;  
+
+    Info<< "\n\ttprev = " << tprev << ", X[6]/fairPosition: " << fairPos << endl;
 
     if (!initialized_)
     {
-		// Initialize Moody
+        // Initialize Moody
         // int moodyInit(const char* fName, int nVals, double initialValues[], double startTime );
-        //moodyInit(fname_.c_str(), nCouplingDof_,  &fairPos_[0][0], tprev);
-        
+        // moodyInit(fname_.c_str(), nCouplingDof_,  &fairPos_[0][0], tprev);
+
         moodyInit(fname_.c_str(), nCouplingDof_, X, tprev);
 
-		if (waveKinematics_)
-		{
-			nNodes_ = moodyGetNumberOfPoints();
-    
-            Info << "\tEnabled setting flow info (wave kinematics). Total # of mooring points passing in from Moody: " 
-                 << nNodes_ << endl;
+        if (waveKinematics_)
+        {
+            nNodes_ = moodyGetNumberOfPoints();
 
-			nodesPos_ = vectorField(nNodes_, vector::zero);
-			velNodes_ = vectorField(nNodes_, vector::zero);
-			accelNodes_ = vectorField(nNodes_, vector::zero);
+            Info<< "\tEnabled setting flow info (wave kinematics). "
+                << "Total # of mooring points passing in from Moody: " << nNodes_ 
+                << endl;
+
+            nodesPos_ = vectorField(nNodes_, vector::zero);
+            velNodes_ = vectorField(nNodes_, vector::zero);
+            accelNodes_ = vectorField(nNodes_, vector::zero);
             rhoF_ = scalarField(nNodes_, 0);
-		}
+        }
 
-		Info<< "\tMoody module initialized!\n" << endl;
-		initialized_ = true;
+        Info<< "\tMoody module initialized!\n"
+            << endl;
+        initialized_ = true;
     }
 
-	if (waveKinematics_)
-	{   
+    if (waveKinematics_)
+    {
         // void moodyGetPositions(int nPointsIn, double xyz[] );
-		moodyGetPositions(nNodes_, &nodesPos_[0][0]);
+        moodyGetPositions(nNodes_, &nodesPos_[0][0]);
 
         Info<< "\tFirst 2 nodes positions: " << nodesPos_[0] << nodesPos_[1]
-            << "; Last 2 nodes: " << nodesPos_[nNodes_-2] << nodesPos_[nNodes_-1]
-		    << endl;
-            
+            << "; Last 2 nodes: " << nodesPos_[nNodes_ - 2] << nodesPos_[nNodes_ - 1]
+            << endl;
+
         // void moodySetFlow(const double t, int nPoints, const double vF[] ,const double aF[],const double rhoF[]);
-		moodySetFlow(t, nNodes_, &velNodes_[0][0], &accelNodes_[0][0], &rhoF_[0]);
-	}
+        moodySetFlow(t, nNodes_, &velNodes_[0][0], &accelNodes_[0][0], &rhoF_[0]);
+    }
 
     // void moodySolve(const double X[], double F[], double t1, double t2);
     moodySolve(X, Flines, tprev, t);
@@ -269,47 +272,55 @@ void Foam::sixDoFRigidBodyMotionRestraints::moodyR::write
 
 }
 
-void Foam::sixDoFRigidBodyMotionRestraints::moodyR::updateWaveKinematics(const Time& time) const
+void Foam::sixDoFRigidBodyMotionRestraints::moodyR::updateWaveKinematics
+(
+    const Time& time
+) const
 {
-	const fvMesh& mesh = time.lookupObject<fvMesh>("region0");
-	const volVectorField& U = mesh.lookupObject<volVectorField>("U");
-    const volScalarField& rho = mesh.lookupObject<volScalarField>("rho");
-    
+    const fvMesh &mesh = time.lookupObject<fvMesh>("region0");
+    const volVectorField &U = mesh.lookupObject<volVectorField>("U");
+    const volScalarField &rho = mesh.lookupObject<volScalarField>("rho");
+
     velNodes_ *= 0;
     accelNodes_ *= 0;
     rhoF_ *= 0;
-    
+
     scalar yMid = 0.005;
     if (twoD_)
     {
-        const boundBox& globalBb = mesh.bounds();
-        yMid = (globalBb.max().y() + globalBb.min().y())/2;
+        const boundBox &globalBb = mesh.bounds();
+        yMid = (globalBb.max().y() + globalBb.min().y()) / 2;
     }
-    
-	label count = 0;
-	forAll(nodesPos_, ni)
-	{
-		point p = nodesPos_[ni];
 
-		// If 2D simulation, set y-coordinate to mid of y-span
-		// p[1] = twoD_? 0.005 : p[1];
-		if (twoD_) { p[1] = yMid; }
+    label count = 0;
+    forAll(nodesPos_, ni)
+    {
+        point p = nodesPos_[ni];
 
-		label celli = mesh.findCell(p);
-		if (celli != -1)
-		{
-			velNodes_[ni] = U[celli];
-			accelNodes_[ni] = fvc::ddt(U)()[celli];
+        // If 2D simulation, set y-coordinate to mid of y-span
+        // p[1] = twoD_? 0.005 : p[1];
+        if (twoD_)
+        {
+            p[1] = yMid;
+        }
+
+        label celli = mesh.findCell(p);
+        if (celli != -1)
+        {
+            velNodes_[ni] = U[celli];
+            accelNodes_[ni] = fvc::ddt(U)()[celli];
             rhoF_[ni] = rho[celli];
-		}
-		else
+        }
+        else
         {
             // Info << "Not found node[" << ni << "] = " << p << endl;
-		    count++;
+            count++;
         }
-	}
+    }
 
-    Info << "\tMesh cells not found for " << count << " mooring points in moodyR::updateWaveKinematics." <<endl;
+    Info<< "\tMesh cells not found for " << count 
+        << " mooring points in moodyR::updateWaveKinematics." 
+        << endl;
 }
 
 /*

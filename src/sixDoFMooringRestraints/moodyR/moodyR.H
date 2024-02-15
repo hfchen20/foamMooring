@@ -75,46 +75,45 @@ class moodyR
     public sixDoFRigidBodyMotionRestraint
 {
     // Private data
-		
+
         //- Moody input filename
         fileName fname_;
-        
+
         //- Coupling mode: 'externalPoint', otherwise 'externalRigidBody'
-        word mode_; 
-        
+        word mode_;
+
         //- Fairlead initial position
         pointField refAttachmentPt_;
-        
+
         //- Number of coupling Dof
         // 'externalPoint': nCouplingDof_ = nRefPt x 3
         // 'externalRigidBody': nCouplingDof_ = 6
         scalar nCouplingDof_;
-        
+
         //- Flag for extract from CFD and send fluid velocity/acceleration to Moody
-		bool waveKinematics_;
-	
+        bool waveKinematics_;
+
         //- Flag for 2D simulation (x, z). If true, set nodesPos[y-cmpt] equal to
         //  mid y-coordinate of the 2D computational domain
         bool twoD_;
-	
-	    //- Number of total nodes for all mooring lines
-        mutable scalar nNodes_;
-		
-		//- Array of mooring nodes coordinates
-        mutable	vectorField nodesPos_;
-		
-		//-  Fluid velocity at mooring nodes
-		mutable vectorField velNodes_;
-		
-		//-  Fluid accel at mooring nodes
-		mutable vectorField accelNodes_;
-        
-        //-  Fluid density
-		mutable scalarField rhoF_;
-        
-		//- Initialize Moody at the first time step
-        mutable bool initialized_;
 
+        //- Number of total nodes for all mooring lines
+        mutable scalar nNodes_;
+
+        //- Array of mooring nodes coordinates
+        mutable vectorField nodesPos_;
+
+        //-  Fluid velocity at mooring nodes
+        mutable vectorField velNodes_;
+
+        //-  Fluid accel at mooring nodes
+        mutable vectorField accelNodes_;
+
+        //-  Fluid density
+        mutable scalarField rhoF_;
+
+        //- Initialize Moody at the first time step
+        mutable bool initialized_;
 
 public:
 
@@ -161,17 +160,16 @@ public:
         virtual bool read(const dictionary& sDoFRBMRCoeff);
 
         //- Write
-        virtual void write(Ostream&) const;
+        virtual void write(Ostream &) const;
 
-		//- update wave kinematics (fluid velocity & acceleration @ nodes coordinates)
-        void updateWaveKinematics(const Time&) const;
-
+        //- update wave kinematics (fluid velocity & acceleration @ nodes coordinates)
+        void updateWaveKinematics(const Time &) const;
 };
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-} // End namespace solidBodyMotionFunctions
+} // End namespace sixDoFRigidBodyMotionRestraints
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

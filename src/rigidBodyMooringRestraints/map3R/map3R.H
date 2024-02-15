@@ -87,14 +87,14 @@ class map3R
         scalar depth_;
         
         //- List of body names for each attachment point. Default is empty list.
-		// Allow for multiple bodies to be attached to the same moodyR restraint:
+        // Allow for multiple bodies to be attached to the same moodyR restraint:
         List<word> bodies_;		
-		
-		//- List of body IDs for each attachment point. Default is bodyID_ for all.
-		List<label> bodyIDs_;		
-		
-		//- List of body indices for each attachment point. Default is bodyID_ for all.
-		List<label> bodyIndices_;
+
+        //- List of body IDs for each attachment point. Default is bodyID_ for all.
+        List<label> bodyIDs_;		
+
+        //- List of body indices for each attachment point. Default is bodyID_ for all.
+        List<label> bodyIndices_;
 
         //- Number of mooring lines, not equal to fairleads if connecting nodes present
         mutable scalar nLines_;
@@ -185,14 +185,14 @@ public:
             Field<spatialVector>& fx,
             const rigidBodyModelState& state
         ) const;
-		
+
         //- Transform body point for a given bodyID
         // Necessary to resolve restraints associated with multiple bodies
-		inline point bodyPoint(const point& p,const label bodyID) const
-		{
-			return (model_.X0(bodyID).inv() && spatialVector(Zero, p)).l();
-		}
-
+        inline point bodyPoint(const point& p,const label bodyID) const
+        {
+            return (model_.X0(bodyID).inv() && spatialVector(Zero, p)).l();
+        }
+        
         //- Update properties from given dictionary
         virtual bool read(const dictionary& dict);
 

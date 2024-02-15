@@ -70,17 +70,17 @@ Foam::RBD::restraints::moodyR::moodyR
     
     initialized_ = false;
 
-    Info << "Create moodyR, a mooring dynamics restraint (Palm et al. 2017)" << endl;
+    Info<< "Create moodyR, a mooring dynamics restraint (Palm et al. 2017)" << endl;
 
     nCouplingDof_ = 3 * refAttachmentPt_.size();
-    Info << "\tSupport couplingMode 'externalPoint' only, nCouplingDof = " << nCouplingDof_ 
-            << endl;
+    Info<< "\tSupport couplingMode 'externalPoint' only, nCouplingDof = " << nCouplingDof_ 
+        << endl;
     
     // If different bodies are attached to moodyR
     if (coeffs_.found("bodies") )
     {
         // size of bodies_ = nAttachments_
-        Info << "Multiple bodies specified in moodyR restraint: " << bodies_ << endl;
+        Info<< "Multiple bodies specified in moodyR restraint: " << bodies_ << endl;
     }
 }
 
@@ -110,8 +110,8 @@ void Foam::RBD::restraints::moodyR::restrain
     scalar tprev = t-state.deltaT();
 
     //double t = model_.time().value();
-	//double tPrev = t - model_.time().deltaTValue();
-
+    //double tPrev = t - model_.time().deltaTValue();
+    
     pointField fairPos = vectorField(int(nCouplingDof_/3), vector::zero);
     vectorField fairForce =vectorField(int(nCouplingDof_/3), vector::zero);
 
