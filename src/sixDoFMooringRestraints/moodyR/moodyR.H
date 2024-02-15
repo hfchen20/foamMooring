@@ -35,7 +35,7 @@ Description
     276, 2017.
 
     J. Palm, C. Eskilsson, G. Paredes and L. Bergdahl,
-    Coupled mooring analysis for floating wave energy converters using CFD: Formulation 
+    Coupled mooring analysis for floating wave energy converters using CFD: Formulation
     and validation, Int. J. of Marine Energy, 16. 83-99 (2016)
 
 SourceFiles
@@ -43,10 +43,10 @@ SourceFiles
 
 References
 
-    Chen, H., & Hall, M. (2022). CFD simulation of floating body motion with mooring dynamics: 
+    Chen, H., & Hall, M. (2022). CFD simulation of floating body motion with mooring dynamics:
         Coupling MoorDyn with OpenFOAM. Applied Ocean Research, 124, 103210.
         https://doi.org/10.1016/j.apor.2022.103210
-        
+
 \*---------------------------------------------------------------------------*/
 
 #ifndef moodyR_H
