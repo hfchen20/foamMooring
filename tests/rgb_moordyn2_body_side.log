@@ -1,0 +1,11 @@
+Cleaning case /home/pepe/OpenFOAM/foamMooring/tests/rgb_moordyn2_body_side/background
+Cleaning case /home/pepe/OpenFOAM/foamMooring/tests/rgb_moordyn2_body_side/floatingBody
+Running blockMesh on /home/pepe/OpenFOAM/foamMooring/tests/rgb_moordyn2_body_side/floatingBody
+Running topoSet on /home/pepe/OpenFOAM/foamMooring/tests/rgb_moordyn2_body_side/floatingBody
+Running subsetMesh on /home/pepe/OpenFOAM/foamMooring/tests/rgb_moordyn2_body_side/floatingBody
+Running blockMesh on /home/pepe/OpenFOAM/foamMooring/tests/rgb_moordyn2_body_side/background
+Running mergeMeshes on /home/pepe/OpenFOAM/foamMooring/tests/rgb_moordyn2_body_side/background
+Running topoSet on /home/pepe/OpenFOAM/foamMooring/tests/rgb_moordyn2_body_side/background
+Restore 0/ from 0.orig/
+Running setFields on /home/pepe/OpenFOAM/foamMooring/tests/rgb_moordyn2_body_side/background
+Running overInterDyMFoam on /home/pepe/OpenFOAM/foamMooring/tests/rgb_moordyn2_body_side/background

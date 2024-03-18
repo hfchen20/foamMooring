@@ -26,7 +26,6 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "moorDynR2.H"
-#include "OFstream.H"
 #include "rigidBodyModel.H"
 #include "addToRunTimeSelectionTable.H"
 
@@ -144,11 +143,23 @@ Foam::RBD::restraints::moorDynR2::moorDynR2
         
         if (writeVTK_)
         {
-            mkDir("Mooring/VTK");
+#ifndef MOORDYN2_HAVE_VTK
+            if (!legacyVTK_) {
+                FatalErrorInFunction
+                    << "vtkLegacyFormat=false option has been set. "
+                    << "However, MoorDyn v2 has been compiled without VTK "
+                    << "support. Please set vtkLegacyFormat=true or install "
+                    << "VTK and recompile foamMooring"
+                    << exit(FatalError);
+            }
+#endif
         }
-
     }
 
+    if (writeVTK_)
+    {
+        mkDir("Mooring/VTK");
+    }
 }
 
 
@@ -162,15 +173,17 @@ Foam::RBD::restraints::moorDynR2::~moorDynR2()
         MoorDyn_Close(moordyn_);
         if (moordyn_backup_.data)
             free(moordyn_backup_.data);
-        
-        vtk::seriesWriter writer;
 
-        writer.scan("Mooring/VTK/" + vtkPrefix_ + ".vtk");
-        
-        Info<< "Writing mooring vtk series file" << nl;
+        if (legacyVTK_) {
+            vtk::seriesWriter writer;
 
-        fileName vtkSeries("Mooring/VTK/" + vtkPrefix_ + ".vtk");
-        writer.write(vtkSeries);
+            writer.scan("Mooring/VTK/" + vtkPrefix_ + ".vtk");
+
+            Info<< "Writing mooring vtk series file" << nl;
+
+            fileName vtkSeries("Mooring/VTK/" + vtkPrefix_ + ".vtk");
+            writer.write(vtkSeries);
+        }
     }
 }
 
@@ -263,6 +276,11 @@ void Foam::RBD::restraints::moorDynR2::restrain
         Info<< "MoorDyn module initialized!" << endl;
         initialized_ = true;
         save_mooring(tprev);
+        if (writeVTK_) {
+            autoPtr<Time> dummy_t = Time::New();
+            dummy_t->setTime(0.0, 0);
+            writeVTK(dummy_t.ref());
+        }
 
         curTime_ = t;
         iteration_ = 1;
@@ -284,20 +302,21 @@ void Foam::RBD::restraints::moorDynR2::restrain
             << "s -> " << tprev + deltaT << "s" << exit(FatalError);
     }
 
+    
+    
     if (couplingMode_ == word("BODY"))
     {
         // forces/moments are already summarized by moordyn
         forAll(bodyIDs_, b)
         {
-            // Accumulate the force for the restrained body
+            // Get the force and moment over the body
             vector force = vector(Flines[b*6], Flines[b*6+1], Flines[b*6+2]);
             vector moment = vector(Flines[b*6+3], Flines[b*6+4], Flines[b*6+5]);
+            // Change the measuring point from the body center to the global
+            // center
+            moment += model_.X0(bodyID_).r() ^ force;
 
-            // moment sum returned by moordyn is about body CoM, in global reference
-            // may need to transform moment?
             fx[bodyIndices_[b]] += spatialVector(moment, force);
-            //fx[bodyIndex_] += model_.X0(bodyID_).T() & spatialVector(moment, Zero);
-            //fx[bodyIndices_[b]] += model_.X0(bodyIDs_[b]).T() & spatialVector(moment, force);
 
             Info<< "X[6dof]: " << vector(X[b*6], X[b*6+1], X[b*6+2]) << ", " << vector(X[b*6+3], X[b*6+4], X[b*6+5])
                 << endl;
@@ -313,7 +332,6 @@ void Foam::RBD::restraints::moorDynR2::restrain
         for(int pt=0; pt<refAttachmentPt_.size(); pt++)
         {
             vector force = fairForce[pt];
-
             vector moment =  fairPos[pt] ^ force;
 
             // Accumulate the force for the restrained body
@@ -342,10 +360,10 @@ bool Foam::RBD::restraints::moorDynR2::read
     const dictionary& dict
 )
 {
+    Info << "***  Foam::RBD::restraints::moorDynR2::read" << endl;
     restraint::read(dict);
 
     coeffs_.readEntry("inputFile", fname_);
-    //coeffs_.readEntry("couplingMode", couplingMode_);
     couplingMode_ = coeffs_.getOrDefault<word>("couplingMode", "POINT");
 
     if (couplingMode_ == word("POINT"))
@@ -411,9 +429,16 @@ bool Foam::RBD::restraints::moorDynR2::read
 
     if (writeVTK_)
     {
+#ifdef MOORDYN2_HAVE_VTK
+        const bool default_legacy_vtk = false;
+#else
+        const bool default_legacy_vtk = true;
+#endif
         vtkPrefix_ = coeffs_.getOrDefault<word>("vtkPrefix", "mdV2");
         vtkStartTime_ = coeffs_.getOrDefault<scalar>("vtkStartTime", 0);
-        outerCorrector_ = coeffs_.getOrDefault<scalar>("outerCorrector", 3);
+        legacyVTK_ = coeffs_.getOrDefault<Switch>("vtkLegacyFormat",
+                                                  default_legacy_vtk);
+        outerCorrector_ = coeffs_.getOrDefault<scalar>("outerCorrector", 1);
     }
 
     return true;
@@ -425,6 +450,7 @@ void Foam::RBD::restraints::moorDynR2::write
     Ostream& os
 ) const
 {
+    Info << "***  Foam::RBD::restraints::moorDynR2::write" << endl;
     restraint::write(os);
 
     os.writeEntry("inputFile", fname_);
@@ -439,6 +465,7 @@ void Foam::RBD::restraints::moorDynR2::write
     {
         os.writeEntry("vtkPrefix", vtkPrefix_);
         os.writeEntry("vtkStartTime", vtkStartTime_);
+        os.writeEntry("vtkLegacyFormat", legacyVTK_);
         os.writeEntry("outerCorrector", outerCorrector_);
     }
 }
@@ -446,6 +473,39 @@ void Foam::RBD::restraints::moorDynR2::write
 
 void Foam::RBD::restraints::moorDynR2::writeVTK(const Time& time) const
 {
+    fileName name(
+        vtkPrefix_ + "_" + Foam::name(++vtkCounter_));
+    if (!legacyVTK_) {
+        name += ".vtm";
+        int moordyn_err = MoorDyn_SaveVTK(moordyn_,
+                                          ("Mooring/VTK/" + name).c_str());
+        if (moordyn_err != MOORDYN_SUCCESS) {
+            FatalError << "Error saving the VTK file \""
+                       << name << " for time " << time.timeName() << " s"
+                       << exit(FatalError);
+        }
+        // Update the vtp file
+        if (!has_pvd()) {
+            make_pvd();
+        }
+        auto lines = read_pvd(time);
+        OFstream os(name_pvd());
+        for (auto line : lines) {
+            os << line.c_str() << nl;
+        }
+        os << "    <DataSet timestep=\"" << time.timeName()
+           << "\" group=\"\" part=\"0\" "
+           << "file=\"" << name.c_str() << "\"/>" << nl
+           << "  </Collection>" << nl
+           << "</VTKFile>" << nl;
+
+        return;
+    }
+
+    name += ".vtk";
+    OFstream mps("Mooring/VTK/" + name);
+    mps.precision(4);
+
     unsigned int nLines, nSeg;
     MoorDyn_GetNumberLines(moordyn_, &nLines);
 
@@ -459,12 +519,9 @@ void Foam::RBD::restraints::moorDynR2::writeVTK(const Time& time) const
 
     double coord[max(nodesPerLine)][3];
 
-    fileName name("Mooring/VTK/" + vtkPrefix_ + "_");
-    OFstream mps(name + Foam::name(++vtkCounter_) + ".vtk");
-    mps.precision(4);
-
     // Writing header
-    mps << "# vtk DataFile Version 3.0" << nl << "MoorDyn v2 vtk output time=" << time.timeName() 
+    mps << "# vtk DataFile Version 3.0" << nl
+        << "MoorDyn v2 vtk output time=" << time.timeName()
         << nl << "ASCII" << nl << "DATASET POLYDATA" << endl;
  
     // Writing points

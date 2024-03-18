@@ -48,6 +48,8 @@ SourceFiles
 #include "Time.H"
 #include "rigidBodyRestraint.H"
 #include "pointField.H"
+#include "IFstream.H"
+#include "OFstream.H"
 
 #include "MoorDyn2.h"
 
@@ -97,9 +99,12 @@ class moorDynR2
 
         mutable bool initialized_;
 
-        //-  Write mooring lines config to file
+        //-  Write mooring lines visualization file
         bool writeVTK_;
-        
+
+        //-  Format of the visualization file
+        bool legacyVTK_;
+
         //- Mooring vtk filename prefix
         word vtkPrefix_;
 
@@ -172,6 +177,64 @@ class moorDynR2
             }
         }
 
+        //- PVD file name
+        inline fileName name_pvd() const
+        {
+            return "Mooring/VTK/" + vtkPrefix_ + ".pvd";
+        }
+
+        //- Check if a PVD file exists
+        inline bool has_pvd() const
+        {
+            IFstream is_file(name_pvd());
+            return is_file.good();
+        }
+
+        //- Create an empty PVD file
+        inline void make_pvd() const
+        {
+            OFstream os(name_pvd());
+            os << "<?xml version=\"1.0\"?>" << nl
+            << "<VTKFile type=\"Collection\" version=\"0.1\"" << nl
+            << "         byte_order=\"LittleEndian\"" << nl
+            << "         compressor=\"vtkZLibDataCompressor\">" << nl
+            << "  <Collection>" << nl
+            << "  </Collection>" << nl
+            << "</VTKFile>" << nl;
+        }
+
+        //- Read the PVD up to the part where new data whall be appended
+        inline std::vector<string> read_pvd(const Time& time) const
+        {
+            IFstream is(name_pvd());
+            if (!is.good()) {
+                FatalError << "Error updating the PVD file: "
+                    << "'moorDynR2.pvd' cannot be read"
+                    << exit(FatalError);
+            }
+            std::vector<string> lines;
+            while (true) {
+                string line;
+                is.getLine(line);
+                if (line.ends_with("</Collection>")) {
+                    return lines;
+                }
+                // Let's try to read the time to discard "the future"
+                if (line.find("<DataSet") != std::string::npos) {
+                    string stripped = line;
+                    stripped.removeStart("    <DataSet timestep=\"");
+                    stripped = stripped.substr(0, line.find("\""));
+                    scalar t = std::stod(stripped);
+                    if (t >= time.value()) {
+                        return lines;
+                    }
+                }
+                lines.push_back(line);
+            }
+            FatalError << "Error updating the PVD file: "
+                << "'moorDynR2.pvd' is ill-formatted"
+                << exit(FatalError);
+        }
 
 public:
 
