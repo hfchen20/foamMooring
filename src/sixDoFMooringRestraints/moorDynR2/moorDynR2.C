@@ -33,15 +33,15 @@ References
 
 \*---------------------------------------------------------------------------*/
 
-#include <iomanip>
-#include <vector>
 #include "moorDynR2.H"
 #include "addToRunTimeSelectionTable.H"
 #include "sixDoFRigidBodyMotion.H"
 //#include "Time.H"
 #include "fvMesh.H"
+#include "OFstream.H"
 #include "error.H"
 #include "quaternion.H"
+#include "foamVtkSeriesWriter.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -72,7 +72,16 @@ Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::moorDynR2
     sixDoFRigidBodyMotionRestraint(name, sDoFRBMRDict)
 {
     read(sDoFRBMRDict);
+    
     initialized_ = false;
+    vtkCounter_ = 0;
+    curTime_ = -1;
+    iteration_ = 0;
+
+    Info<< "Create moorDynR2 using MoorDyn v2."
+        << "  Coupling mode: " << couplingMode_ 
+        << endl;
+    
     moordyn_backup_.t = 0.0;
     moordyn_backup_.data = nullptr;
 
@@ -80,6 +89,7 @@ Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::moorDynR2
     if (Pstream::master())
     {
         int moordyn_err = MOORDYN_SUCCESS;
+        //moordyn_ = MoorDyn_Create("Mooring/lines_v2.txt");
         moordyn_ = MoorDyn_Create(inputFile_.c_str());
         if (!moordyn_) {
             FatalError << "MoorDyn v2 cannot be created!" << exit(FatalError);
@@ -89,40 +99,92 @@ Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::moorDynR2
         // be modelled
         unsigned int n;
         moordyn_err = MoorDyn_NCoupledDOF(moordyn_, &n);
-        if ((moordyn_err != MOORDYN_SUCCESS) || (n != 6)) {
-            FatalError << "6 Degrees Of Freedom were expected "
-                    << "on the MoorDyn definition file" << exit(FatalError);
+        if (moordyn_err != MOORDYN_SUCCESS) {
+            FatalErrorInFunction
+                << "NCoupledDOF error on the MoorDyn definition file" 
+                << exit(FatalError);
         }
-        moordyn_err = MoorDyn_GetNumberBodies(moordyn_, &n);
-        if ((moordyn_err != MOORDYN_SUCCESS) || !n) {
-            FatalError << "At least one body was expected "
-                    << "on the MoorDyn definition file" << exit(FatalError);
-        }
-        moordyn_body_ = NULL;
-        for (unsigned int i = 0; i < n; i++) {
-            MoorDynBody body = MoorDyn_GetBody(moordyn_, i + 1);
-            if (!body) {
-                FatalError << "Failure getting the MoorDyn body " << i + 1
-                        << exit(FatalError);
-            }
-            int t;
-            moordyn_err = MoorDyn_GetBodyType(body, &t);
-            if (moordyn_err != MOORDYN_SUCCESS) {
-                FatalError << "Failure geeting the body " << i + 1
-                        << " type" << exit(FatalError);
-            }
-            if (t == -1) {
-                // Coupled body, see Body.hpp:143
-                moordyn_body_ = body;
-                break;
+        nCouplingDof_ = int(n);
+
+        if (couplingMode_ == word("POINT"))
+        {
+            Info<< "\tCoupling mode: " << couplingMode_ << ", expecting nCouplingDof="
+                << 3 * refAttachmentPt_.size() << endl;
+            if (nCouplingDof_ != 3 * refAttachmentPt_.size())
+            {
+                FatalErrorInFunction
+                    << " refAttachmentPt size: " << refAttachmentPt_.size() 
+                    << " not equal to # coupled points " << int(nCouplingDof_/3)
+                    << " defined in MoorDyn input!"
+                    << exit(FatalError);
             }
         }
-        if (!moordyn_body_) {
-            FatalError << "No coupled body could be found" << exit(FatalError);
+        else if (couplingMode_ == word("BODY"))
+        {
+            Info<< "Coupling mode: " << couplingMode_ << ", expecting nCouplingDof = 6"
+                << endl;
+            if (nCouplingDof_ != 6 )
+            {
+                FatalErrorInFunction
+                    << " Support one coupled only in this sixDoFMotion restraint"
+                    << exit(FatalError);
+            }
+
+            moordyn_err = MoorDyn_GetNumberBodies(moordyn_, &n);
+            if ((moordyn_err != MOORDYN_SUCCESS) || n != 1) {
+                FatalError << "Only one coupled body was expected "
+                        << "on the MoorDyn definition file" << exit(FatalError);
+            }
+            moordyn_body_ = NULL;
+            for (unsigned int i = 0; i < n; i++) {
+                MoorDynBody body = MoorDyn_GetBody(moordyn_, i + 1);
+                if (!body) {
+                    FatalError << "Failure getting the MoorDyn body " << i + 1
+                            << exit(FatalError);
+                }
+                int t;
+                moordyn_err = MoorDyn_GetBodyType(body, &t);
+                if (moordyn_err != MOORDYN_SUCCESS) {
+                    FatalError << "Failure geeting the body " << i + 1
+                            << " type" << exit(FatalError);
+                }
+                if (t == -1) {
+                    // Coupled body, see Body.hpp:143
+                    moordyn_body_ = body;
+                    break;
+                }
+            }
+            if (!moordyn_body_) {
+                FatalError << "No coupled body could be found" << exit(FatalError);
+            }
         }
+        else
+        {
+            FatalErrorInFunction
+                << "Two coupling modes supported: 'POINT' or 'BODY' "
+                << exit(FatalError);
+        }   
+
+        if (writeVTK_)
+        {
+#ifndef MOORDYN2_HAVE_VTK
+            if (!legacyVTK_) {
+                FatalErrorInFunction
+                    << "vtkLegacyFormat=false option has been set. "
+                    << "However, MoorDyn v2 has been compiled without VTK "
+                    << "support. Please set vtkLegacyFormat=true or install "
+                    << "VTK and recompile foamMooring"
+                    << exit(FatalError);
+            }
+#endif
+        }
+
     }
-    
-    Info << "Create moorDynR2 using MoorDyn v2." << endl;
+
+    if (writeVTK_)
+    {
+        mkDir("Mooring/VTK");
+    }
 
 }
 
@@ -137,6 +199,15 @@ Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::~moorDynR2()
         MoorDyn_Close(moordyn_);
         if (moordyn_backup_.data)
             free(moordyn_backup_.data);
+
+        vtk::seriesWriter writer;
+
+        writer.scan("Mooring/VTK/" + vtkPrefix_ + ".vtk");
+        
+        Info<< "Writing mooring vtk series file" << nl;
+
+        fileName vtkSeries("Mooring/VTK/" + vtkPrefix_ + ".vtk");
+        writer.write(vtkSeries);
     }
 }
 
@@ -153,28 +224,63 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::restrain
 ) const
 {
     int moordyn_err = MOORDYN_SUCCESS;
+    
+    const Time& time = motion.time();
 
-    scalar deltaT = motion.time().deltaTValue();
-    scalar t = motion.time().value();
+    scalar deltaT = time.deltaTValue();
+    scalar t = time.value();
     scalar tprev = t - deltaT;
-
-    point CoM = motion.centreOfMass();
-    vector rotationAngle
-    (
-       quaternion(motion.orientation()).eulerAngles(quaternion::XYZ)
-    );
-
-    vector v = motion.v();
-    vector omega = motion.omega();
-
-    double X[6], XD[6];
-    for (int ii=0; ii<3; ii++)
+    
+    if (t == curTime_)
     {
-       X[ii] = CoM[ii];
-       X[ii+3] = rotationAngle[ii];
-       XD[ii] = v[ii];
-       XD[ii+3] = omega[ii];
+        iteration_++;
     }
+    else if (t > curTime_)
+    {
+        iteration_ = 1;
+        curTime_ = t;
+    }
+
+    pointField fairPos = vectorField(int(nCouplingDof_/3), vector::zero);
+    vectorField fairVel = vectorField(int(nCouplingDof_/3), vector::zero);
+    vectorField fairForce =vectorField(int(nCouplingDof_/3), vector::zero);
+
+    // If coupling mode is 'BODY', X and fairPos are in fact body's 6DoF motion.
+    // Flines is mooring forces and moments on the body (may need to reverse the sign).
+    double* X = &fairPos[0][0];
+    double* XD = &fairVel[0][0];
+    double* Flines = &fairForce[0][0];
+
+    if (couplingMode_ == word("BODY"))
+    {
+        point CoM = motion.centreOfMass();
+        vector rotationAngle
+        (
+            quaternion(motion.orientation()).eulerAngles(quaternion::XYZ)
+        );
+
+        vector v = motion.v();
+        vector omega = motion.omega();
+
+        for (int ii=0; ii<3; ii++)
+        {
+            X[ii] = CoM[ii];
+            X[ii+3] = rotationAngle[ii];
+            XD[ii] = v[ii];
+            XD[ii+3] = omega[ii];
+        }
+    }
+    else
+    {
+        // Calculate fairlead position
+        for(int pt=0; pt<refAttachmentPt_.size(); pt++)
+        {
+            fairPos[pt] = motion.transform(refAttachmentPt_[pt]);
+            fairVel[pt] = motion.velocity(refAttachmentPt_[pt]);
+        }
+    }
+
+    Info<< "\n\ttprev = " << tprev << ", X[6]/fairPosition: " << fairPos << endl;
 
     if (!initialized_)
     {
@@ -186,45 +292,57 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::restrain
         Info<< "MoorDyn module initialized!" << endl;
         initialized_ = true;
         save_mooring(tprev);
-        Info<< "MoorDyn module saved at t = " << tprev << " s" << endl;
-        writeVTK(tprev);
+        if (writeVTK_) {
+            autoPtr<Time> dummy_t = Time::New();
+            dummy_t->setTime(0.0, 0);
+            writeVTK(dummy_t.ref());
+        }
+
+        curTime_ = t;
+        iteration_ = 1;
     } else if (tprev - moordyn_backup_.t >= 1.e-3 * deltaT) {
         // We have successfully advanced forward in time
         save_mooring(tprev);
         Info<< "MoorDyn module saved at t = " << tprev << " s" << endl;
-        writeVTK(tprev);
     } else {
         // We are repeating the same time step because the implicit scheme
         load_mooring();
         Info<< "MoorDyn module restored to t = " << moordyn_backup_.t << " s" << endl;
     }
-
-    double Flines[6] = {0.0};
-
-    // Call LinesCalc() to obtain forces and moments, Flines(1x6)
-    // LinesCalc(double X[], double XD[], double Flines[], double* t_in, double* dt_in)
-
-    Info << "X[6]: " << vector(X[0], X[1], X[2]) << ", "
-         << vector(X[3], X[4], X[5]) << endl;
-
-    Info << "XD[6]: " << vector(XD[0], XD[1], XD[2]) << ", "
-         << vector(XD[3], XD[4], XD[5]) << endl;
-
-    moordyn_err = MoorDyn_Step(moordyn_, X, XD, Flines, &tprev, &deltaT);
-    if (moordyn_err != MOORDYN_SUCCESS) {
-        FatalError << "Error computing MoorDyn step " << tprev
-              << "s -> " << tprev + deltaT << "s" << exit(FatalError);
-    }
     
-    // Info << "Mooring [force, moment] = [ "
-    //      << Flines[0] << " " << Flines[1] << " " << Flines[2] << ", "
-    //      << Flines[3] << " " << Flines[4] << " " << Flines[5] << " ]"
-    //      << endl;
+    // Step MoorDyn to get mooring forces on body
+    //moordyn_err = MoorDyn_Step(moordyn_, X, XD, Flines, &tprev, &deltaT);
+    moordyn_err = MoorDyn_Step(moordyn_, &fairPos[0][0], &fairVel[0][0], &fairForce[0][0], &tprev, &deltaT);
+    if (moordyn_err != MOORDYN_SUCCESS) {
+        FatalErrorInFunction
+            << "Error computing MoorDyn step " << tprev
+            << "s -> " << tprev + deltaT << "s" << exit(FatalError);
+    }
 
-    for(int i=0;i<3;i++)
+    if (couplingMode_ == word("BODY"))
     {
-        restraintForce[i] = Flines[i];
-        restraintMoment[i] = Flines[i+3];
+        for(int i=0;i<3;i++)
+        {
+            restraintForce[i] = Flines[i];
+            restraintMoment[i] = Flines[i+3];
+        }
+    }
+    else
+    {
+        // Sum forces and calculate moments
+        point CoR = motion.centreOfRotation();
+
+        for(int pt=0; pt<refAttachmentPt_.size(); pt++)
+        {
+            restraintForce += fairForce[pt];
+
+            restraintMoment += (fairPos[pt] - CoR) ^ fairForce[pt];
+
+            Info<< " attachPt[" << pt << "] " // << fairPos[pt]
+                << " force " << fairForce[pt]
+                //<< " moment " << moment
+                << endl; 
+        }
     }
 
     // Since moment is already calculated by LinesCalc, set to
@@ -237,6 +355,15 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::restrain
              << ", moment " << restraintMoment
              << endl;
     }
+    
+    if (writeVTK_ && iteration_ == outerCorrector_)
+    {
+        if (t >= vtkStartTime_ && time.outputTime())
+        {
+            Info<< "Write mooring VTK ..." << endl;
+            writeVTK(time);
+        }
+    }
 }
 
 
@@ -246,13 +373,29 @@ bool Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::read
 )
 {
     sixDoFRigidBodyMotionRestraint::read(sDoFRBMRDict);
+    
+    sDoFRBMRCoeffs_.readEntry("inputFile", inputFile_);
+    sDoFRBMRCoeffs_.readEntry("couplingMode", couplingMode_);
+    if (couplingMode_ == word("POINT"))
+    {
+        sDoFRBMRCoeffs_.readEntry("refAttachmentPt", refAttachmentPt_);
+    }
 
-    inputFile_ = sDoFRBMRCoeffs_.getOrDefault<fileName>(
-            "inputFile",
-            "Mooring/lines_v2.txt"
-        );
-    writeVTK_ = sDoFRBMRCoeffs_.getOrDefault<Switch>("writeMooringVTK", true);
-
+    writeVTK_ = sDoFRBMRCoeffs_.getOrDefault<Switch>("writeMooringVTK", false);
+    if (writeVTK_)
+    {
+#ifdef MOORDYN2_HAVE_VTK
+        const bool default_legacy_vtk = false;
+#else
+        const bool default_legacy_vtk = true;
+#endif
+        vtkPrefix_ = sDoFRBMRCoeffs_.getOrDefault<word>("vtkPrefix", "mdV2");
+        vtkStartTime_ = sDoFRBMRCoeffs_.getOrDefault<scalar>("vtkStartTime", 0);
+        legacyVTK_ = sDoFRBMRCoeffs_.getOrDefault<Switch>("vtkLegacyFormat",
+                                                          default_legacy_vtk);
+        outerCorrector_ = sDoFRBMRCoeffs_.getOrDefault<scalar>("outerCorrector", 1);
+    }
+    
     return true;
 }
 
@@ -263,48 +406,106 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::write
 ) const
 {
     os.writeEntry("inputFile", inputFile_);
+    os.writeEntry("couplingMode", couplingMode_);
+    os.writeEntry("nCouplingDof", nCouplingDof_);
+    if (couplingMode_ == word("POINT"))
+        os.writeEntry("refAttachmentPt", refAttachmentPt_);
+    
     os.writeEntry("writeMooringVTK", writeVTK_);
+    if (writeVTK_)
+    {
+        os.writeEntry("vtkPrefix", vtkPrefix_);
+        os.writeEntry("vtkStartTime", vtkStartTime_);
+        os.writeEntry("vtkLegacyFormat", legacyVTK_);
+        os.writeEntry("outerCorrector", outerCorrector_);
+    }
 }
 
-void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::writeVTK(const scalar& t) const
+void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::writeVTK(const Time& time) const
 {
-    if (!writeVTK_)
+    fileName name(
+        vtkPrefix_ + "_" + Foam::name(++vtkCounter_));
+    if (!legacyVTK_) {
+        name += ".vtm";
+        int moordyn_err = MoorDyn_SaveVTK(moordyn_,
+                                          ("Mooring/VTK/" + name).c_str());
+        if (moordyn_err != MOORDYN_SUCCESS) {
+            FatalError << "Error saving the VTK file \""
+                       << name << " for time " << time.timeName() << " s"
+                       << exit(FatalError);
+        }
+        // Update the vtp file
+        if (!has_pvd()) {
+            make_pvd();
+        }
+        auto lines = read_pvd(time);
+        OFstream os(name_pvd());
+        for (auto line : lines) {
+            os << line.c_str() << nl;
+        }
+        os << "    <DataSet timestep=\"" << time.timeName()
+           << "\" group=\"\" part=\"0\" "
+           << "file=\"" << name.c_str() << "\"/>" << nl
+           << "  </Collection>" << nl
+           << "</VTKFile>" << nl;
+
         return;
-
-    std::ostringstream vtk_oss;
-    unsigned int vtk_last = 0;
-    while (true) {
-        vtk_oss.str("");
-        vtk_oss.clear();
-        vtk_oss << "moorDynR2."
-                << std::setfill('0') << std::setw(6) << vtk_last
-                << ".vtm";
-        IFstream is_file(vtk_oss.str());
-        if (!is_file.good())
-            break;
-        vtk_last++;
     }
 
-    int moordyn_err = MoorDyn_SaveVTK(moordyn_, vtk_oss.str().c_str());
-    if (moordyn_err != MOORDYN_SUCCESS) {
-        FatalError << "Error saving the VTK file for time " << t << " s"
-            << exit(FatalError);
+    name += ".vtk";
+    OFstream mps("Mooring/VTK/" + name);
+    mps.precision(4);
+
+    unsigned int nLines, nSeg;
+    MoorDyn_GetNumberLines(moordyn_, &nLines);
+
+    labelList nodesPerLine(nLines, -1);
+    for(int i=0; i<int(nLines); i++)
+    {
+        MoorDynLine line = MoorDyn_GetLine(moordyn_, i+1);
+        MoorDyn_GetLineN(line, &nSeg);
+        nodesPerLine[i] = nSeg+1;
     }
 
-    // Update the vtp file
-    if (!has_pvd()) {
-        make_pvd();
+    double coord[max(nodesPerLine)][3];
+
+    // Writing header
+    mps << "# vtk DataFile Version 3.0" << nl
+        << "MoorDyn v2 vtk output time=" << time.timeName()
+        << nl << "ASCII" << nl << "DATASET POLYDATA" << endl;
+ 
+    // Writing points
+    mps << "\nPOINTS " << sum(nodesPerLine) << " float" << endl;
+
+    for(int i=0; i<int(nLines); i++)
+    {   
+        //map_.getNodeCoordinates(i, nodesPerLine_[i], &coord[0][0]);
+        MoorDynLine line = MoorDyn_GetLine(moordyn_, i+1);
+        
+        for(int p=0; p<nodesPerLine[i]; p++)
+        {
+            MoorDyn_GetLineNodePos(line, p, &coord[p][0]);
+            
+            mps << coord[p][0] << " " << coord[p][1] << " " << coord[p][2] << endl;
+        }
     }
-    auto lines = read_pvd();
-    OFstream os("moorDynR2.pvd");
-    for (auto line : lines) {
-        os << line.c_str() << nl;
+    
+    // Writing lines
+    mps << "\nLINES " << nLines << " " << sum(nodesPerLine+1) << endl;
+
+    label start_node(0);
+    for(int i=0; i<int(nLines); i++)
+    {       
+        mps << nodesPerLine[i];
+        
+        for(int j=0; j<nodesPerLine[i]; j++)
+        {
+            mps << " " << start_node+j;
+        }
+        mps << endl;
+        
+        start_node += nodesPerLine[i];
     }
-    os << "    <DataSet timestep=\"" << t
-       << "\" group=\"\" part=\"0\" "
-       << "file=\"" << vtk_oss.str().c_str() << "\"/>" << nl
-       << "  </Collection>" << nl
-       << "</VTKFile>" << nl;
 }
 
 // ************************************************************************* //

@@ -1,0 +1,83 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2212                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      dynamicMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dynamicFvMesh       dynamicOversetFvMesh;
+
+motionSolverLibs    (rigidBodyMeshMotion);
+
+motionSolver        rigidBodyMotion;
+
+rigidBodyMotionCoeffs
+{
+    report          on;
+
+    solver
+    {
+        type Newmark;
+    }
+
+    accelerationRelaxation 0.8;
+    
+    bodies
+    {
+        floatingObject
+        {
+            type            rigidBody;
+            parent          root;
+            mass            20.0;
+            
+            centreOfMass    (0 0 0);
+            inertia         (0.015 0 0 0.015 0 0.015);
+            // Transformation tensor and centre of rotation
+            transform       (1 0 0 0 1 0 0 0 1) (0 0 0);
+            
+            joint
+            {
+                type            composite;
+                joints
+                (
+                    // The body can just rotate around y axis
+                    {
+                        type Ry;
+                    }
+                );
+            }
+            
+            patches         (floatingObject);
+            innerDistance   100.0;
+            outerDistance   101.0;
+        }
+    }
+    
+    restraints
+    {
+        moorDynR2_pt
+        {
+            type               moorDynR2;
+            body               floatingObject;
+            couplingMode       "POINT";
+            inputFile          "Mooring/moordyn.txt";
+            refAttachmentPt
+            (
+                (-0.1 0.0 -0.1)
+            );
+            writeMooringVTK    false;
+        }
+    }
+
+}
+
+// ************************************************************************* //

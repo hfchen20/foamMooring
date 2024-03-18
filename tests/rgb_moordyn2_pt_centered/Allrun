@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -e                                              # Fail if something fails
+
+cd "${0%/*}" || exit                                # Run from this directory
+. ${WM_PROJECT_DIR:?}/bin/tools/RunFunctions        # Tutorial run functions
+#------------------------------------------------------------------------------
+
+./Allclean
+
+(cd floatingBody && ./Allrun.pre)
+(cd background  && ./Allrun.pre)
+
+python check.py
+
+#------------------------------------------------------------------------------

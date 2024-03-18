@@ -1,0 +1,24 @@
+--------------------- MoorDyn v2 Input File ------------------------------------
+MoorDyn input file for a moored floating box EsfLOWC (Wu et al., 2018)
+----------------------- LINE TYPES ------------------------------------------
+TypeName   Diam     Mass/m     EA         BA/-zeta    EI         Cd     Ca     CdAx    CaAx
+(name)     (m)      (kg/m)     (N)        (N-s/-)     (N-m^2)    (-)    (-)    (-)     (-)
+main       0.01     1000       100        -1.0        0          1.0    1.0    0.0     0.0
+---------------------------- BODIES -----------------------------------------------------
+ID   Attachment  X0     Y0    Z0      r0      p0     y0     Mass  CG*  I*       Volume  CdA*   Ca
+(#)  (-)         (m)    (m)   (m)     (deg)   (deg)  (deg)  (kg)  (m)  (kg-m^2) (m^3)   (m^2)  (-)
+1    Coupled     0.1    0     0       0       0      0      0     0    0        0       0      0
+---------------------- CONNECTION PROPERTIES --------------------------------
+ID    Type      X       Y       Z       Mass   Volume  CdA    Ca
+(#)   (-)       (m)     (m)     (m)     (kg)   (mˆ3)   (m^2)  (-)
+1     Free       0.0    0.0     -0.2    100    0       0      0
+2     Body1     -0.1    0.0     -0.1    0      0       0      0
+---------------------- LINES ----------------------------------------
+ID   LineType   AttachA  AttachB  UnstrLen  NumSegs  LineOutputs
+(#)   (name)     (#)      (#)       (m)       (-)     (-)
+1     main       1        2         0.1       1       -
+---------------------- OPTIONS -----------------------------------------
+0.01          dtM           time step to use in mooring integration (s)
+0.5           WtrDpth       water depth (m)
+0.0           TmaxIC        max time for ic gen (s)
+------------------------- need this line -------------------------------------- 

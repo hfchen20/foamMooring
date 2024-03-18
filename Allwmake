@@ -22,11 +22,24 @@ cp -f ../MoorDyn.h $WM_PROJECT_USER_DIR/foamMooring/src/include/MoorDynv1.h
 cd ../..
 
 # MoorDyn v2
-echo "compile MoorDyn v2"
+configure_moordyn_v2 () {
+    cmake -DBUILD_TESTING=OFF -DEXTERNAL_EIGEN=OFF -DFORTRAN_WRAPPER=OFF -DMATLAB_WRAPPER=OFF -DPYTHON_WRAPPER=OFF -DUSE_VTK=$1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$FOAM_USER_LIBBIN/.. ../MoorDyn
+    return $?
+} 
+
+echo "compile MoorDyn v2 with VTK"
+MOORDYN2_HAVE_VTK=true
 mkdir -p MoorDyn.build
 cd MoorDyn.build
-cmake -DBUILD_TESTING=OFF -DEXTERNAL_EIGEN=OFF -DFORTRAN_WRAPPER=OFF -DMATLAB_WRAPPER=OFF -DPYTHON_WRAPPER=OFF -DUSE_VTK=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$FOAM_USER_LIBBIN/.. ../MoorDyn
+set +e  # Do not exit if the configuration fail, so we can try without VTK
+configure_moordyn_v2 ON
 CMAKE_RESULT=$?
+set -e
+if [ $CMAKE_RESULT -ne 0 ]; then
+    MOORDYN2_HAVE_VTK=false
+    echo "compile MoorDyn v2 without VTK"
+    configure_moordyn_v2 OFF
+fi
 make -j
 make install
 cd ../..
@@ -39,6 +52,9 @@ echo "compile MAP++"
 cp moody-2.0.1-Linux/lib/libmoody.so $FOAM_USER_LIBBIN
 
 # compile mooring restraints
+if [[ "$MOORDYN2_HAVE_VTK" = true ]]; then
+    export FOAM_EXTRA_CXXFLAGS="$FOAM_EXTRA_CXXFLAGS -DMOORDYN2_HAVE_VTK"
+fi
 echo "compile sixDoF mooring restraints"
 ( cd src/sixDoFMooringRestraints && wmake libso )
 

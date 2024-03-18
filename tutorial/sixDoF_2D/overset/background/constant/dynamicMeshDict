@@ -71,11 +71,22 @@ sixDoFRigidBodyMotionCoeffs
 
   restraints
   {
-    moorDynR2
+    moorDynR2_pt
     {
-      sixDoFRigidBodyMotionRestraint moorDynR2;
-      inputFile                      "Mooring/lines_v2.txt";
-      writeMooringVTK                true;
+      sixDoFRigidBodyMotionRestraint  moorDynR2;
+      couplingMode       "POINT";
+      inputFile          "Mooring/lines_v2_point.txt";
+      refAttachmentPt
+      (
+        (-0.1      0.1    -0.077)
+        (-0.1     -0.1    -0.077)
+        ( 0.1      0.1    -0.077)
+        ( 0.1     -0.1    -0.077)
+      );
+      writeMooringVTK    true;
+      vtkPrefix         "mdv2_pt";
+      vtkStartTime       0;
+      outerCorrector     1;
     }
 
     /* Example mooring restraints as defined in libsixDoFMooring
@@ -84,13 +95,6 @@ sixDoFRigidBodyMotionCoeffs
     moorDynR1
     {
       sixDoFRigidBodyMotionRestraint moorDynR1;
-    }
-
-    moorDynR2
-    {
-      sixDoFRigidBodyMotionRestraint moorDynR2;
-      inputFile                      "Mooring/lines_v2.txt";
-      writeMooringVTK                true;
     }
 
     moorDynR2_pt
@@ -108,7 +112,7 @@ sixDoFRigidBodyMotionCoeffs
       writeMooringVTK    true;
       vtkPrefix         "mdv2_pt";
       vtkStartTime       0;
-      outerCorrector     3;
+      outerCorrector     1;
     }
 
     moorDynR2_bd
@@ -117,9 +121,9 @@ sixDoFRigidBodyMotionCoeffs
       couplingMode       "BODY";
       inputFile          "Mooring/lines_v2.txt";
       writeMooringVTK    true;
-      vtkPrefix         "mdv2_body";
+      vtkPrefix          "mdv2_body";
       vtkStartTime       0;
-      outerCorrector     3;
+      outerCorrector     1;
     }
 
     map3R

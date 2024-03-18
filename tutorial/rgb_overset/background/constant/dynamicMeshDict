@@ -116,11 +116,27 @@ rigidBodyMotionCoeffs
                 ( 0.1     -0.1    -0.062)  
             );
             writeMooringVTK    true;
+            vtkPrefix          "mdv2_pt";
+            vtkStartTime       0;
+            outerCorrector     3;
+        }
+
+        moorDynR2_bd
+        {
+            type               moorDynR2;
+            body               floatingObject;
+            couplingMode       "BODY"; // optional
+            inputFile          "Mooring/lines_v2_point.txt";
+            bodies
+            (
+                floatingObject
+            );
+            writeMooringVTK    true;
             vtkPrefix         "mdv2_pt";
             vtkStartTime       0;
             outerCorrector     3;
         }
-        
+
         map3R
         {
             type                map3R;
