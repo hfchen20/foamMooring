@@ -85,8 +85,8 @@ boundary
     }
     sides
     {
-	      type empty;
-	      faces
+        type empty;
+        faces
         (
             (1 5 4 0) // front
             (3 7 6 2) // back

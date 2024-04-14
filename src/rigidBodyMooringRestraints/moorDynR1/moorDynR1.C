@@ -23,6 +23,16 @@ License
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
+References
+    Chen, H., & Hall, M. (2022). CFD simulation of floating body motion with
+    mooring dynamics: Coupling MoorDyn with OpenFOAM. Applied Ocean
+    Research, 124, 103210. https://doi.org/10.1016/j.apor.2022.103210
+    
+    Chen, H., Medina, T. A., & Cercos-Pita, J. L. (2024). CFD simulation of multiple
+    moored floating structures using OpenFOAM: An open-access mooring restraints 
+    library. Ocean Engineering, 303, 117697.
+    https://doi.org/10.1016/j.oceaneng.2024.117697
+
 \*---------------------------------------------------------------------------*/
 
 #include "moorDynR1.H"
@@ -68,13 +78,14 @@ Foam::RBD::restraints::moorDynR1::moorDynR1
     
     initialized_ = false;
 
-    Info << "Create moorDynR1 using MoorDyn v1." << endl;
+    Info<< "Create moorDynR1 using MoorDyn v1." << endl;
 
     // If different bodies are attached to moodyR
     if (coeffs_.found("bodies") )
     {
         // size of bodies_ = nAttachments_
-        Info << "Multiple bodies specified in moorDynR1 restraint: " << bodies_ << endl;
+        Info<< "Multiple bodies specified in moorDynR1 restraint: "
+            << bodies_ << endl;
     }
 
 }

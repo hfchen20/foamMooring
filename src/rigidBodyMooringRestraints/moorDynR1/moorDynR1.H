@@ -40,6 +40,16 @@ Description
 SourceFiles
     moorDynR1.C
 
+References
+    Chen, H., & Hall, M. (2022). CFD simulation of floating body motion with
+    mooring dynamics: Coupling MoorDyn with OpenFOAM. Applied Ocean
+    Research, 124, 103210. https://doi.org/10.1016/j.apor.2022.103210
+    
+    Chen, H., Medina, T. A., & Cercos-Pita, J. L. (2024). CFD simulation of multiple
+    moored floating structures using OpenFOAM: An open-access mooring restraints 
+    library. Ocean Engineering, 303, 117697.
+    https://doi.org/10.1016/j.oceaneng.2024.117697
+    
 \*---------------------------------------------------------------------------*/
 
 #ifndef RBD_restraints_moorDynR1_H

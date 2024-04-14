@@ -34,7 +34,7 @@ outerCorrector     3; // optional, default 3
     
 ### XML format VTK
 
-Option 2 (XML format VTK) requires installation of [`vtk` library](https://gitlab.com/hfchen20/foamMooring/-/merge_requests/3) and `USE_VTK=ON` when compiling MoorDyn v2. This generates VTK files every time step, for the time being.
+Option 2 (XML format VTK) requires installation of [`vtk` library](https://gitlab.com/hfchen20/foamMooring/-/merge_requests/3) and `USE_VTK=ON` when compiling MoorDyn v2. The updated `.Allwmake` script first tries to compiling MoorDyn v2 with VTK support. If an error is detected, it reverts to a compiling without VTK support.
 
 
 ## Post-process rigid body motions

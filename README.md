@@ -1,4 +1,4 @@
-## A mooring restraints library for simulating rigid body motions in OpenFOAM
+## A mooring restraints library for rigid body motions in OpenFOAM
 
 Documentation: https://hfchen20.gitlab.io/foamMooring/
 
@@ -19,7 +19,9 @@ GitHub mirror: https://github.com/hfchen20/foamMooring
 
 ![One floater](tutorial/misc/Animation_overset3d_h12t20.mp4){width=400px height=320px}
 ![Two floaters](tutorial/misc/twoBody_moored.mp4){width=400px height=320px}
-![Two floaters with shared moorings](tutorial/misc/twinFB_shared_mooring.ogv){width=600px height=320px}
+![Two floaters with shared mooring lines](img/twinFB_shared_mooring_tight.jpeg){width=600px height=320px}
+
+<!-- ![Two floaters with shared moorings](tutorial/misc/twinFB_shared_mooring.ogv) -->
 
 ## Compile foamMooring
 
@@ -75,49 +77,71 @@ libs    (sixDoFMooring); // or (rigidBodyMooring)
 
 moorDynR1
 {
-	sixDoFRigidBodyMotionRestraint moorDynR1;
+    sixDoFRigidBodyMotionRestraint moorDynR1;
 }
 
-moorDynR2
+moorDynR2_pt
 {
-	sixDoFRigidBodyMotionRestraint moorDynR2;
-	inputFile                      "Mooring/lines_v2.txt";
-	writeMooringVTK                false; // true if you compile v2 with VTK support
+    sixDoFRigidBodyMotionRestraint  moorDynR2;
+    couplingMode       "POINT";
+    inputFile          "Mooring/lines_v2_point.txt";
+    refAttachmentPt
+    (
+        (-0.1      0.1    -0.077)
+        (-0.1     -0.1    -0.077)
+        ( 0.1      0.1    -0.077)
+        ( 0.1     -0.1    -0.077)
+    );
+    writeMooringVTK    true;
+    vtkPrefix         "mdv2_pt";
+    vtkStartTime       0;
+    outerCorrector     1;
+}
+
+moorDynR2_bd
+{
+    sixDoFRigidBodyMotionRestraint  moorDynR2;
+    couplingMode       "BODY";
+    inputFile          "Mooring/lines_v2.txt";
+    writeMooringVTK    true;
+    vtkPrefix          "mdv2_body";
+    vtkStartTime       0;
+    outerCorrector     1;
 }
 
 map3R
 {
-	sixDoFRigidBodyMotionRestraint map3R;
-	inputFile                     "Mooring/esflOWC_4lines.map";
-	summaryFile                   "Mooring/esflOWC_summary.map";
-	waterDepth                    0.5;
-	refAttachmentPt
-	(
-		(-0.1      0.1    -0.077)
-		(-0.1     -0.1    -0.077)
-		( 0.1      0.1    -0.077)
-		( 0.1     -0.1    -0.077)
-	);
-	numberOfSegments       20;
-	writeMooringVTK        true;
+    sixDoFRigidBodyMotionRestraint map3R;
+    inputFile                     "Mooring/esflOWC_4lines.map";
+    summaryFile                   "Mooring/esflOWC_summary.map";
+    waterDepth                    0.5;
+    refAttachmentPt
+    (
+        (-0.1      0.1    -0.077)
+        (-0.1     -0.1    -0.077)
+        ( 0.1      0.1    -0.077)
+        ( 0.1     -0.1    -0.077)
+    );
+    numberOfSegments       20;
+    writeMooringVTK        true;
 }
 
 moodyR
 {
-	sixDoFRigidBodyMotionRestraint moodyR;
-	inputFile              "Mooring/boxWu_exPoint.m";
+    sixDoFRigidBodyMotionRestraint moodyR;
+    inputFile              "Mooring/boxWu_exPoint.m";
 
-	couplingMode           "externalPoint";  // or "externalRigidBody"
-	nCouplingDof           6;
-	refAttachmentPt
-	(
-		(-0.1      0.1    -0.077)
-		(-0.1     -0.1    -0.077)
-		( 0.1      0.1    -0.077)
-		( 0.1     -0.1    -0.077)
-	);
-	waveKinematics         false;
-	twoD                   true;
+    couplingMode           "externalPoint";  // or "externalRigidBody"
+    nCouplingDof           6;
+    refAttachmentPt
+    (
+        (-0.1      0.1    -0.077)
+        (-0.1     -0.1    -0.077)
+        ( 0.1      0.1    -0.077)
+        ( 0.1     -0.1    -0.077)
+    );
+    waveKinematics         false;
+    twoD                   true;
 }
 ```
 
@@ -138,6 +162,7 @@ moodyR
 - Chen, H., & Hall, M. (2022). CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn with OpenFOAM,
 Applied Ocean Research, 124, 103210. [https://doi.org/10.1016/j.apor.2022.103210](https://www.sciencedirect.com/science/article/pii/S0141118722001511)
 - Chen, H., Medina, T. A., & Cercos-Pita, J. L. CFD simulation of multiple moored floating structures using OpenFOAM: An open-access mooring restraints library. [preprint at http://dx.doi.org/10.13140/RG.2.2.34206.10569](http://dx.doi.org/10.13140/RG.2.2.34206.10569)
+- Chen, H., Medina, T. A., & Cercos-Pita, J. L. (2024). CFD simulation of multiple moored floating structures using OpenFOAM: An open-access mooring restraints library. Ocean Engineering, 303, 117697. [https://doi.org/10.1016/j.oceaneng.2024.117697](https://doi.org/10.1016/j.oceaneng.2024.117697)
 
 
 ## Disclaimer

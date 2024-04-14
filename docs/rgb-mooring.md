@@ -7,18 +7,21 @@ The mooring restraint `librigidBodyMooring.so` enhances the native rigid body mo
 While the built-in six-DoF motions solver calculates the body motion one by one, this multibody dynamics solver calculates the motion responses of all bodies together. This algorithm is inherently applicable to simulations of interconnected bodies and multiple hinged bodies.
 
 - After the hydrodynamic forces/moments acting on all the bodies are calculated, the reacting forces/moments by all restraints are added up to the body each of the restraint is attached to. 
-- The forward dynamics algorithm then calculates the joint acceleration from the joints state and forces. 
+- The forward dynamics algorithm calculates the joint acceleration from the joints state and forces. 
 - The joints velocity and position are then integrated using the Newmark-β scheme. 
 - The bodies state is finally updated to correspond to the current joints state. 
 
 ## Coupling mode for interconnected bodies
 
-For the `rigidBodyMotion` restraints, only the point coupling mode is valid as the mooring restraining moments requested by the multibody dynamics formulation should be in global coordinate system. Multiple bodies interconnected with shared moorings or hinges can be simulated.
+For the `rigidBodyMotion` restraints, only the point coupling mode is valid at the time of writing as the mooring restraining moments requested by the multibody dynamics formulation should be in global coordinate system. Multiple bodies interconnected with shared moorings or hinges can be simulated. Available restraints include
 
 - map3R
 - moorDynR1, moorDynR2
 - moodyR
 - linearSpringGroup
+
+!!! note
+    Body coupling mode for rigidBodyMooring has been fixed by Jose Luis Cercos-Pita.
 
 ## How to use rigidBodyMooring
 - Prepare an OpenFOAM case as usual. The floating body motion can be accommodated by either deforming mesh `interFoam` or overset grid `overInterDyMFoam`.
@@ -88,10 +91,27 @@ libs    (rigidBodyMooring);
             ( 0.25     -0.3725    -0.0652)  
         );
         writeMooringVTK    true;
-        vtkPrefix         "mdv2_pt";
+        vtkPrefix          "mdv2_pt";
         vtkStartTime       0;
         outerCorrector     3;
     }
+
+    moorDynR2_bd
+    {
+        type               moorDynR2;
+        body               floatingObject;
+        couplingMode       "BODY";
+        inputFile          "Mooring/lines_v2.txt";
+        bodies
+        (
+            floatingObject
+        );
+        writeMooringVTK    true;
+        vtkPrefix          "mdv2_bd";
+        vtkStartTime       0;
+        outerCorrector     3;
+    }
+
     ```
 
 === "Moody"
@@ -142,14 +162,14 @@ libs    (rigidBodyMooring);
         // if true, specify a scalar for stiffness, damping, restLength
         // otherwise, specify a scalarList for each spring (x, x, x, x)
         identicalSprings      true;
-        stiffness              28;
-        damping                0;
-        restLength             7.014391404;
+        stiffness             28;
+        damping               0;
+        restLength            7.014391404;
 
-        writeForce             true;
-        writeVTK               true;
-        compression            false; // false = no spring force when compressed
-        frelax                 0.8;
+        writeForce            true;
+        writeVTK              true;
+        compression           false; // false = no spring force when compressed
+        frelax                0.8;
     }
     ```
 

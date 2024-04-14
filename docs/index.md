@@ -43,13 +43,13 @@ MAP++         | map3R        | map3R
 MoorDyn v1    | moorDynR1    | moorDynR1
 MoorDyn v2    | moorDynR2    | moorDynR2
 Moody         | moodyR       | moodyR
-linearSpring  | linearSpringGroup  | linearSpringGroup
-quasi-static  | waves2FoamMooring  | NA
+Linear spring | linearSpringGroup  | linearSpringGroup
+Quasi-static  | waves2FoamMooring  | NA
 
 !!! note
-    `waves2FoamMooring` is available, which should be compatible with most recent versions of OpenFOAM!
+    `waves2FoamMooring` is available, which should be compatible with most recent versions of OpenFOAM.
 
-    Extending on `mooringLine` in [waves2Foam](https://github.com/ogoe/waves2Foam/tree/master/src/waves2FoamMooring/mooringLine), this restraint, `waves2FoamMooring`, enables definition of multiple (inhomogeneous) mooring lines and runtime generation of VTK files for visualization.
+    Extending on `mooringLine` in [waves2Foam](https://github.com/ogoe/waves2Foam/tree/master/src/waves2FoamMooring/mooringLine), this restraint enables definition of multiple (inhomogeneous) mooring lines and runtime generation of VTK files for visualization.
 
 ## Main features of MAP++, MoorDyn, Moody
 
@@ -68,6 +68,7 @@ Moody is a finite element mooring dynamics model developed with the special inte
 - Chen, H., & Hall, M. (2022). CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn with OpenFOAM,
 Applied Ocean Research, 124, 103210. [https://doi.org/10.1016/j.apor.2022.103210](https://www.sciencedirect.com/science/article/pii/S0141118722001511)
 - Chen, H., Medina, T. A., & Cercos-Pita, J. L. CFD simulation of multiple moored floating structures using OpenFOAM: An open-access mooring restraints library. [preprint at http://dx.doi.org/10.13140/RG.2.2.34206.10569](http://dx.doi.org/10.13140/RG.2.2.34206.10569)
+- Chen, H., Medina, T. A., & Cercos-Pita, J. L. (2024). CFD simulation of multiple moored floating structures using OpenFOAM: An open-access mooring restraints library. Ocean Engineering, 303, 117697. [https://doi.org/10.1016/j.oceaneng.2024.117697](https://doi.org/10.1016/j.oceaneng.2024.117697)
 
 ## Disclaimer
 

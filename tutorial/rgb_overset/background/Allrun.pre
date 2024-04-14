@@ -20,17 +20,17 @@ restore0Dir
 runApplication setFields
 
 if  [ $# -eq 1 ]; then
-	#decomposePar &> log.decomposePar
+    #decomposePar &> log.decomposePar
 
-	#mpirun -np 3 interFoam -parallel &> log.interFoam
+    #mpirun -np 3 interFoam -parallel &> log.interFoam
 
-	runApplication decomposePar
-	runParallel overInterDyMFoam
-	runApplication reconstructPar
+    runApplication decomposePar
+    runParallel overInterDyMFoam
+    runApplication reconstructPar
     rm -r processor*
 
 else
-	runApplication overInterDyMFoam
+    runApplication overInterDyMFoam
 fi
 
 touch aa.foam
