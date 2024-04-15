@@ -1,5 +1,6 @@
 
 ## Brief descriptions about tutorials
+These tutorials are provided for educational purposes only, i.e. to help you learn foamMooring. Use with caution for your own projects.
 
 ### sixDoF_2D
 - sixDoFMooring `libsixDoFMooring.so`
@@ -11,7 +12,6 @@
 - rigidBodyMooring `librigidBodyMooring.so`
 - overset grid
 - mooring restraints include MAP++, MoorDyn, Moody.
-- recommend `POINT` coupling only
 
 ### wfoamMooring
 - to showcase waves2FoamMooring
