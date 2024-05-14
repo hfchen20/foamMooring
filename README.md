@@ -49,6 +49,11 @@ For [options](/src/sixDoFMooringRestraints/Make/options), remove
 -lmap-1.30.00 \
 ```
 
+Actually, a new branch `dynamic-only` was created for users not interested in the quasi-static mooring model. Specify the branch name when you clone the repo in the first step above.
+```
+git clone -b dynamic-only https://gitlab.com/hfchen20/foamMooring.git 
+```
+
 ## Code structure
 ![Code structure](docs/img/flowchart_foamMooring.svg)
 
