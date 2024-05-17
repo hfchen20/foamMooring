@@ -23,7 +23,7 @@ Documentation: [https://hfchen20.gitlab.io/foamMooring](https://hfchen20.gitlab.
 - Mooring models of restraints include MAP++, MoorDyn, Moody, groups of linear springs.
 - Most restraints support runtime generation of legacy VTK files (including vtk.series).
 - You can compile only part of the library (i.e., certain restraints) if that suits your needs.
-- No need to change and re-compile of built-in motion libraries and flow solvers.
+- No need to change and re-compile the built-in motion libraries and flow solvers.
 - Tested on v2012, v2212, v2306, mostly with overset grid solver `overInterDyMFoam`.
 - Should also work with `interFoam` (deforming mesh) and other variants `waveFoam` and `olaFlow`.
 - Even `overPimpleDyMFoam` ...
