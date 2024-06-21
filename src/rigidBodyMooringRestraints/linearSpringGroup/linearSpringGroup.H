@@ -112,13 +112,22 @@ class linearSpringGroup
     // Private data
 
         //- Number of springs in the group
-        scalar numberOfSprings_;
+        label numberOfSprings_;
 
         //- Anchor point, where the spring is attached to an immovable object
         pointField anchor_;
 
         //- Reference point of attachment to the solid body
         pointField refAttachmentPt_;
+
+        //- List of body names, allowing for multiple bodies
+        List<word> bodies_;
+
+        //- List of body IDs for each attachment point
+        List<label> bodyIDs_;
+
+        //- List of body indices for each attachment point
+        List<label> bodyIndices_;
 
         //- Are the springs having the same properties: stiffness, damping, restLength?
         bool identicalSprings_;
@@ -136,10 +145,7 @@ class linearSpringGroup
         scalar restLength_;
 
         //-  Write springs' tension to file
-        bool writeForce_;
-
-        //-  Write springs' position to file
-        bool writePos_;
+        bool writeTension_;
 
         //-  Write springs' position to vtk
         bool writeVTK_;
@@ -167,9 +173,6 @@ class linearSpringGroup
 
         //- Output stream for springs' tension
         mutable autoPtr<OFstream> tensionFile_;
-
-        //- Output stream for springs' attachment position
-        mutable autoPtr<OFstream> posFile_;
 
         //- Cache old restrain force
         mutable vector oldForce_;
@@ -221,6 +224,18 @@ public:
             Field<spatialVector>& fx,
             const rigidBodyModelState& state
         ) const;
+
+        //- Transform body point for a given bodyID
+        inline point bodyPoint(const point& p, const label bodyID) const
+        {
+            return (model_.X0(bodyID).inv() && spatialVector(Zero, p)).l();
+        }
+
+        //- Transform body point velocity for a given bodyID
+        inline vector bodyPointVelocity(const point& p, const label bodyID) const
+        {
+            return model_.v(bodyID, p).l();
+        }
 
         //- Update properties from given dictionary
         virtual bool read(const dictionary& dict);
