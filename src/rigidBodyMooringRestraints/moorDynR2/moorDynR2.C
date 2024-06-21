@@ -173,7 +173,7 @@ Foam::RBD::restraints::moorDynR2::moorDynR2
 
 Foam::RBD::restraints::moorDynR2::~moorDynR2()
 {
-    if (Pstream::master()) && initialized_)
+    if (Pstream::master() && initialized_)
     {
         // Close MoorDyn call
         MoorDyn_Close(moordyn_);

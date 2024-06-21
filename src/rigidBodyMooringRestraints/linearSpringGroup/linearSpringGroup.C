@@ -171,7 +171,7 @@ void Foam::RBD::restraints::linearSpringGroup::restrain
         r /= (magR + VSMALL);
 
         // Velocity of the attached end of the spring
-        vector v = bodyPointVelocity(refAttachmentPt_[pt], bodyIDs_[pt]).l();
+        vector v = bodyPointVelocity(refAttachmentPt_[pt], bodyIDs_[pt]);
 
         scalar delta = magR - restLength_;
 

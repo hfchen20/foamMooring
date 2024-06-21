@@ -225,6 +225,18 @@ public:
             const rigidBodyModelState& state
         ) const;
 
+        //- Transform body point for a given bodyID
+        inline point bodyPoint(const point& p, const label bodyID) const
+        {
+            return (model_.X0(bodyID).inv() && spatialVector(Zero, p)).l();
+        }
+
+        //- Transform body point velocity for a given bodyID
+        inline vector bodyPointVelocity(const point& p, const label bodyID) const
+        {
+            return model_.v(bodyID, p).l();
+        }
+
         //- Update properties from given dictionary
         virtual bool read(const dictionary& dict);
 
