@@ -88,6 +88,13 @@ Foam::RBD::restraints::linearSpringGroup::linearSpringGroup
 
     read(dict);
 
+    Info << "Created linearSpringGroup, # Springs " << numberOfSprings_
+         << ", writeTension " << writeTension_
+         << ", writeVTK " << writeVTK_
+         << ", allow compression " << compression_
+         << ", frelax " << frelax_
+         << endl;
+
     if (Pstream::master())
     {
         if (writeVTK_)
@@ -95,26 +102,15 @@ Foam::RBD::restraints::linearSpringGroup::linearSpringGroup
             mkDir("Mooring/VTK");
         }
 
-        if (writeForce_)
+        if (writeTension_)
         {
-            tensionFile_.reset( new OFstream(fileName("Mooring/tension.dat")) );
+            word fname(vtkPrefix_ + "_tension.dat");
+            tensionFile_.reset(new OFstream(fileName("Mooring/" + fname)));
             // Writing header
-            tensionFile_() << "Time history of springs' tension. # springs: " << numberOfSprings_ << endl;
-        }
-
-        if (writePos_)
-        {
-            posFile_.reset( new OFstream(fileName("Mooring/position.dat") ) );
-            posFile_() << "Time history of springs' attachment points. # springs: " << numberOfSprings_ << endl;
+            tensionFile_()<< "Time history of springs' tension. # springs: "
+                << numberOfSprings_ << endl;
         }
     }
-
-    Info << "Created linearSpringGroup, # Springs " << numberOfSprings_
-         << ", writeForce " << writeForce_
-         << ", writeVTK " << writeVTK_
-         << ", allow compression " << compression_
-         << ", frelax " << frelax_
-         << endl;
 }
 
 
@@ -122,7 +118,7 @@ Foam::RBD::restraints::linearSpringGroup::linearSpringGroup
 
 Foam::RBD::restraints::linearSpringGroup::~linearSpringGroup()
 {
-    // combine vtk files into a series
+    if (Pstream::master() && writeVTK_)
     {
         vtk::seriesWriter writer;
 
@@ -167,7 +163,7 @@ void Foam::RBD::restraints::linearSpringGroup::restrain
 
     for(int pt=0; pt<numberOfSprings_; pt++)
     {
-        fairPos[pt] = bodyPoint(refAttachmentPt_[pt]);
+        fairPos[pt] = bodyPoint(refAttachmentPt_[pt], bodyIDs_[pt]);
 
         // Current axis of the spring
         vector r = fairPos[pt] - anchor_[pt];
@@ -175,7 +171,7 @@ void Foam::RBD::restraints::linearSpringGroup::restrain
         r /= (magR + VSMALL);
 
         // Velocity of the attached end of the spring
-        vector v = bodyPointVelocity(refAttachmentPt_[pt]).l();
+        vector v = bodyPointVelocity(refAttachmentPt_[pt], bodyIDs_[pt]).l();
 
         scalar delta = magR - restLength_;
 
@@ -214,29 +210,17 @@ void Foam::RBD::restraints::linearSpringGroup::restrain
     // Move into numberOfSprings_ for loop?
     fx[bodyIndex_] += spatialVector(moment, force);
 
-    if (Pstream::master() && iteration_ == outerCorrector_)
+    if (iteration_ == outerCorrector_)
     {
-        if (writeForce_)
+        if (writeTension_)
         {
             // Write spring tension to file
             tensionFile_() << t;
             for(int pt=0; pt<numberOfSprings_; pt++)
             {
-                tensionFile_() << "\t" << tension[pt];
+                tensionFile_() << "  " << tension[pt];
             }
             tensionFile_() << endl;
-        }
-
-        if (writePos_)
-        {
-            // Write spring attachment pts to file
-            posFile_() << t;
-            for(int pt=0; pt<numberOfSprings_; pt++)
-            {
-                point pos = fairPos[pt];
-                posFile_() << "\t" << pos[0] << "\t" << pos[1] << "\t" << pos[2];
-            }
-            posFile_() << endl;
         }
 
         if (writeVTK_)
@@ -248,7 +232,6 @@ void Foam::RBD::restraints::linearSpringGroup::restrain
             }
         }
     }
-
 }
 
 
@@ -263,11 +246,35 @@ bool Foam::RBD::restraints::linearSpringGroup::read
     coeffs_.readEntry("anchor", anchor_);
     coeffs_.readEntry("refAttachmentPt", refAttachmentPt_);
 
-    if (numberOfSprings_ != refAttachmentPt_.size() || numberOfSprings_ != anchor_.size())
+    label nAttachments = refAttachmentPt_.size();
+
+    // Initialise the sizes of bodyIDs, and bodyIndices
+    bodyIDs_ = List<label>(nAttachments, bodyID_);
+    bodyIndices_ = List<label>(nAttachments, bodyIndex_);
+        
+    if (numberOfSprings_ != nAttachments || numberOfSprings_ != anchor_.size())
     {
         FatalErrorInFunction
-            << "Size of anchor or refAttachmentPt unequal to umberOfSprings"
+            << "Size of anchor or refAttachmentPt not equal to numberOfSprings"
             << abort(FatalError);
+    }
+
+    // If the moorings are attached to different bodies
+    if (coeffs_.found("bodies") )
+    {
+        coeffs_.lookup("bodies") >> bodies_;
+        if (bodies_.size() != nAttachments)
+        {
+            FatalErrorInFunction
+                << "Number of attachment points not equal to number of bodies " << bodies_
+                << abort(FatalError);
+        }
+
+        for(int ii=0; ii<nAttachments; ii++)
+        {
+            bodyIDs_[ii] = model_.bodyID(bodies_[ii]);
+            bodyIndices_[ii] = model_.master(bodyIDs_[ii]);
+        }
     }
 
     identicalSprings_ = coeffs_.getOrDefault<Switch>("identicalSprings", true);
@@ -278,18 +285,24 @@ bool Foam::RBD::restraints::linearSpringGroup::read
         coeffs_.readEntry("damping", damping_);
         coeffs_.readEntry("restLength", restLength_);
     }
+    else
+        FatalErrorInFunction
+            << "Inhomogeneous springs not implemented yet!"
+            << abort(FatalError);
 
-    // non-identical springs to be implemented
-
-    writeForce_ = coeffs_.getOrDefault<Switch>("writeForce", true);
-    writePos_ = coeffs_.getOrDefault<Switch>("writePosition", false);
+    writeTension_ =
+        coeffs_.getOrDefault<Switch>
+        (
+            "writeForce",
+            coeffs_.getOrDefault<Switch>("writeTension", false)
+        );
     writeVTK_ = coeffs_.getOrDefault<Switch>("writeVTK", false);
     compression_ = coeffs_.getOrDefault<Switch>("compression", false);
     frelax_ = coeffs_.getOrDefault<scalar>("frelax", 0.8);
 
     if (writeVTK_)
     {
-        vtkPrefix_ = coeffs_.getOrDefault<word>("vtkPrefix", "sprGroup");
+        vtkPrefix_ = coeffs_.getOrDefault<word>("vtkPrefix", this->name());
         vtkStartTime_ = coeffs_.getOrDefault<scalar>("vtkStartTime", 0);
         outerCorrector_ = coeffs_.getOrDefault<scalar>("outerCorrector", 3);
     }
@@ -312,8 +325,7 @@ void Foam::RBD::restraints::linearSpringGroup::write
     os.writeEntry("stiffness", stiffness_);
     os.writeEntry("damping", damping_);
     os.writeEntry("restLength", restLength_);
-    os.writeEntry("writeForce", writeForce_);
-    os.writeEntry("writePosition", writePos_);
+    os.writeEntry("writeTension", writeTension_);
     os.writeEntry("writeVTK", writeVTK_);
     os.writeEntry("compression", compression_);
     os.writeEntryIfDifferent<scalar>("frelax", 0.8, frelax_);
@@ -335,13 +347,16 @@ void Foam::RBD::restraints::linearSpringGroup::writeVTK
     int nLines = numberOfSprings_;
     labelList nodesPerLine(nLines, 2);
 
-    fileName name("Mooring/VTK/" + vtkPrefix_ + "_");
-    OFstream mps(name + Foam::name(++vtkCounter_) + ".vtk");
+    fileName name("Mooring/VTK/" + vtkPrefix_);
+    OFstream mps(name + word::printf("_%04d", vtkCounter_++) + ".vtk");
+
     mps.precision(4);
 
     // Writing header
-    mps << "# vtk DataFile Version 3.0" << nl << "linearSpringGroup vtk output time=" << time.timeName()
-        << nl << "ASCII" << nl << "DATASET POLYDATA" << endl;
+    mps << "# vtk DataFile Version 3.0" << nl
+        << "linearSpringGroup vtk output time=" << time.timeName() << nl
+        << "ASCII" << nl
+        << "DATASET POLYDATA" << endl;
 
     // Writing points
     mps << "\nPOINTS " << 2 * nLines << " float" << endl;

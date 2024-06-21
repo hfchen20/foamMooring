@@ -146,7 +146,7 @@ Foam::RBD::restraints::moorDynR2::moorDynR2
         // If different bodies are attached to moodyR
         if (coeffs_.found("bodies") )
         {
-            Info<< "Multiple bodies specified in moorDynR2 restraint: " << bodies_ << endl
+            Info<< "Multiple bodies specified in moorDynR2 restraint: " << bodies_ << nl
                 << " body IDs " << bodyIDs_
                 << endl << endl;
         }
@@ -163,12 +163,8 @@ Foam::RBD::restraints::moorDynR2::moorDynR2
                     << exit(FatalError);
             }
 #endif
+            mkDir("Mooring/VTK");
         }
-    }
-
-    if (writeVTK_)
-    {
-        mkDir("Mooring/VTK");
     }
 }
 
@@ -177,7 +173,7 @@ Foam::RBD::restraints::moorDynR2::moorDynR2
 
 Foam::RBD::restraints::moorDynR2::~moorDynR2()
 {
-    if (initialized_)
+    if (Pstream::master()) && initialized_)
     {
         // Close MoorDyn call
         MoorDyn_Close(moordyn_);
@@ -305,14 +301,16 @@ void Foam::RBD::restraints::moorDynR2::restrain
     }
 
     // Step MoorDyn to get forces on bodies
-    moordyn_err = MoorDyn_Step(moordyn_, &fairPos[0][0], &fairVel[0][0], &fairForce[0][0], &tprev, &deltaT);
+    moordyn_err = MoorDyn_Step
+    (
+        moordyn_, &fairPos[0][0], &fairVel[0][0], &fairForce[0][0], &tprev, &deltaT
+    );
+
     if (moordyn_err != MOORDYN_SUCCESS) {
         FatalErrorInFunction
             << "Error computing MoorDyn step " << tprev
             << "s -> " << tprev + deltaT << "s" << exit(FatalError);
-    }
-
-    
+    }    
     
     if (couplingMode_ == word("BODY"))
     {
@@ -322,13 +320,13 @@ void Foam::RBD::restraints::moorDynR2::restrain
             // Get the force and moment over the body
             vector force = vector(Flines[b*6], Flines[b*6+1], Flines[b*6+2]);
             vector moment = vector(Flines[b*6+3], Flines[b*6+4], Flines[b*6+5]);
-            // Change the measuring point from the body center to the global
-            // center
+            // Change the measuring point from the body center to the global center
             moment += model_.X0(bodyID_).r() ^ force;
 
             fx[bodyIndices_[b]] += spatialVector(moment, force);
 
-            Info<< "X[6dof]: " << vector(X[b*6], X[b*6+1], X[b*6+2]) << ", " << vector(X[b*6+3], X[b*6+4], X[b*6+5])
+            Info<< "X[6dof]: " << vector(X[b*6], X[b*6+1], X[b*6+2]) << ", "
+                << vector(X[b*6+3], X[b*6+4], X[b*6+5])
                 << endl;
             Info<< " body " << bodies_[b]
                 << " force " << force
@@ -380,7 +378,7 @@ bool Foam::RBD::restraints::moorDynR2::read
     {
         coeffs_.readEntry("refAttachmentPt", refAttachmentPt_);
 
-        scalar nAttachments = refAttachmentPt_.size();
+        label nAttachments = refAttachmentPt_.size();
 
         // Initialise the sizes of bodyIDs, and bodyIndices
         bodyIDs_ = List<label>(nAttachments, bodyID_);
@@ -435,7 +433,12 @@ bool Foam::RBD::restraints::moorDynR2::read
         }
     }
 
-    writeVTK_ = coeffs_.getOrDefault<Switch>("writeMooringVTK", false);
+    writeVTK_ =
+        coeffs_.getOrDefault<Switch>
+        (
+            "writeMooringVTK",
+            coeffs_.getOrDefault<Switch>("writeVTK", false)
+        );
 
     if (writeVTK_)
     {
@@ -444,7 +447,7 @@ bool Foam::RBD::restraints::moorDynR2::read
 #else
         const bool default_legacy_vtk = true;
 #endif
-        vtkPrefix_ = coeffs_.getOrDefault<word>("vtkPrefix", "mdV2");
+        vtkPrefix_ = coeffs_.getOrDefault<word>("vtkPrefix", this->name());
         vtkStartTime_ = coeffs_.getOrDefault<scalar>("vtkStartTime", 0);
         legacyVTK_ = coeffs_.getOrDefault<Switch>("vtkLegacyFormat",
                                                   default_legacy_vtk);
@@ -470,7 +473,7 @@ void Foam::RBD::restraints::moorDynR2::write
     if (int(bodies_.size())>0)
         os.writeEntry("bodies",bodies_);
     
-    os.writeEntry("writeMooringVTK", writeVTK_);
+    os.writeEntry("writeVTK", writeVTK_);
     if (writeVTK_)
     {
         os.writeEntry("vtkPrefix", vtkPrefix_);
@@ -483,8 +486,8 @@ void Foam::RBD::restraints::moorDynR2::write
 
 void Foam::RBD::restraints::moorDynR2::writeVTK(const Time& time) const
 {
-    fileName name(
-        vtkPrefix_ + "_" + Foam::name(++vtkCounter_));
+    fileName name(vtkPrefix_ + word::printf("_%04d", vtkCounter_++));
+
     if (!legacyVTK_) {
         name += ".vtm";
         int moordyn_err = MoorDyn_SaveVTK(moordyn_,
