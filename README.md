@@ -1,5 +1,11 @@
 ## A mooring restraints library for rigid body motions in OpenFOAM
 
+![](https://img.shields.io/badge/OpenFOAM-v2012-brightgreen) 
+![](https://img.shields.io/badge/v2212-brightgreen)
+![](https://img.shields.io/badge/v2312-brightgreen)
+
+![](https://img.shields.io/badge/MoorDyn-v1,v2-brightgreen) ![](https://img.shields.io/badge/Moody-v2-brightgreen)
+
 Documentation: https://hfchen20.gitlab.io/foamMooring/
 
 GitHub mirror: https://github.com/hfchen20/foamMooring
@@ -13,7 +19,7 @@ GitHub mirror: https://github.com/hfchen20/foamMooring
 - Most restraints support runtime generation of legacy VTK files (including vtk.series).
 - You can compile only part of the library (i.e., certain restraints) if that suits your needs.
 - No need to change and re-compile the built-in motion libraries and flow solvers.
-- Tested on v2012, v2212, v2306, mostly with overset grid solver `overInterDyMFoam`.
+- Tested on OpenFOAM v2012 ~ v2312, mostly with overset grid solver `overInterDyMFoam`.
 - Should also work with `interFoam` (deforming mesh) and other variants `waveFoam` and `olaFlow`.
 - Even `overPimpleDyMFoam` ...
 
@@ -25,7 +31,8 @@ GitHub mirror: https://github.com/hfchen20/foamMooring
 
 ## Compile foamMooring
 
-Prerequisites: git, make, CMake, and [VTK](https://vtk.org/) if USE_VTK=ON when compiling MoorDyn v2. MAP++ may require other dependent libraries, such as `lapacke`.
+- Install [prerequisites](https://hfchen20.gitlab.io/foamMooring/installation/#prerequisites).
+
 - Clone the repo in `$WM_PROJECT_USER_DIR`.
 ```
 mkdir -p $WM_PROJECT_USER_DIR 
@@ -39,122 +46,28 @@ If there is no interest in the quasi-static mooring model MAP++, specify a branc
 git clone -b dynamic-only https://gitlab.com/hfchen20/foamMooring.git
 ```
 
-- Run `Allwmake`. Upon successful compilation, there should be at least two libraries, `libsixDoFMooring.so` and `librigidBodyMooring.so`, in `$FOAM_USER_LIBBIN`.
+- Run `Allwmake`. Upon successful compilation, there should be at least two libraries in `$FOAM_USER_LIBBIN`: `libsixDoFMooring.so` and `librigidBodyMooring.so`, .
 ```
 ./Allwmake
-```
-
-- You can selectively compile part of the library. If there is difficulty in compiling MAP++ and map3R (quasi-static mooring code), you could skip compiling MAP++ in `Allwmake` and remove/comment out the corresponding entries in the Make files. For [files](/src/sixDoFMooringRestraints/Make/files), remove
-```
-map3R/mapFoamInterface.C
-map3R/map3R.C
-```
-For [options](/src/sixDoFMooringRestraints/Make/options), remove
-```
--llapacke \
--lmap-1.30.00 \
-```
-
-Actually, a new branch `dynamic-only` was created for users not interested in the quasi-static mooring model. Specify the branch name when you clone the repo in the first step above.
-```
-git clone -b dynamic-only https://gitlab.com/hfchen20/foamMooring.git 
 ```
 
 ## Code structure
 ![Code structure](docs/img/flowchart_foamMooring.svg)
 
-## How to use (tested on v2012, v2212)
-
-Refer to [documentation](https://hfchen20.gitlab.io/foamMooring/) for more examples.
+## How to use
 
 - Prepare an OpenFOAM case as usual. The floating body motion can be accommodated by either deforming mesh `interFoam` or overset grid `overInterDyMFoam`.
+
 - Add in `controlDict`
 ```
 libs    (sixDoFMooring); // or (rigidBodyMooring)
 ```
-- Prepare a mooring input file in case subfolder "Mooring". For example, for sixDoFMooring 
-   - MoorDyn v1: [lines.txt](tutorial/sixDoF_2D/overset/background/Mooring) (filename hard-coded)
 
-   - MoorDyn v2: [lines_v2.txt](tutorial/sixDoF_2D/overset/background/Mooring)
+- Prepare a mooring input file in case subfolder "Mooring". Mooring models can be MoorDyn v1, v2, Moody, MAP++, and simple springs.
 
-   - Moody: [boxWu_exPoint.m](tutorial/sixDoF_2D/overset/background/Mooring)
+- Define mooring restraints in `constant/dynamicMeshDict`. [sixDoFMooring](https://hfchen20.gitlab.io/foamMooring/six-dof-mooring/) and [rigidBodyMooring](https://hfchen20.gitlab.io/foamMooring/rgb-mooring/) have slightly different restraints.
 
-   - MAP++: [esflOWC_4lines.map](tutorial/sixDoF_2D/overset/background/Mooring)
-
-- Define mooring restraints in `constant/dynamicMeshDict`
-```
-// Example mooring restraints as defined in libsixDoFMooring, add one of
-//	moorDynR1 || moorDynR2 || map3R || moodyR 
-
-moorDynR1
-{
-    sixDoFRigidBodyMotionRestraint moorDynR1;
-}
-
-moorDynR2_pt
-{
-    sixDoFRigidBodyMotionRestraint  moorDynR2;
-    couplingMode       "POINT";
-    inputFile          "Mooring/lines_v2_point.txt";
-    refAttachmentPt
-    (
-        (-0.1      0.1    -0.077)
-        (-0.1     -0.1    -0.077)
-        ( 0.1      0.1    -0.077)
-        ( 0.1     -0.1    -0.077)
-    );
-    writeMooringVTK    true;
-    vtkPrefix         "mdv2_pt";
-    vtkStartTime       0;
-    outerCorrector     1;
-}
-
-moorDynR2_bd
-{
-    sixDoFRigidBodyMotionRestraint  moorDynR2;
-    couplingMode       "BODY";
-    inputFile          "Mooring/lines_v2.txt";
-    writeMooringVTK    true;
-    vtkPrefix          "mdv2_body";
-    vtkStartTime       0;
-    outerCorrector     1;
-}
-
-map3R
-{
-    sixDoFRigidBodyMotionRestraint map3R;
-    inputFile                     "Mooring/esflOWC_4lines.map";
-    summaryFile                   "Mooring/esflOWC_summary.map";
-    waterDepth                    0.5;
-    refAttachmentPt
-    (
-        (-0.1      0.1    -0.077)
-        (-0.1     -0.1    -0.077)
-        ( 0.1      0.1    -0.077)
-        ( 0.1     -0.1    -0.077)
-    );
-    numberOfSegments       20;
-    writeMooringVTK        true;
-}
-
-moodyR
-{
-    sixDoFRigidBodyMotionRestraint moodyR;
-    inputFile              "Mooring/boxWu_exPoint.m";
-
-    couplingMode           "externalPoint";  // or "externalRigidBody"
-    nCouplingDof           6;
-    refAttachmentPt
-    (
-        (-0.1      0.1    -0.077)
-        (-0.1     -0.1    -0.077)
-        ( 0.1      0.1    -0.077)
-        ( 0.1     -0.1    -0.077)
-    );
-    waveKinematics         false;
-    twoD                   true;
-}
-```
+Refer to [documentation](https://hfchen20.gitlab.io/foamMooring/) for more examples.
 
 ## Main features of mooring models
 
@@ -162,18 +75,16 @@ moodyR
 
 ## Visualize mooring lines in Paraview
 
-- Write VTK files 'mooringN.vtk' for mooring lines where N denotes a time sequence number.
-- Prepare a vtk.series file 'mooring.vtk.series' to be loaded into Paraview.
-- A Python script and example VTK files are provided in the tutorial to post-process MoorDyn output.
-- The mooring tension could also be added to the VTK files.
-- MoorDyn v2 has a built-in functionality to write XML-based VTK files.
+See [docs](https://hfchen20.gitlab.io/foamMooring/utilities/#visualize-mooring-lines).
+
 
 ## References
 
 - Chen, H., & Hall, M. (2022). CFD simulation of floating body motion with mooring dynamics: Coupling MoorDyn with OpenFOAM,
 Applied Ocean Research, 124, 103210. [https://doi.org/10.1016/j.apor.2022.103210](https://www.sciencedirect.com/science/article/pii/S0141118722001511)
-- Chen, H., Medina, T. A., & Cercos-Pita, J. L. (2024). CFD simulation of multiple moored floating structures using OpenFOAM: An open-access mooring restraints library. Ocean Engineering, 303, 117697. [https://doi.org/10.1016/j.oceaneng.2024.117697](https://doi.org/10.1016/j.oceaneng.2024.117697) ([preprint](http://dx.doi.org/10.13140/RG.2.2.34206.10569))
-
+- Chen, H., Medina, T. A., & Cercos-Pita, J. L. (2024). CFD simulation of multiple moored floating structures using OpenFOAM: An open-access mooring 
+restraints library. Ocean Engineering, 303, 117697. [https://doi.org/10.1016/j.oceaneng.2024.117697](https://doi.org/10.1016/j.oceaneng.2024.117697) 
+([preprint](http://dx.doi.org/10.13140/RG.2.2.34206.10569))
 
 ## Disclaimer
 

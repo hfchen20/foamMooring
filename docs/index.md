@@ -2,6 +2,8 @@
 
 A mooring restraints library for simulating rigid body motions in OpenFOAM
 
+![](https://img.shields.io/badge/OpenFOAM-v2012_to_v2312-brightgreen)
+![](https://img.shields.io/badge/MoorDyn-v1,v2-brightgreen) ![](https://img.shields.io/badge/Moody-v2-brightgreen)
 ---
 
 GitLab repo: [https://gitlab.com/hfchen20/foamMooring](https://hfchen20.gitlab.io/foamMooring/)
@@ -9,11 +11,6 @@ GitLab repo: [https://gitlab.com/hfchen20/foamMooring](https://hfchen20.gitlab.i
 GitHub mirror: [https://github.com/hfchen20/foamMooring](https://github.com/hfchen20/foamMooring)
 
 Documentation: [https://hfchen20.gitlab.io/foamMooring](https://hfchen20.gitlab.io/foamMooring)
-
-:star: Consider starring the repository if you find it useful. :star:
-
-!!! note
-    UNDER CONSTRUCTION!
 
 ---
 
@@ -24,7 +21,7 @@ Documentation: [https://hfchen20.gitlab.io/foamMooring](https://hfchen20.gitlab.
 - Most restraints support runtime generation of legacy VTK files (including vtk.series).
 - You can compile only part of the library (i.e., certain restraints) if that suits your needs.
 - No need to change and re-compile the built-in motion libraries and flow solvers.
-- Tested on v2012, v2212, v2306, mostly with overset grid solver `overInterDyMFoam`.
+- Tested on v2012, v2212, v2306, v2312, mostly with overset grid solver `overInterDyMFoam`.
 - Should also work with `interFoam` (deforming mesh) and other variants `waveFoam` and `olaFlow`.
 - Even `overPimpleDyMFoam` ...
 
