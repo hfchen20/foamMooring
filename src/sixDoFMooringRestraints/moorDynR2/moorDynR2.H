@@ -59,6 +59,7 @@ References
 #include "OFstream.H"
 
 #include "MoorDyn2.h"
+#include <sys/stat.h>
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -80,6 +81,8 @@ class moorDynR2
         
         //- MoorDyn input filename
         fileName inputFile_;
+        std::vector<string> initFiles_;
+        int nInitFiles_;
         
         //- Coupling mode: 'POINT' or 'BODY'
         word couplingMode_;
@@ -120,11 +123,18 @@ class moorDynR2
         label outerCorrector_;
         
         // The MoorDyn system instance
-        MoorDyn moordyn_;
+        mutable MoorDyn moordyn_;
         
         // The coupled body to be controlled by this MoorDyn instance
         MoorDynBody moordyn_body_;
-        
+
+        // Save state at user-defined interval for OpenFOAM restart 
+        fileName restartWrite_="Mooring/restartFile_";
+        fileName restartRead_;
+        bool saveRestart_;
+        mutable scalar saveInterval_;
+        mutable int restartCount_ = 1;
+
         // A backup of the Mooring system to can restore in between implicit time
         // steps
         typedef struct _moordyn_backup {
@@ -230,6 +240,13 @@ class moorDynR2
             FatalError << "Error updating the PVD file: "
                 << "'moorDynR2.pvd' is ill-formatted"
                 << exit(FatalError);
+        }
+
+        //- Check if restart file exists
+        inline bool checkRestartFile (const std::string& name) const 
+        {
+            struct stat buffer;
+            return (stat (name.c_str(), &buffer) == 0);
         }
 
 public:
