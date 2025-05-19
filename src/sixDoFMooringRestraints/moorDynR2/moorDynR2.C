@@ -87,14 +87,25 @@ Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::moorDynR2
     moordyn_backup_.t = 0.0;
     moordyn_backup_.data = nullptr;
 
+    //- For multi-step initialization
+    std::stringstream ss(inputFile_);
+    while (ss.good()) {
+            string substr;
+            getline(ss, substr, ',');
+            initFiles_.push_back(substr);
+    }
+    nInitFiles_ = initFiles_.size();
+
     // Create the MoorDyn system
     if (Pstream::master())
     {
         int moordyn_err = MOORDYN_SUCCESS;
         //moordyn_ = MoorDyn_Create("Mooring/lines_v2.txt");
-        moordyn_ = MoorDyn_Create(inputFile_.c_str());
+        moordyn_ = MoorDyn_Create(initFiles_[0].c_str());
         if (!moordyn_) {
-            FatalError << "MoorDyn v2 cannot be created!" << exit(FatalError);
+            FatalError << "MoorDyn v2 cannot be created with "
+                       << initFiles_[0] 
+                       << exit(FatalError);
         }
         // In this release just a single floating body is accepted. In the
         // future more bodies can be added, providing info about the body to
@@ -282,16 +293,73 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::restrain
         }
     }
 
-    Info<< "\n\ttprev = " << tprev << ", X[6]/fairPosition: " << fairPos << endl;
+//    Info<< "\n\ttprev = " << tprev << ", X[6]/fairPosition: " << fairPos << endl;
 
     if (!initialized_)
     {
-        moordyn_err = MoorDyn_Init(moordyn_, X, XD);
-        if (moordyn_err != MOORDYN_SUCCESS) {
-            FatalError << "MoorDyn could not be initialized"
+        Info << "Read restartFile: " << restartFile_ << nl;
+        Info << "Restart file exists: " 
+             << ( checkRestartFile(restartFile_) ? "True" : "False") << nl;
+
+        //- For restart
+        saveInterval_ = motion.time().controlDict().get<scalar>("writeInterval");
+
+        if (t > deltaT && restartFile_ != word("None") && checkRestartFile(restartFile_)) 
+        {
+            moordyn_err = MoorDyn_Init_NoIC(moordyn_, X, XD);
+            if (moordyn_err != MOORDYN_SUCCESS) {
+            FatalError << "MoorDyn could not be initialize"
                        << exit(FatalError);
+            }
+
+            moordyn_err = MoorDyn_Load( moordyn_, restartFile_.c_str() );
+            if (moordyn_err != MOORDYN_SUCCESS) 
+            {
+                FatalError << "MoorDyn could not be restarted. Check restart file!"
+                           << exit(FatalError);
+            }
+
+            restartCount_ = floor(t/saveInterval_) + 1;
+
+            Info << "MoorDyn is initialized using restart file!" << nl << nl;
+
+        } else {
+            moordyn_err = MoorDyn_Init(moordyn_, X, XD);
+            if (moordyn_err != MOORDYN_SUCCESS) {
+                FatalError << "MoorDyn could not be initialized"
+                           << exit(FatalError);
+            }
+
+            moordyn_err = MoorDyn_SaveState(moordyn_, (initFiles_[0]+".ic").c_str());
+            if (moordyn_err != MOORDYN_SUCCESS) {
+                FatalError << "MoorDyn state could not be saved"
+                           << exit(FatalError);
+            }
+
+            for ( int i = 1; i < nInitFiles_; i++ )
+            {
+                moordyn_ = MoorDyn_Create(initFiles_[i].c_str());
+                if (!moordyn_) {
+                    FatalError << "MoorDyn instance cannot be created with "
+                               << initFiles_[i]
+                               << exit(FatalError);
+                }
+                moordyn_err = MoorDyn_Init(moordyn_, X, XD);
+                if (moordyn_err != MOORDYN_SUCCESS) {
+                    FatalError << "MoorDyn could not be initialized"
+                               << exit(FatalError);
+                }
+
+                moordyn_err = MoorDyn_SaveState(moordyn_, (initFiles_[i]+".ic").c_str());
+                if (moordyn_err != MOORDYN_SUCCESS) {
+                    FatalError << "MoorDyn state could not be saved"
+                               << exit(FatalError);
+                }
+            }
+
+            Info << nl << "MoorDyn module initialized!" << nl << nl;
         }
-        Info<< "MoorDyn module initialized!" << endl;
+
         initialized_ = true;
         save_mooring(tprev);
         if (writeVTK_) {
@@ -302,16 +370,34 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::restrain
 
         curTime_ = t;
         iteration_ = 1;
+
     } else if (tprev - moordyn_backup_.t >= 1.e-3 * deltaT) {
         // We have successfully advanced forward in time
         save_mooring(tprev);
         Info<< "MoorDyn module saved at t = " << tprev << " s" << endl;
+
+        // For restart - Save restart file at writeInterval from controlDict
+        if ( mag(t - restartCount_*saveInterval_) < 1.e-3 * deltaT && saveRestart_ )
+        {
+            moordyn_err = MoorDyn_Save(moordyn_,
+                    ( restartPrefix_ + motion.time().timeName() ).c_str() );
+
+            if(moordyn_err != MOORDYN_SUCCESS)
+            {
+                WarningIn(__PRETTY_FUNCTION__)
+                << "MoorDyn restart file could not be saved!\n";
+            }
+
+            restartCount_++;
+            Info << "restartCount: " << restartCount_ << endl;
+        }
+
     } else {
         // We are repeating the same time step because the implicit scheme
         load_mooring();
         Info<< "MoorDyn module restored to t = " << moordyn_backup_.t << " s" << endl;
     }
-    
+
     // Step MoorDyn to get mooring forces on body
     //moordyn_err = MoorDyn_Step(moordyn_, X, XD, Flines, &tprev, &deltaT);
     moordyn_err = MoorDyn_Step(moordyn_, &fairPos[0][0], &fairVel[0][0], &fairForce[0][0], &tprev, &deltaT);
@@ -328,6 +414,7 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::restrain
             restraintForce[i] = Flines[i];
             restraintMoment[i] = Flines[i+3];
         }
+
     }
     else
     {
@@ -357,7 +444,7 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::restrain
              << ", moment " << restraintMoment
              << endl;
     }
-    
+
     if (writeVTK_ && iteration_ == outerCorrector_)
     {
         if (t >= vtkStartTime_ && time.outputTime())
@@ -397,7 +484,11 @@ bool Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::read
                                                           default_legacy_vtk);
         outerCorrector_ = sDoFRBMRCoeffs_.getOrDefault<scalar>("outerCorrector", 1);
     }
-    
+
+    //- For restarting
+    restartFile_ = sDoFRBMRDict.getOrDefault<fileName>("restartFile", "None");
+    saveRestart_ = sDoFRBMRDict.getOrDefault<bool>("saveRestart", true);
+
     return true;
 }
 
@@ -421,6 +512,8 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::write
         os.writeEntry("vtkLegacyFormat", legacyVTK_);
         os.writeEntry("outerCorrector", outerCorrector_);
     }
+    os.writeEntry("restartFile", restartFile_);
+    os.writeEntry("saveRestart", saveRestart_);
 }
 
 void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::writeVTK(const Time& time) const
