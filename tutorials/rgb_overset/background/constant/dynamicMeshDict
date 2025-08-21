@@ -126,7 +126,7 @@ rigidBodyMotionCoeffs
             type               moorDynR2;
             body               floatingObject;
             couplingMode       "BODY";
-            inputFile          "Mooring/lines_v2_point.txt";
+            inputFile          "Mooring/lines_v2.txt";
             bodies
             (
                 floatingObject

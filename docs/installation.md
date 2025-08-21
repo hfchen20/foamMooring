@@ -10,7 +10,7 @@ sudo apt install libvtk7-dev
 sudo apt install libvtk9-dev
 ```
 
-- [lapacke](https://www.netlib.org/lapack/lapacke.html), (optional) required only by MAP++.
+- [lapacke](https://www.netlib.org/lapack/lapacke.html), (optional) required by MAP++ only.
 ```
 sudo apt install liblapack3
 sudo apt install liblapack-dev liblapacke-dev
