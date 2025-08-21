@@ -20,9 +20,6 @@ For the `rigidBodyMotion` restraints, only the point coupling mode is valid at t
 - moodyR
 - linearSpringGroup
 
-!!! note
-    Body coupling mode for rigidBodyMooring has been fixed by Jose Luis Cercos-Pita.
-
 ## How to use rigidBodyMooring
 - Prepare an OpenFOAM case as usual. The floating body motion can be accommodated by either deforming mesh `interFoam` or overset grid `overInterDyMFoam`.
 

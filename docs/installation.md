@@ -10,7 +10,7 @@ sudo apt install libvtk7-dev
 sudo apt install libvtk9-dev
 ```
 
-- [lapacke](https://www.netlib.org/lapack/lapacke.html), required by MAP++.
+- [lapacke](https://www.netlib.org/lapack/lapacke.html), (optional) required only by MAP++.
 ```
 sudo apt install liblapack3
 sudo apt install liblapack-dev liblapacke-dev
@@ -24,23 +24,28 @@ cd $WM_PROJECT_USER_DIR
 git clone https://gitlab.com/hfchen20/foamMooring.git
 cd foamMooring 
 ```
-If there is no interest in the quasi-static mooring model MAP++, specify a branch option, `-b dynamic-only`, when cloning the repo.
-```
-git clone -b dynamic-only https://gitlab.com/hfchen20/foamMooring.git
-```
 
 - Run `Allwmake`. Upon successful compilation, there should be at least two libraries, `libsixDoFMooring.so` and `librigidBodyMooring.so`, in `$FOAM_USER_LIBBIN`.
 ```
 ./Allwmake
 ```
 
-- You can selectively compile part of the library. If there is difficulty in compiling MAP++ and map3R (quasi-static mooring code),  you could skip compiling MAP++ in `Allwmake` and remove the corresponding entries in the Make files.
-For `Make/files`, remove
+## Use of MAP++
+The quasi-static mooring model *MAP++* is not compiled by default. To use the related mooring restraints `map3R`,
+
+- Remove the comment sign `#` in `Allwmake` to compile MAP++.
+```
+(cd map-plus-plus/src; make && cp libmap-1.30.00.so $FOAM_USER_LIBBIN)
+```
+
+- Add the corresponding entries in the Make files.
+
+For `Make/files`, add
 ```
 map3R/mapFoamInterface.C
 map3R/map3R.C
 ```
-For `Make/options`, remove
+Replace `Make/options` with [`Make/options-map3`](https://gitlab.com/hfchen20/foamMooring/-/blob/master/src/sixDoFMooringRestraints/Make/options-map3?ref_type=heads) which includes the headers and libraries needed by `map3R`, such as
 ```
 -llapacke \
 -lmap-1.30.00 \

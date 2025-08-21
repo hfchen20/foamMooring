@@ -41,9 +41,12 @@ git clone https://gitlab.com/hfchen20/foamMooring.git
 cd foamMooring 
 ```
 
-If there is no interest in the quasi-static mooring model MAP++, specify a branch option, `-b dynamic-only`, when cloning the repo.
+The `dynamic-only` branch has been deleted. If you are previously using this branch, change branch and update the code.
 ```
-git clone -b dynamic-only https://gitlab.com/hfchen20/foamMooring.git
+git status
+# if not On branch master
+git checkout master
+git pull
 ```
 
 - Run `Allwmake`. Upon successful compilation, there should be at least two libraries in `$FOAM_USER_LIBBIN`: `libsixDoFMooring.so` and `librigidBodyMooring.so`, .
