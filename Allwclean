@@ -9,12 +9,13 @@ rm –r $FOAM_USER_LIBBIN/../include
 rm -rf thirdParty/MoorDyn.build
 
 # compile MAP++
-(cd map-plus-plus/src; make clean)
+#(cd map-plus-plus/src; make clean)
 
 # copy precompiled Moody library
 #cp moody-2.0.1-Linux/lib/libmoody.so $FOAM_USER_LIBBIN
 
-# compile sixDoFRigidBodyMotionRestraints
+# compile mooring restraints
 ( cd src/sixDoFMooringRestraints && wclean )
+( cd src/rigidBodyMooringRestraints && wclean )
 
 echo "Compilation clean!"

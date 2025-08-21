@@ -3,14 +3,20 @@
 # Stop if something fails
 set -e
 
-# compile the 3rd parties (modules)
-# =======================
+# ----------------------------------------------------------
+#   Compile the 3rd parties (modules)
+# ----------------------------------------------------------
 git submodule init
 git submodule update --remote
 cd thirdParty
 
-# MoorDyn v1
+# ----------------------------------------------------------
+#   Compile MoorDyn v1
+# ----------------------------------------------------------
+echo ""
 echo "compile MoorDyn v1"
+echo ""
+
 cd MoorDyn_v1/compileSO
 make -j
 mkdir -p $FOAM_USER_LIBBIN
@@ -21,13 +27,19 @@ cp -f MoorDyn.so $FOAM_USER_LIBBIN/libmoordynv1.so
 cp -f ../MoorDyn.h $WM_PROJECT_USER_DIR/foamMooring/src/include/MoorDynv1.h
 cd ../..
 
-# MoorDyn v2
+# ----------------------------------------------------------
+#   Compile MoorDyn v2
+# ----------------------------------------------------------
+
 configure_moordyn_v2 () {
     cmake -DBUILD_TESTING=OFF -DEXTERNAL_EIGEN=OFF -DFORTRAN_WRAPPER=OFF -DMATLAB_WRAPPER=OFF -DPYTHON_WRAPPER=OFF -DUSE_VTK=$1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$FOAM_USER_LIBBIN/.. ../MoorDyn
     return $?
 } 
 
+echo ""
 echo "compile MoorDyn v2 with VTK"
+echo ""
+
 MOORDYN2_HAVE_VTK=true
 mkdir -p MoorDyn.build
 cd MoorDyn.build
@@ -37,28 +49,50 @@ CMAKE_RESULT=$?
 set -e
 if [ $CMAKE_RESULT -ne 0 ]; then
     MOORDYN2_HAVE_VTK=false
+    echo ""
     echo "compile MoorDyn v2 without VTK"
+    echo ""
     configure_moordyn_v2 OFF
 fi
+
 make -j
 make install
 cd ../..
 
-# compile MAP++
-echo "compile MAP++"
-(cd map-plus-plus/src; make && cp libmap-1.30.00.so $FOAM_USER_LIBBIN)
-
-# copy precompiled Moody library
-cp moody-2.0.1-Linux/lib/libmoody.so $FOAM_USER_LIBBIN
-
-# compile mooring restraints
+# Set MoorDyn v2 vtk flag
 if [[ "$MOORDYN2_HAVE_VTK" = true ]]; then
     export FOAM_EXTRA_CXXFLAGS="$FOAM_EXTRA_CXXFLAGS -DMOORDYN2_HAVE_VTK"
 fi
+
+# ----------------------------------------------------------
+#   Compile  MAP++
+# ----------------------------------------------------------
+echo ""
+echo "SKIP compile MAP++"
+echo ""
+#(cd map-plus-plus/src; make && cp libmap-1.30.00.so $FOAM_USER_LIBBIN)
+
+# ----------------------------------------------------------
+#   Copy precompiled Moody library
+# ----------------------------------------------------------
+cp moody-2.0.1-Linux/lib/libmoody.so $FOAM_USER_LIBBIN
+
+# ----------------------------------------------------------
+#   Compile sixDoFMooringRestraints
+# ----------------------------------------------------------
+echo ""
 echo "compile sixDoF mooring restraints"
+echo ""
 ( cd src/sixDoFMooringRestraints && wmake libso )
 
+# ----------------------------------------------------------
+#   Compile rigidBodyMooringRestraints
+# ----------------------------------------------------------
+echo ""
 echo "compile rigid body mooring restraints"
+echo ""
 ( cd src/rigidBodyMooringRestraints && wmake libso )
 
-echo "Compilation done!"
+echo ""
+echo " Compilation done!"
+echo ""

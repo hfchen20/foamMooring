@@ -9,5 +9,8 @@ cleanCase0
 rm -rf 0/motionScale
 rm -rf moorDynR2.*
 rm -rf Mooring/*.out
+rm -rf Mooring/VTK
+rm -rf Mooring/restart*
+rm -rf Mooring/*.ic
 
 #------------------------------------------------------------------------------
