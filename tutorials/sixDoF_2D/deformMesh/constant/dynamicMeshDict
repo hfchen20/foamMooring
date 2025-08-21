@@ -75,6 +75,7 @@ sixDoFRigidBodyMotionCoeffs
         moorDynR2
         {
             sixDoFRigidBodyMotionRestraint moorDynR2;
+            couplingMode                   "BODY";
             inputFile                      "Mooring/lines_v2.txt";
             writeMooringVTK                true;
         }
@@ -85,13 +86,6 @@ sixDoFRigidBodyMotionCoeffs
         moorDynR1
         {
             sixDoFRigidBodyMotionRestraint moorDynR1;
-        }
-
-        moorDynR2
-        {
-            sixDoFRigidBodyMotionRestraint moorDynR2;
-            inputFile                      "Mooring/lines_v2.txt";
-            writeMooringVTK                true;
         }
 
         moorDynR2_pt

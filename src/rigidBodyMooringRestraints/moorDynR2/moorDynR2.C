@@ -242,7 +242,7 @@ void Foam::RBD::restraints::moorDynR2::restrain
             
             vector rotationAngle
             (
-                quaternion(CofR.E()).eulerAngles(quaternion::XYZ)
+                quaternion(CofR.E().T()).eulerAngles(quaternion::XYZ)
             );
             
             vector v = vCofR.l();
@@ -321,9 +321,9 @@ void Foam::RBD::restraints::moorDynR2::restrain
             vector force = vector(Flines[b*6], Flines[b*6+1], Flines[b*6+2]);
             vector moment = vector(Flines[b*6+3], Flines[b*6+4], Flines[b*6+5]);
             // Change the measuring point from the body center to the global center
-            moment += model_.X0(bodyID_).r() ^ force;
+            // moment += model_.X0(bodyID_).r() ^ force;
 
-            fx[bodyIndices_[b]] += spatialVector(moment, force);
+            fx[bodyIndices_[b]] += model_.X0(bodyIDs_[b]).T() & spatialVector(moment, force);
 
             Info<< "X[6dof]: " << vector(X[b*6], X[b*6+1], X[b*6+2]) << ", "
                 << vector(X[b*6+3], X[b*6+4], X[b*6+5])
@@ -340,7 +340,7 @@ void Foam::RBD::restraints::moorDynR2::restrain
         for(int pt=0; pt<refAttachmentPt_.size(); pt++)
         {
             vector force = fairForce[pt];
-            vector moment =  fairPos[pt] ^ force;
+            vector moment = fairPos[pt] ^ force;
 
             // Accumulate the force for the restrained body
             fx[bodyIndices_[pt]] += spatialVector(moment, force);
@@ -406,7 +406,6 @@ bool Foam::RBD::restraints::moorDynR2::read
         if (coeffs_.found("bodies"))
         {
             coeffs_.lookup("bodies") >> bodies_;
-
             /*
             {
                 // remove duplicate body names
@@ -419,12 +418,12 @@ bool Foam::RBD::restraints::moorDynR2::read
                     }
                 }
                 bodies_.transfer(tmpBodies);
-
-                bodyIDs_.setSize(bodies_.size());
-                bodyIndices_.setSize(bodies_.size());
             }
             */
-
+            
+            bodyIDs_.setSize(bodies_.size());
+            bodyIndices_.setSize(bodies_.size());
+                
             for(int ii=0; ii<bodies_.size(); ii++)
             {
                 bodyIDs_[ii] = model_.bodyID(bodies_[ii]);
