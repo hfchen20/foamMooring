@@ -1,0 +1,123 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2312                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       pointVectorField;
+    location    "0";
+    object      pointDisplacement;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 1 0 0 0 0 0];
+
+internalField   uniform (0 0 0);
+
+boundaryField
+{
+    stationaryWalls
+    {
+        type            fixedValue;
+        value           uniform (0 0 0);
+    }
+    inlet
+    {
+        type            fixedValue;
+        value           uniform (0 0 0);
+    }
+    outlet
+    {
+        type            fixedValue;
+        value           uniform (0 0 0);
+    }
+    atmosphere
+    {
+        type            fixedValue;
+        value           uniform (0 0 0);
+    }
+    sides
+    {
+        type            empty;
+    }
+    floatingObject
+    {
+        type            sixDoFRigidBodyDisplacement;
+        value           uniform (0 0 0);
+        
+        //patches         (floatingObject);
+        mass            3.148;
+        centreOfMass    (0.0 0.0 -0.016);
+        momentOfInertia ( 0.015 0.015 0.021 );
+
+        report          on;
+
+        accelerationRelaxation 0.8;
+        //accelerationDamping   0.95;
+
+        solver
+        {
+            type Newmark;
+        }
+
+        constraints
+        {
+            // translation contrained on a plane around CoR
+            fixedPlane
+            {
+                sixDoFRigidBodyMotionConstraint plane;
+                normal (0 1 0);
+            }
+
+            // rotation constraint
+            fixedAxis
+            {
+                sixDoFRigidBodyMotionConstraint axis;
+                axis (0 1 0);
+            }
+        }
+
+        restraints
+        {
+
+            moorDynR2_bd
+            {
+                sixDoFRigidBodyMotionRestraint  moorDynR2;
+                couplingMode       "BODY";
+                inputFile          "Mooring/lines_v2.txt";
+                writeMooringVTK    true;
+                vtkPrefix         "mdv2_body";
+                vtkStartTime       0;
+                outerCorrector     3;
+            }
+
+            /* Example mooring restraints as defined in libsixDoFMooring
+            moorDynR2_pt
+            {
+                sixDoFRigidBodyMotionRestraint  moorDynR2;
+                couplingMode       "POINT";
+                inputFile          "Mooring/lines_v2_point.txt";
+                refAttachmentPt
+                (
+                    (-0.1      0.1    -0.077)
+                    (-0.1     -0.1    -0.077)
+                    ( 0.1      0.1    -0.077)
+                    ( 0.1     -0.1    -0.077)
+                );
+                writeMooringVTK    true;
+                vtkPrefix         "mdv2_pt";
+                vtkStartTime       0;
+                outerCorrector     3;
+            }
+            */ 
+        }
+    }
+}
+
+
+// ************************************************************************* //
