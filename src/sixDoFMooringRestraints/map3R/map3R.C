@@ -170,7 +170,9 @@ void Foam::sixDoFRigidBodyMotionRestraints::map3R::initializeMAP(const Time& tim
     {
         mps_.reset( new OFstream(outputFile_) );
         // Writing header
-        mps_() << "Time history of fairlead tension (compts) from MAP++. Total # fairleads: " << nFairleads_ << endl;
+        mps_()
+            << "Time history of fairlead tension (compts) from MAP++. Total # fairleads: "
+            << nFairleads_ << endl;
     }
 
     if (writeVTK_)
@@ -343,13 +345,14 @@ void Foam::sixDoFRigidBodyMotionRestraints::map3R::writeVTK(const Time& time) co
     double coord[max(nodesPerLine_)][3];
     
     fileName name("Mooring/VTK/map3_");
-    // OFstream mps(name + time.timeName() + "_.vtk");
     OFstream mps(name + Foam::name(++vtkCounter_) + ".vtk");
     mps.precision(4);
 
     // Writing header
-    mps << "# vtk DataFile Version 3.0" << nl << "MAP++ vtk output time=" << time.timeName() 
-        << nl << "ASCII" << nl << "DATASET POLYDATA" << endl;
+    mps << "# vtk DataFile Version 3.0" << nl
+        << "MAP++ vtk output time=" << time.timeName() 
+        << nl << "ASCII" << nl
+        << "DATASET POLYDATA" << endl;
  
     // Writing points
     mps << "\nPOINTS " << sum(nodesPerLine_) << " float" << endl;
@@ -365,7 +368,6 @@ void Foam::sixDoFRigidBodyMotionRestraints::map3R::writeVTK(const Time& time) co
     }
     
     // Writing lines
-    //mps << "\nLINES " << nLines_ << " " << nLines_*(nodesPerLine_+1) << endl;
     mps << "\nLINES " << nLines_ << " " << sum(nodesPerLine_+1) << endl;
 
     label start_node(0);

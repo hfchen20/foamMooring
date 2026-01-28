@@ -81,12 +81,12 @@ class moorDynR1
         pointField refAttachmentPt_;
 
         //- List of body names for each attachment point. Default is empty list.
-		// Allow for multiple bodies to be attached to the same restraint
-        List<word> bodies_;		
+        // Allow for multiple bodies to be attached to the same restraint
+        List<word> bodies_;
                 
         //- List of body IDs for each attachment point. Default is bodyID_ for all.
-        List<label> bodyIDs_;		
-
+        List<label> bodyIDs_;
+        
         //- List of body indices for each attachment point. Default is bodyID_ for all.
         List<label> bodyIndices_;
 

@@ -80,17 +80,19 @@ Foam::RBD::restraints::moodyR::moodyR
     
     initialized_ = false;
 
-    Info<< "Create moodyR, a mooring dynamics restraint (Palm et al. 2017)" << endl;
+    Info<< "Create moodyR, a mooring dynamics restraint (Palm et al. 2017)"
+        << endl;
 
     nCouplingDof_ = 3 * refAttachmentPt_.size();
-    Info<< "\tSupport couplingMode 'externalPoint' only, nCouplingDof = " << nCouplingDof_ 
-        << endl;
+    Info<< "\tSupport couplingMode 'externalPoint' only, nCouplingDof = "
+        << nCouplingDof_ << endl;
     
     // If different bodies are attached to moodyR
     if (coeffs_.found("bodies") )
     {
         // size of bodies_ = nAttachments_
-        Info<< "Multiple bodies specified in moodyR restraint: " << bodies_ << endl;
+        Info<< "Multiple bodies specified in moodyR restraint: "
+            << bodies_ << endl;
     }
 }
 
@@ -187,7 +189,7 @@ bool Foam::RBD::restraints::moodyR::read
         coeffs_.lookup("bodies") >> bodies_;
         // size of bodies_ = nAttachments_
     
-        for(int ii=0; ii<nAttachments; ii++) 			
+        for(int ii=0; ii<nAttachments; ii++)
         {
             bodyIDs_[ii] = model_.bodyID(bodies_[ii]);
             bodyIndices_[ii] = model_.master(bodyIDs_[ii]);
@@ -207,9 +209,10 @@ void Foam::RBD::restraints::moodyR::write
 
     os.writeEntry("inputFile", fname_);
     if (int(bodies_.size())>0)
-	   	os.writeEntry("bodies",bodies_);
+    {
+        os.writeEntry("bodies",bodies_);
+    }
     os.writeEntry("refAttachmentPt", refAttachmentPt_);
-    
 }
 
 

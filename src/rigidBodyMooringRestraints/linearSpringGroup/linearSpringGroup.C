@@ -107,7 +107,8 @@ Foam::RBD::restraints::linearSpringGroup::linearSpringGroup
             word fname(vtkPrefix_ + "_tension.dat");
             tensionFile_.reset(new OFstream(fileName("Mooring/" + fname)));
             // Writing header
-            tensionFile_()<< "Time history of springs' tension. # springs: "
+            tensionFile_()
+                << "Time history of springs' tension. # springs: "
                 << numberOfSprings_ << endl;
         }
     }
@@ -381,7 +382,6 @@ void Foam::RBD::restraints::linearSpringGroup::writeVTK
         mps << endl;
         start_node += nodesPerLine[i];
     }
-
 }
 
 // ************************************************************************* //

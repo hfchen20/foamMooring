@@ -10,7 +10,6 @@ Documentation: https://hfchen20.gitlab.io/foamMooring/
 
 GitHub mirror: https://github.com/hfchen20/foamMooring
 
-:star: Consider starring the repository if you find it useful. :star:
 
 ## Overview
 
@@ -88,6 +87,7 @@ Applied Ocean Research, 124, 103210. [https://doi.org/10.1016/j.apor.2022.103210
 - Chen, H., Medina, T. A., & Cercos-Pita, J. L. (2024). CFD simulation of multiple moored floating structures using OpenFOAM: An open-access mooring 
 restraints library. Ocean Engineering, 303, 117697. [https://doi.org/10.1016/j.oceaneng.2024.117697](https://doi.org/10.1016/j.oceaneng.2024.117697) 
 ([preprint](http://dx.doi.org/10.13140/RG.2.2.34206.10569))
+
 
 ## Disclaimer
 

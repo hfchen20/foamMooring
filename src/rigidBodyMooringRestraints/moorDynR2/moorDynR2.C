@@ -534,14 +534,14 @@ void Foam::RBD::restraints::moorDynR2::writeVTK(const Time& time) const
     // Writing header
     mps << "# vtk DataFile Version 3.0" << nl
         << "MoorDyn v2 vtk output time=" << time.timeName()
-        << nl << "ASCII" << nl << "DATASET POLYDATA" << endl;
+        << nl << "ASCII" << nl
+        << "DATASET POLYDATA" << endl;
  
     // Writing points
     mps << "\nPOINTS " << sum(nodesPerLine) << " float" << endl;
 
     for(int i=0; i<int(nLines); i++)
-    {   
-        //map_.getNodeCoordinates(i, nodesPerLine_[i], &coord[0][0]);
+    {
         MoorDynLine line = MoorDyn_GetLine(moordyn_, i+1);
         
         for(int p=0; p<nodesPerLine[i]; p++)

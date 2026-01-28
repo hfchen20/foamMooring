@@ -114,17 +114,17 @@ void Foam::RBD::restraints::moorDynR1::restrain
 {
     scalar deltaT = state.deltaT();
     scalar tprev = state.t() - deltaT;
-	
+
     const spatialTransform CofR(model_.X0(bodyID_));
     const spatialVector vCofR(model_.v(bodyID_, Zero));
-	
+
     point CoR = CofR.r();
-	
+
     vector rotationAngle
     (
        quaternion(CofR.E()).eulerAngles(quaternion::XYZ)
     );
-	
+
     vector v = vCofR.l();
     vector omega = vCofR.w();
 
@@ -145,7 +145,7 @@ void Foam::RBD::restraints::moorDynR1::restrain
         Info<< "MoorDyn module initialized!" << endl;
         initialized_ = true;
     }
-	
+
     scalar nFair = refAttachmentPt_.size();
     pointField fairPos = vectorField(nFair, vector::zero);
     vectorField fairVel = vectorField(nFair, vector::zero);
@@ -213,7 +213,7 @@ bool Foam::RBD::restraints::moorDynR1::read
         coeffs_.lookup("bodies") >> bodies_;
         // size of bodies_ = nAttachments_
     
-        for(int ii=0; ii<nAttachments; ii++) 			
+        for(int ii=0; ii<nAttachments; ii++)
         {
             bodyIDs_[ii] = model_.bodyID(bodies_[ii]);
             bodyIndices_[ii] = model_.master(bodyIDs_[ii]);

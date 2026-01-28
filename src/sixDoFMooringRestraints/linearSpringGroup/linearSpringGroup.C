@@ -93,13 +93,17 @@ Foam::sixDoFRigidBodyMotionRestraints::linearSpringGroup::linearSpringGroup
     {
         tensionFile_.reset( new OFstream(fileName("Mooring/tension.dat")) );
         // Writing header
-        tensionFile_() << "Time history of springs' tension. # springs: " << numberOfSprings_ << endl;
+        tensionFile_()
+            << "Time history of springs' tension. # springs: "
+            << numberOfSprings_ << endl;
     }
 
     if (writePos_)
     {
         posFile_.reset( new OFstream(fileName("Mooring/position.dat") ) );
-        posFile_() << "Time history of springs' attachment points. # springs: " << numberOfSprings_ << endl;     
+        posFile_()
+            << "Time history of springs' attachment points. # springs: "
+            << numberOfSprings_ << endl;     
     }
 
     Info << "Created linearSpringGroup, # Springs " << numberOfSprings_ 
@@ -340,8 +344,10 @@ void Foam::sixDoFRigidBodyMotionRestraints::linearSpringGroup::writeVTK
     mps.precision(4);
 
     // Writing header
-    mps << "# vtk DataFile Version 3.0" << nl << "linearSpringGroup vtk output time=" << time.timeName() 
-        << nl << "ASCII" << nl << "DATASET POLYDATA" << endl;
+    mps << "# vtk DataFile Version 3.0" << nl
+        << "linearSpringGroup vtk output time=" << time.timeName() << nl
+        << "ASCII" << nl
+        << "DATASET POLYDATA" << endl;
  
     // Writing points
     mps << "\nPOINTS " << 2 * nLines << " float" << endl;

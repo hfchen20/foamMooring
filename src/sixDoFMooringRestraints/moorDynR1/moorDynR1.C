@@ -38,7 +38,6 @@ References
 #include "moorDynR1.H"
 #include "addToRunTimeSelectionTable.H"
 #include "sixDoFRigidBodyMotion.H"
-//#include "Time.H"
 #include "fvMesh.H"
 #include "OFstream.H"
 #include "quaternion.H"
@@ -149,12 +148,6 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR1::restrain
 
     //LinesCalc(&CoM[0], &v[0], Flines, &t, &deltaT);
     LinesCalc(X, XD, Flines, &tprev, &deltaT);
-/*
-    Info<< "Mooring [force, moment] = [ "
-        << Flines[0] << " " << Flines[1] << " " << Flines[2] << ", "
-        << Flines[3] << " " << Flines[4] << " " << Flines[5] << " ]"
-        << endl;
-*/
 
     for(int i=0;i<3;i++)
     {
@@ -169,7 +162,7 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR1::restrain
     if (motion.report())
     {
         Info<< t << ": force " << restraintForce
-	    << ", moment " << restraintMoment
+            << ", moment " << restraintMoment
             << endl;
     }
 }

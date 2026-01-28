@@ -98,7 +98,9 @@ Foam::sixDoFRigidBodyMotionRestraints::waves2FoamMooring::waves2FoamMooring
     {
         tensionFile_.reset( new OFstream(fileName("Mooring/wfoamForce.dat")) );
         // Writing header
-        tensionFile_() << "Time history of mooring forces at fairlead: # lines " << nLines_ << endl;
+        tensionFile_()
+            << "Time history of mooring forces at fairlead: # lines "
+            << nLines_ << endl;
     }
 }
 
@@ -621,8 +623,10 @@ void Foam::sixDoFRigidBodyMotionRestraints::waves2FoamMooring::writeVTK(
     mps.precision(4);
 
     // Writing header
-    mps << "# vtk DataFile Version 3.0" << nl << "waves2FoamMooring vtk output time=" << time.timeName() 
-        << nl << "ASCII" << nl << "DATASET POLYDATA" << endl;
+    mps << "# vtk DataFile Version 3.0" << nl
+        << "waves2FoamMooring vtk output time=" << time.timeName() 
+        << nl << "ASCII" << nl
+        << "DATASET POLYDATA" << endl;
  
     // Writing points
     mps << "\nPOINTS " << sum(nodesPerLine_+1) << " float" << endl;
@@ -632,7 +636,6 @@ void Foam::sixDoFRigidBodyMotionRestraints::waves2FoamMooring::writeVTK(
         pointField coord = centreLine(fairPos[i], anchor_[i], i);
 
         for(int p=0; p<coord.size(); p++)
-        //for(int p=0; p<nodesPerLine_[i]; p++)
         {
             mps << coord[p][0] << " " << coord[p][1] << " " << coord[p][2] << endl;
         }
