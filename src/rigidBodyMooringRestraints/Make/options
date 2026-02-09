@@ -16,6 +16,5 @@ LIB_LIBS = \
     -lrigidBodyDynamics \
     -L$(FOAM_USER_LIBBIN) \
     -lmoody \
-    -lmoordynv1 \
     -lmoordyn
     

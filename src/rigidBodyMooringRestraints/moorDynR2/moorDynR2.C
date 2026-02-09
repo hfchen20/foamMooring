@@ -109,7 +109,7 @@ Foam::RBD::restraints::moorDynR2::moorDynR2
 
         if (couplingMode_ == word("POINT"))
         {
-            Info<< "\tCoupling mode: " << couplingMode_ << ", expecting nCouplingDof="
+            Info<< " Coupling mode: " << couplingMode_ << ", expecting nCouplingDof="
                 << 3 * refAttachmentPt_.size() << endl;
             if (nCouplingDof_ != 3 * refAttachmentPt_.size())
             {
@@ -122,7 +122,8 @@ Foam::RBD::restraints::moorDynR2::moorDynR2
         }
         else if (couplingMode_ == word("BODY"))
         {   
-            Info<< "Coupling mode: " << couplingMode_ << ", expecting nCouplingDof=6 * nCoupledBodies"
+            Info<< " Coupling mode: " << couplingMode_
+                << ", expecting nCouplingDof=6 * nCoupledBodies"
                 << endl;
             WarningInFunction
                 << "The 'BODY' coupling mode may NOT work as intended."
@@ -139,15 +140,15 @@ Foam::RBD::restraints::moorDynR2::moorDynR2
         else
         {
             FatalErrorInFunction
-                << "Two coupling modes supported only: 'POINT' or 'BODY'. Recommend to use 'POINT'."
+                << "Two coupling modes supported only: 'POINT' or 'BODY'."
                 << exit(FatalError);
         }
 
         // If different bodies are attached to moodyR
         if (coeffs_.found("bodies") )
         {
-            Info<< "Multiple bodies specified in moorDynR2 restraint: " << bodies_ << nl
-                << " body IDs " << bodyIDs_
+            Info<< "Multiple bodies specified in moorDynR2 restraint: " << bodies_
+                << "\n body IDs " << bodyIDs_
                 << endl << endl;
         }
         
@@ -178,7 +179,9 @@ Foam::RBD::restraints::moorDynR2::~moorDynR2()
         // Close MoorDyn call
         MoorDyn_Close(moordyn_);
         if (moordyn_backup_.data)
+        {
             free(moordyn_backup_.data);
+        }
 
         if (legacyVTK_) {
             vtk::seriesWriter writer;
@@ -293,11 +296,13 @@ void Foam::RBD::restraints::moorDynR2::restrain
     } else if (tprev - moordyn_backup_.t >= 1.e-3 * deltaT) {
         // We have successfully advanced forward in time
         save_mooring(tprev);
-        Info<< "MoorDyn module saved at t = " << tprev << " s" << endl;
+        Info<< "MoorDyn module saved at t = " << tprev << " s"
+            << endl;
     } else {
         // We are repeating the same time step because the implicit scheme
         load_mooring();
-        Info<< "MoorDyn module restored to t = " << moordyn_backup_.t << " s" << endl;
+        Info<< "MoorDyn module restored to t = " << moordyn_backup_.t
+            << " s" << endl;
     }
 
     // Step MoorDyn to get forces on bodies
@@ -356,19 +361,19 @@ void Foam::RBD::restraints::moorDynR2::restrain
     {
         if (t >= vtkStartTime_ && time.outputTime())
         {
-            Info<< "Write mooring VTK ..." << endl;
+            //Info<< "Write mooring VTK ..." << endl;
             writeVTK(time);
         }
     }
-
 }
+
 
 bool Foam::RBD::restraints::moorDynR2::read
 (
     const dictionary& dict
 )
 {
-    Info << "***  Foam::RBD::restraints::moorDynR2::read" << endl;
+    //Info << "***  Foam::RBD::restraints::moorDynR2::read" << endl;
     restraint::read(dict);
 
     coeffs_.readEntry("inputFile", fname_);
@@ -388,7 +393,14 @@ bool Foam::RBD::restraints::moorDynR2::read
         if (coeffs_.found("bodies") )
         {
             coeffs_.lookup("bodies") >> bodies_;
-            // size of bodies_ = nAttachments_
+            // check size of bodies_
+            if (bodies_.size() != nAttachments)
+            {
+                FatalErrorInFunction
+                    << "bodies " << bodies_ << ", size=" << bodies_.size()
+                    << ", not equal to refAttachmentPt size " << nAttachments
+                    << exit(FatalError);
+            }
         
             for(int ii=0; ii<nAttachments; ii++)
             {
@@ -429,6 +441,10 @@ bool Foam::RBD::restraints::moorDynR2::read
                 bodyIDs_[ii] = model_.bodyID(bodies_[ii]);
                 bodyIndices_[ii] = model_.master(bodyIDs_[ii]);
             }
+        }
+        else
+        {
+            bodies_ = List<word>(1, model_.name(bodyID_));
         }
     }
 
