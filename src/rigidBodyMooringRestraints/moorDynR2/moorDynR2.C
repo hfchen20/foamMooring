@@ -93,24 +93,27 @@ Foam::RBD::restraints::moorDynR2::moorDynR2
     {
         int moordyn_err = MOORDYN_SUCCESS;
         moordyn_ = MoorDyn_Create(fname_.c_str());
-        if (!moordyn_) {
+        if (!moordyn_)
+        {
             FatalErrorInFunction
-                << "MoorDyn v2 cannot be created!" << exit(FatalError);
+                << "MoorDyn v2 cannot be created!"
+                << exit(FatalError);
         }
         unsigned int n;
         moordyn_err = MoorDyn_NCoupledDOF(moordyn_, &n);
-        if (moordyn_err != MOORDYN_SUCCESS) {
+        if (moordyn_err != MOORDYN_SUCCESS)
+        {
             FatalErrorInFunction
                 << "NCoupledDOF error on the MoorDyn definition file" 
                 << exit(FatalError);
         }
         nCouplingDof_ = int(n);
-        //nCouplingDof_ = n;
 
         if (couplingMode_ == word("POINT"))
         {
-            Info<< " Coupling mode: " << couplingMode_ << ", expecting nCouplingDof="
-                << 3 * refAttachmentPt_.size() << endl;
+            Info<< " Coupling mode: " << couplingMode_
+                << ", expecting nCouplingDof=" << 3 * refAttachmentPt_.size()
+                << endl;
             if (nCouplingDof_ != 3 * refAttachmentPt_.size())
             {
                 FatalErrorInFunction
@@ -144,7 +147,7 @@ Foam::RBD::restraints::moorDynR2::moorDynR2
                 << exit(FatalError);
         }
 
-        // If different bodies are attached to moodyR
+        // If different bodies are attached
         if (coeffs_.found("bodies") )
         {
             Info<< "Multiple bodies specified in moorDynR2 restraint: " << bodies_
@@ -174,7 +177,7 @@ Foam::RBD::restraints::moorDynR2::moorDynR2
 
 Foam::RBD::restraints::moorDynR2::~moorDynR2()
 {
-    if (Pstream::master() && initialized_)
+    if (initialized_)
     {
         // Close MoorDyn call
         MoorDyn_Close(moordyn_);
@@ -183,7 +186,8 @@ Foam::RBD::restraints::moorDynR2::~moorDynR2()
             free(moordyn_backup_.data);
         }
 
-        if (legacyVTK_) {
+        if (Pstream::master() && legacyVTK_)
+        {
             vtk::seriesWriter writer;
 
             writer.scan("Mooring/VTK/" + vtkPrefix_ + ".vtk");
@@ -276,7 +280,8 @@ void Foam::RBD::restraints::moorDynR2::restrain
     {
         // Initialize MoorDyn
         moordyn_err = MoorDyn_Init(moordyn_, X, XD);
-        if (moordyn_err != MOORDYN_SUCCESS) {
+        if (moordyn_err != MOORDYN_SUCCESS)
+        {
             FatalErrorInFunction
                 << "MoorDyn could not be initialized"
                 << exit(FatalError);
@@ -284,8 +289,10 @@ void Foam::RBD::restraints::moorDynR2::restrain
 
         Info<< "MoorDyn module initialized!" << endl;
         initialized_ = true;
+        
         save_mooring(tprev);
-        if (writeVTK_) {
+        if (writeVTK_)
+        {
             autoPtr<Time> dummy_t = Time::New();
             dummy_t->setTime(0.0, 0);
             writeVTK(dummy_t.ref());
@@ -293,12 +300,14 @@ void Foam::RBD::restraints::moorDynR2::restrain
 
         curTime_ = t;
         iteration_ = 1;
-    } else if (tprev - moordyn_backup_.t >= 1.e-3 * deltaT) {
+    } else if (tprev - moordyn_backup_.t >= 1.e-3 * deltaT)
+    {
         // We have successfully advanced forward in time
         save_mooring(tprev);
         Info<< "MoorDyn module saved at t = " << tprev << " s"
             << endl;
-    } else {
+    } else
+    {
         // We are repeating the same time step because the implicit scheme
         load_mooring();
         Info<< "MoorDyn module restored to t = " << moordyn_backup_.t
@@ -311,10 +320,12 @@ void Foam::RBD::restraints::moorDynR2::restrain
         moordyn_, &fairPos[0][0], &fairVel[0][0], &fairForce[0][0], &tprev, &deltaT
     );
 
-    if (moordyn_err != MOORDYN_SUCCESS) {
+    if (moordyn_err != MOORDYN_SUCCESS)
+    {
         FatalErrorInFunction
             << "Error computing MoorDyn step " << tprev
-            << "s -> " << tprev + deltaT << "s" << exit(FatalError);
+            << "s -> " << tprev + deltaT << "s"
+            << exit(FatalError);
     }    
     
     if (couplingMode_ == word("BODY"))
@@ -361,7 +372,7 @@ void Foam::RBD::restraints::moorDynR2::restrain
     {
         if (t >= vtkStartTime_ && time.outputTime())
         {
-            //Info<< "Write mooring VTK ..." << endl;
+            //Info<< "Write mooring VTK .." << endl;
             writeVTK(time);
         }
     }
@@ -478,15 +489,20 @@ void Foam::RBD::restraints::moorDynR2::write
     Ostream& os
 ) const
 {
-    Info << "***  Foam::RBD::restraints::moorDynR2::write" << endl;
+    //Info << "***  Foam::RBD::restraints::moorDynR2::write" << endl;
     restraint::write(os);
 
     os.writeEntry("inputFile", fname_);
     os.writeEntry("couplingMode", couplingMode_);
     if (couplingMode_ == word("POINT"))
+    {
         os.writeEntry("refAttachmentPt", refAttachmentPt_);
+    }
+    
     if (int(bodies_.size())>0)
+    {
         os.writeEntry("bodies",bodies_);
+    }
     
     os.writeEntry("writeVTK", writeVTK_);
     if (writeVTK_)
@@ -503,22 +519,30 @@ void Foam::RBD::restraints::moorDynR2::writeVTK(const Time& time) const
 {
     fileName name(vtkPrefix_ + word::printf("_%04d", vtkCounter_++));
 
-    if (!legacyVTK_) {
+    if (!legacyVTK_)
+    {
         name += ".vtm";
-        int moordyn_err = MoorDyn_SaveVTK(moordyn_,
-                                          ("Mooring/VTK/" + name).c_str());
-        if (moordyn_err != MOORDYN_SUCCESS) {
-            FatalError << "Error saving the VTK file \""
-                       << name << " for time " << time.timeName() << " s"
-                       << exit(FatalError);
+        int moordyn_err = MoorDyn_SaveVTK
+        (
+            moordyn_,
+            ("Mooring/VTK/" + name).c_str()
+        );
+        if (moordyn_err != MOORDYN_SUCCESS)
+        {
+            FatalErrorInFunction
+                << "Error saving the VTK file \""
+                << name << " for time " << time.timeName() << " s"
+                << exit(FatalError);
         }
         // Update the vtp file
-        if (!has_pvd()) {
+        if (!has_pvd())
+        {
             make_pvd();
         }
         auto lines = read_pvd(time);
         OFstream os(name_pvd());
-        for (auto line : lines) {
+        for (auto line : lines) 
+        {
             os << line.c_str() << nl;
         }
         os << "    <DataSet timestep=\"" << time.timeName()

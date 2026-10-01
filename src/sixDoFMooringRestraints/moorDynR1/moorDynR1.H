@@ -72,7 +72,7 @@ class moorDynR1
 {
     // Private data
 
-	//- Initialize MoorDyn at the first time step ()
+        //- Initialize MoorDyn at the first time step
         mutable bool initialized_;
 
 

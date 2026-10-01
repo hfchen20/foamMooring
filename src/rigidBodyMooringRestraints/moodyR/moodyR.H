@@ -30,7 +30,7 @@ Group
     grpRigidBodyDynamicsRestraints
 
 Description
-    Mooring dynamics resolved.
+    Moody restraint
 
     J. Palm, C. Eskilsson, and L. Bergdahl. An hp-adaptive discontinuous Galerkin
     method for modelling snap loads in mooring cables. Ocean Engineering, 144:266–
@@ -116,15 +116,15 @@ class moodyR
 {
     // Private data
 
-        //- Moody input filename
+        //- Mooring input filename
         fileName fname_;
 
         //- List of body names for each attachment point. Default is empty list.
-        // Allow for multiple bodies to be attached to the same moodyR restraint:
-        List<word> bodies_;		
-                
+        // Allow for multiple bodies to be attached to
+        List<word> bodies_;
+        
         //- List of body IDs for each attachment point. Default is bodyID_ for all.
-        List<label> bodyIDs_;		
+        List<label> bodyIDs_;
 
         //- List of body indices for each attachment point. Default is bodyID_ for all.
         List<label> bodyIndices_;

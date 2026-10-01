@@ -30,7 +30,7 @@ Group
     grpRigidBodyDynamicsRestraints
 
 Description
-    sixDoFRigidBodyMotionRestraints model.  Quasi-static mooring model.
+    Quasi-static mooring restraint, MAP++.
 
     M., Masciola, J., Jonkman, and A. Robertson. Implementation of a multisegmented, 
     quasi-static cable model. In The Twenty-third International Offshore and Polar 
@@ -77,7 +77,7 @@ class map3R
 {
     // Private data
 
-        //- mapFoamInterface object: initialie, update, and close MAP calls
+        //- MAP interface to initialise, update, and close MAP calls
         mutable mapFoamInterface map_;
         
         //- MAP intput file
@@ -93,11 +93,10 @@ class map3R
         scalar depth_;
         
         //- List of body names for each attachment point. Default is empty list.
-        // Allow for multiple bodies to be attached to the same moodyR restraint:
-        List<word> bodies_;		
+        List<word> bodies_;
 
         //- List of body IDs for each attachment point. Default is bodyID_ for all.
-        List<label> bodyIDs_;		
+        List<label> bodyIDs_;
 
         //- List of body indices for each attachment point. Default is bodyID_ for all.
         List<label> bodyIndices_;
@@ -123,9 +122,6 @@ class map3R
         //- Start time to write VTK, default to runTime.start
         scalar vtkStartTime_;
 
-        //- Write interval (sec) to output VTK
-        //scalar vtkInterval_;
-
         //- Sequence number to be included in vtk filename
         mutable label vtkCounter_;
 
@@ -148,8 +144,6 @@ class map3R
         //- Output stream for mooring fairlead forces
         mutable autoPtr<OFstream> mps_;
 
-        //- Output stream for mooring VTK
-        //mutable autoPtr<OFstream> vtk_;
 
 public:
 

@@ -120,9 +120,6 @@ void Foam::RBD::restraints::moodyR::restrain
 {
     scalar t = state.t();
     scalar tprev = t-state.deltaT();
-
-    //double t = model_.time().value();
-    //double tPrev = t - model_.time().deltaTValue();
     
     pointField fairPos = vectorField(int(nCouplingDof_/3), vector::zero);
     vectorField fairForce =vectorField(int(nCouplingDof_/3), vector::zero);
@@ -183,7 +180,6 @@ bool Foam::RBD::restraints::moodyR::read
     bodyIDs_ = List<label>(nAttachments, bodyID_);
     bodyIndices_ = List<label>(nAttachments, bodyIndex_);
     
-    // If different bodies are attached to moody moorings:
     if (coeffs_.found("bodies") )
     {
         coeffs_.lookup("bodies") >> bodies_;

@@ -125,7 +125,7 @@ void Foam::sixDoFRigidBodyMotionRestraints::moodyR::restrain
     scalar tprev = t - time.deltaTValue();
     
     pointField fairPos = vectorField(int(nCouplingDof_/3), vector::zero);
-    vectorField fairForce =vectorField(int(nCouplingDof_/3), vector::zero);
+    vectorField fairForce = vectorField(int(nCouplingDof_/3), vector::zero);
     
     // If coupling mode is externalRigidBody, X and fairPos are in fact body's 6DoF motion;
     // Flines is mooring forces and moments on the body (may need to reverse the sign).
@@ -160,9 +160,7 @@ void Foam::sixDoFRigidBodyMotionRestraints::moodyR::restrain
     if (!initialized_)
     {
         // Initialize Moody
-        // int moodyInit(const char* fName, int nVals, double initialValues[], double startTime );
         // moodyInit(fname_.c_str(), nCouplingDof_,  &fairPos_[0][0], tprev);
-
         moodyInit(fname_.c_str(), nCouplingDof_, X, tprev);
 
         if (waveKinematics_)
@@ -199,9 +197,7 @@ void Foam::sixDoFRigidBodyMotionRestraints::moodyR::restrain
 
     // void moodySolve(const double X[], double F[], double t1, double t2);
     moodySolve(X, Flines, tprev, t);
-    
-    //if (mode_ == word("externalPoint"))
-    //    moodySolve(&fairPos[0][0], &fairForce[0][0], tprev, t);
+    // moodySolve(&fairPos[0][0], &fairForce[0][0], tprev, t);
     
     if (mode_ == word("externalPoint"))
     {        
@@ -234,7 +230,7 @@ void Foam::sixDoFRigidBodyMotionRestraints::moodyR::restrain
     if (motion.report())
     {
         Info<< t << ": force " << restraintForce
-	        << ", moment " << restraintMoment
+            << ", moment " << restraintMoment
             << endl;
     }
 }

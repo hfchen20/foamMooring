@@ -79,7 +79,7 @@ class moodyR
 {
     // Private data
 
-        //- Moody input filename
+        //- Mooring input filename
         fileName fname_;
 
         //- Coupling mode: 'externalPoint', otherwise 'externalRigidBody'

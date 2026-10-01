@@ -57,8 +57,6 @@ SourceFiles
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-//class mapFoamInterface;
-
 namespace Foam
 {
 
@@ -75,7 +73,7 @@ class map3R
 {
     // Private data
     
-    //- mapFoamInterface object, initialie, update, and close MAP calls
+    //- MAP interface to initialise, update, and close MAP calls
     mutable mapFoamInterface map_;
     
     //- MAP intput file
@@ -103,10 +101,10 @@ class map3R
     // size equal to nLines_
     pointField refAttachmentPt_;
     
-    //-  Write mooring fairlead forces to file
+    //- Write mooring fairlead forces to file
     bool writeForces_;
         
-   //- Write mooring line coordinates to VTK files
+    //- Write mooring line coordinates to VTK files
     bool writeVTK_;
 
     //- Start time to write VTK, default to runTime.start
@@ -119,7 +117,6 @@ class map3R
     label nNodes_;
 
     //- List of nodes # per mooring line
-    //scalarField nodesPerLine_;
     mutable List<label> nodesPerLine_;
 
     //- Current time, to count iteration

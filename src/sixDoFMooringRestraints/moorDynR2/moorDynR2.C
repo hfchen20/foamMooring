@@ -89,10 +89,11 @@ Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::moorDynR2
 
     //- For multi-step initialization
     std::stringstream ss(inputFile_);
-    while (ss.good()) {
-            string substr;
-            getline(ss, substr, ',');
-            initFiles_.push_back(substr);
+    while (ss.good())
+    {
+        string substr;
+        getline(ss, substr, ',');
+        initFiles_.push_back(substr);
     }
     nInitFiles_ = initFiles_.size();
 
@@ -100,9 +101,10 @@ Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::moorDynR2
     if (Pstream::master())
     {
         int moordyn_err = MOORDYN_SUCCESS;
-        //moordyn_ = MoorDyn_Create("Mooring/lines_v2.txt");
+        
         moordyn_ = MoorDyn_Create(initFiles_[0].c_str());
-        if (!moordyn_) {
+        if (!moordyn_)
+        {
             FatalError << "MoorDyn v2 cannot be created with "
                        << initFiles_[0] 
                        << exit(FatalError);
@@ -112,7 +114,8 @@ Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::moorDynR2
         // be modelled
         unsigned int n;
         moordyn_err = MoorDyn_NCoupledDOF(moordyn_, &n);
-        if (moordyn_err != MOORDYN_SUCCESS) {
+        if (moordyn_err != MOORDYN_SUCCESS)
+        {
             FatalErrorInFunction
                 << "NCoupledDOF error on the MoorDyn definition file" 
                 << exit(FatalError);
@@ -121,8 +124,9 @@ Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::moorDynR2
 
         if (couplingMode_ == word("POINT"))
         {
-            Info<< "\tCoupling mode: " << couplingMode_ << ", expecting nCouplingDof="
-                << 3 * refAttachmentPt_.size() << endl;
+            Info<< "\tCoupling mode: " << couplingMode_
+                << ", expecting nCouplingDof=" << 3 * refAttachmentPt_.size()
+                << endl;
             if (nCouplingDof_ != 3 * refAttachmentPt_.size())
             {
                 FatalErrorInFunction
@@ -134,7 +138,8 @@ Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::moorDynR2
         }
         else if (couplingMode_ == word("BODY"))
         {
-            Info<< "Coupling mode: " << couplingMode_ << ", expecting nCouplingDof = 6"
+            Info<< "Coupling mode: " << couplingMode_
+                << ", expecting nCouplingDof = 6"
                 << endl;
             if (nCouplingDof_ != 6 )
             {
@@ -144,22 +149,27 @@ Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::moorDynR2
             }
 
             moordyn_err = MoorDyn_GetNumberBodies(moordyn_, &n);
-            if ((moordyn_err != MOORDYN_SUCCESS) || n != 1) {
-                FatalError << "Only one coupled body was expected "
-                        << "on the MoorDyn definition file" << exit(FatalError);
+            if ((moordyn_err != MOORDYN_SUCCESS) || n != 1)
+            {
+                FatalErrorInFunction
+                    << "Only one coupled body was expected on the MoorDyn definition file"
+                    << exit(FatalError);
             }
             moordyn_body_ = NULL;
-            for (unsigned int i = 0; i < n; i++) {
+            for (unsigned int i = 0; i < n; i++)
+            {
                 MoorDynBody body = MoorDyn_GetBody(moordyn_, i + 1);
                 if (!body) {
-                    FatalError << "Failure getting the MoorDyn body " << i + 1
-                            << exit(FatalError);
+                    FatalErrorInFunction
+                        << "Failure getting the MoorDyn body " << i + 1
+                        << exit(FatalError);
                 }
                 int t;
                 moordyn_err = MoorDyn_GetBodyType(body, &t);
                 if (moordyn_err != MOORDYN_SUCCESS) {
-                    FatalError << "Failure geeting the body " << i + 1
-                            << " type" << exit(FatalError);
+                    FatalErrorInFunction
+                        << "Failure geeting the body " << i + 1 << " type"
+                        << exit(FatalError);
                 }
                 if (t == -1) {
                     // Coupled body, see Body.hpp:143
@@ -168,7 +178,9 @@ Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::moorDynR2
                 }
             }
             if (!moordyn_body_) {
-                FatalError << "No coupled body could be found" << exit(FatalError);
+                FatalErrorInFunction
+                    << "No coupled body could be found"
+                    << exit(FatalError);
             }
         }
         else
@@ -190,15 +202,11 @@ Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::moorDynR2
                     << exit(FatalError);
             }
 #endif
+            
+            mkDir("Mooring/VTK");
         }
 
     }
-
-    if (writeVTK_)
-    {
-        mkDir("Mooring/VTK");
-    }
-
 }
 
 
@@ -211,16 +219,21 @@ Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::~moorDynR2()
         // Close MoorDyn call
         MoorDyn_Close(moordyn_);
         if (moordyn_backup_.data)
+        {
             free(moordyn_backup_.data);
-
-        vtk::seriesWriter writer;
-
-        writer.scan("Mooring/VTK/" + vtkPrefix_ + ".vtk");
+        }
         
-        Info<< "Writing mooring vtk series file" << nl;
+        if (Pstream::master() && legacyVTK_)
+        {
+            vtk::seriesWriter writer;
 
-        fileName vtkSeries("Mooring/VTK/" + vtkPrefix_ + ".vtk");
-        writer.write(vtkSeries);
+            writer.scan("Mooring/VTK/" + vtkPrefix_ + ".vtk");
+
+            Info<< "Writing mooring vtk series file" << nl;
+
+            fileName vtkSeries("Mooring/VTK/" + vtkPrefix_ + ".vtk");
+            writer.write(vtkSeries);
+        }
     }
 }
 
@@ -297,72 +310,97 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::restrain
 
     if (!initialized_)
     {
-        Info << "Read restartFile: " << restartFile_ << nl;
-        Info << "Restart file exists: " 
-             << ( checkRestartFile(restartFile_) ? "True" : "False") << nl;
+        Info<< "Read restartFile: " << restartFile_ << nl;
+        Info<< "Restart file exists: " 
+            << ( checkRestartFile(restartFile_) ? "True" : "False") << nl;
 
         //- For restart
         saveInterval_ = motion.time().controlDict().get<scalar>("writeInterval");
 
-        if (t > deltaT && restartFile_ != word("None") && checkRestartFile(restartFile_)) 
+        if
+        (
+            t > deltaT 
+         && restartFile_ != word("None")
+         && checkRestartFile(restartFile_)
+        ) 
         {
             moordyn_err = MoorDyn_Init_NoIC(moordyn_, X, XD);
-            if (moordyn_err != MOORDYN_SUCCESS) {
-            FatalError << "MoorDyn could not be initialize"
-                       << exit(FatalError);
+            if (moordyn_err != MOORDYN_SUCCESS)
+            {
+                FatalErrorInFunction
+                    << "MoorDyn could not be initialize"
+                    << exit(FatalError);
             }
 
-            moordyn_err = MoorDyn_Load( moordyn_, restartFile_.c_str() );
+            moordyn_err = MoorDyn_Load(moordyn_, restartFile_.c_str());
             if (moordyn_err != MOORDYN_SUCCESS) 
             {
-                FatalError << "MoorDyn could not be restarted. Check restart file!"
-                           << exit(FatalError);
+                FatalErrorInFunction
+                    << "MoorDyn could not be restarted. Check restart file!"
+                    << exit(FatalError);
             }
 
             restartCount_ = floor(t/saveInterval_) + 1;
 
-            Info << "MoorDyn is initialized using restart file!" << nl << nl;
+            Info<< "MoorDyn is initialized using restart file!" << nl << nl;
 
-        } else {
+        } else
+        {
             moordyn_err = MoorDyn_Init(moordyn_, X, XD);
-            if (moordyn_err != MOORDYN_SUCCESS) {
-                FatalError << "MoorDyn could not be initialized"
-                           << exit(FatalError);
+            if (moordyn_err != MOORDYN_SUCCESS)
+            {
+                FatalErrorInFunction
+                    << "MoorDyn could not be initialized"
+                    << exit(FatalError);
             }
 
-            moordyn_err = MoorDyn_SaveState(moordyn_, (initFiles_[0]+".ic").c_str());
-            if (moordyn_err != MOORDYN_SUCCESS) {
-                FatalError << "MoorDyn state could not be saved"
-                           << exit(FatalError);
+            moordyn_err = MoorDyn_SaveState
+            (
+                moordyn_,
+                (initFiles_[0]+".ic").c_str()
+            );
+            if (moordyn_err != MOORDYN_SUCCESS)
+            {
+                FatalErrorInFunction
+                    << "MoorDyn state could not be saved"
+                    << exit(FatalError);
             }
 
             for ( int i = 1; i < nInitFiles_; i++ )
             {
                 moordyn_ = MoorDyn_Create(initFiles_[i].c_str());
-                if (!moordyn_) {
-                    FatalError << "MoorDyn instance cannot be created with "
-                               << initFiles_[i]
-                               << exit(FatalError);
+                if (!moordyn_)
+                {
+                    FatalErrorInFunction
+                        << "MoorDyn instance cannot be created with "
+                        << initFiles_[i]
+                        << exit(FatalError);
                 }
                 moordyn_err = MoorDyn_Init(moordyn_, X, XD);
-                if (moordyn_err != MOORDYN_SUCCESS) {
-                    FatalError << "MoorDyn could not be initialized"
-                               << exit(FatalError);
+                if (moordyn_err != MOORDYN_SUCCESS)
+                {
+                    FatalErrorInFunction
+                        << "MoorDyn could not be initialized"
+                        << exit(FatalError);
                 }
 
-                moordyn_err = MoorDyn_SaveState(moordyn_, (initFiles_[i]+".ic").c_str());
-                if (moordyn_err != MOORDYN_SUCCESS) {
-                    FatalError << "MoorDyn state could not be saved"
-                               << exit(FatalError);
+                moordyn_err = 
+                    MoorDyn_SaveState(moordyn_, (initFiles_[i]+".ic").c_str());
+                if (moordyn_err != MOORDYN_SUCCESS)
+                {
+                    FatalErrorInFunction
+                        << "MoorDyn state could not be saved"
+                        << exit(FatalError);
                 }
             }
 
-            Info << nl << "MoorDyn module initialized!" << nl << nl;
+            Info<< nl << "MoorDyn module initialized!" << nl << nl;
         }
 
         initialized_ = true;
         save_mooring(tprev);
-        if (writeVTK_) {
+        if (writeVTK_)
+        {
             autoPtr<Time> dummy_t = Time::New();
             dummy_t->setTime(0.0, 0);
             writeVTK(dummy_t.ref());
@@ -371,40 +409,60 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::restrain
         curTime_ = t;
         iteration_ = 1;
 
-    } else if (tprev - moordyn_backup_.t >= 1.e-3 * deltaT) {
+    } else if (tprev - moordyn_backup_.t >= 1.e-3 * deltaT)
+    {
         // We have successfully advanced forward in time
         save_mooring(tprev);
         Info<< "MoorDyn module saved at t = " << tprev << " s" << endl;
 
         // For restart - Save restart file at writeInterval from controlDict
-        if ( mag(t - restartCount_*saveInterval_) < 1.e-3 * deltaT && saveRestart_ )
+        if
+        ( 
+            mag(t - restartCount_*saveInterval_) < 1.e-3 * deltaT
+         && saveRestart_ 
+        )
         {
-            moordyn_err = MoorDyn_Save(moordyn_,
-                    ( restartPrefix_ + motion.time().timeName() ).c_str() );
+            moordyn_err = MoorDyn_Save
+            (
+                moordyn_,
+                ( restartPrefix_ + motion.time().timeName() ).c_str()
+            );
 
             if(moordyn_err != MOORDYN_SUCCESS)
             {
                 WarningIn(__PRETTY_FUNCTION__)
-                << "MoorDyn restart file could not be saved!\n";
+                    << "MoorDyn restart file could not be saved!\n";
             }
 
             restartCount_++;
-            Info << "restartCount: " << restartCount_ << endl;
+            Info<< "restartCount: " << restartCount_ << endl;
         }
 
     } else {
         // We are repeating the same time step because the implicit scheme
         load_mooring();
-        Info<< "MoorDyn module restored to t = " << moordyn_backup_.t << " s" << endl;
+        Info<< "MoorDyn module restored to t = " << moordyn_backup_.t << " s"
+            << endl;
     }
 
     // Step MoorDyn to get mooring forces on body
     //moordyn_err = MoorDyn_Step(moordyn_, X, XD, Flines, &tprev, &deltaT);
-    moordyn_err = MoorDyn_Step(moordyn_, &fairPos[0][0], &fairVel[0][0], &fairForce[0][0], &tprev, &deltaT);
-    if (moordyn_err != MOORDYN_SUCCESS) {
+    moordyn_err = MoorDyn_Step
+    (
+        moordyn_,
+        &fairPos[0][0],
+        &fairVel[0][0],
+        &fairForce[0][0],
+        &tprev,
+        &deltaT
+    );
+    
+    if (moordyn_err != MOORDYN_SUCCESS)
+    {
         FatalErrorInFunction
             << "Error computing MoorDyn step " << tprev
-            << "s -> " << tprev + deltaT << "s" << exit(FatalError);
+            << "s -> " << tprev + deltaT << "s"
+            << exit(FatalError);
     }
 
     if (couplingMode_ == word("BODY"))
@@ -449,7 +507,7 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::restrain
     {
         if (t >= vtkStartTime_ && time.outputTime())
         {
-            Info<< "Write mooring VTK ..." << endl;
+            Info<< "Write mooring VTK .." << endl;
             writeVTK(time);
         }
     }
@@ -502,9 +560,12 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::write
     os.writeEntry("couplingMode", couplingMode_);
     os.writeEntry("nCouplingDof", nCouplingDof_);
     if (couplingMode_ == word("POINT"))
+    {
         os.writeEntry("refAttachmentPt", refAttachmentPt_);
+    }
     
     os.writeEntry("writeMooringVTK", writeVTK_);
+    
     if (writeVTK_)
     {
         os.writeEntry("vtkPrefix", vtkPrefix_);
@@ -518,24 +579,32 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::write
 
 void Foam::sixDoFRigidBodyMotionRestraints::moorDynR2::writeVTK(const Time& time) const
 {
-    fileName name(
-        vtkPrefix_ + "_" + Foam::name(++vtkCounter_));
-    if (!legacyVTK_) {
+    fileName name(vtkPrefix_ + word::printf("_%04d", ++vtkCounter_));
+    
+    if (!legacyVTK_)
+    {
         name += ".vtm";
-        int moordyn_err = MoorDyn_SaveVTK(moordyn_,
-                                          ("Mooring/VTK/" + name).c_str());
-        if (moordyn_err != MOORDYN_SUCCESS) {
-            FatalError << "Error saving the VTK file \""
-                       << name << " for time " << time.timeName() << " s"
-                       << exit(FatalError);
+        int moordyn_err = MoorDyn_SaveVTK
+        (
+            moordyn_,
+            ("Mooring/VTK/" + name).c_str()
+        );
+        if (moordyn_err != MOORDYN_SUCCESS)
+        {
+            FatalErrorInFunction
+                << "Error saving the VTK file \"" << name 
+                << " for time " << time.timeName() << " s"
+                << exit(FatalError);
         }
         // Update the vtp file
-        if (!has_pvd()) {
+        if (!has_pvd())
+        {
             make_pvd();
         }
         auto lines = read_pvd(time);
         OFstream os(name_pvd());
-        for (auto line : lines) {
+        for (auto line : lines)
+        {
             os << line.c_str() << nl;
         }
         os << "    <DataSet timestep=\"" << time.timeName()

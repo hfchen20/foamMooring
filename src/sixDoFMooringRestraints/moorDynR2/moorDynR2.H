@@ -78,7 +78,7 @@ class moorDynR2
 {
     // Private data
         
-        //- MoorDyn input filename
+        //- Mooring input filename
         fileName inputFile_;
         std::vector<string> initFiles_;
         int nInitFiles_;

@@ -137,15 +137,12 @@ void Foam::sixDoFRigidBodyMotionRestraints::moorDynR1::restrain
 
     double Flines[6] = {0.0};
 
-    // Call LinesCalc() to obtain forces and moments, Flines(1x6)
-    // LinesCalc(double X[], double XD[], double Flines[], double* t_in, double* dt_in)
-
     Info<< "X[6]: " << vector(X[0], X[1], X[2]) << ", " << vector(X[3], X[4], X[5])
         << endl;
-
-    Info<< "XD[6]: " << vector(XD[0], XD[1], XD[2]) << ", " << vector(XD[3], XD[4], XD[5])
-        << endl;
-
+    // Info<< "XD[6]: " << vector(XD[0], XD[1], XD[2]) << ", " << vector(XD[3], XD[4], XD[5])
+    //     << endl;
+    
+    // Call LinesCalc() to obtain forces and moments, Flines(1x6)
     //LinesCalc(&CoM[0], &v[0], Flines, &t, &deltaT);
     LinesCalc(X, XD, Flines, &tprev, &deltaT);
 

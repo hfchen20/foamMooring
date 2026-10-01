@@ -30,7 +30,7 @@ Group
     grpRigidBodyDynamicsRestraints
 
 Description
-    Linear spring restraint.
+    Groups of linear spring restraint.
 
 SourceFiles
     linearSpringGroup.C

@@ -177,10 +177,13 @@ void Foam::RBD::restraints::linearSpringGroup::restrain
         scalar delta = magR - restLength_;
 
         if (compression_)
+        {
             tension[pt] =  stiffness_*delta;
+        }
         else
+        {
             tension[pt] = (delta > VSMALL) ? stiffness_*delta : 0.0;
-
+        }
         // Force and moment on the master body including optional damping
         vector fi = -tension[pt]*r - damping_*(r & v)*r;
 
@@ -228,7 +231,7 @@ void Foam::RBD::restraints::linearSpringGroup::restrain
         {
             if (t >= vtkStartTime_ && time.outputTime())
             {
-                Info<< "Write springs VTK ..." << endl;
+                //Info<< "Write springs VTK .." << endl;
                 writeVTK(time, fairPos);
             }
         }
@@ -287,10 +290,11 @@ bool Foam::RBD::restraints::linearSpringGroup::read
         coeffs_.readEntry("restLength", restLength_);
     }
     else
+    {
         FatalErrorInFunction
             << "Inhomogeneous springs not implemented yet!"
             << abort(FatalError);
-
+    }
     writeTension_ =
         coeffs_.getOrDefault<Switch>
         (

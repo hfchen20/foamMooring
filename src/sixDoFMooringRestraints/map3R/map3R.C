@@ -103,7 +103,7 @@ Foam::sixDoFRigidBodyMotionRestraints::map3R::map3R
 
 Foam::sixDoFRigidBodyMotionRestraints::map3R::~map3R()
 {
-    if (initialized_)
+    if (initialized_ && Pstream::master())
     {
         // Close MAP++
         map_.closeMAP();
@@ -152,17 +152,19 @@ void Foam::sixDoFRigidBodyMotionRestraints::map3R::initializeMAP(const Time& tim
 
     if (nLines_ != refAttachmentPt_.size())
     {
-        Info<< "Warning: Number of refAttachmentPt unequal to # of lines defined in MAP++! refAttachmentPt size: "
-            << refAttachmentPt_.size() << ", MAP.size_lines() = " << nLines_ << endl;
+        Info<< "Warning: Number of refAttachmentPt unequal to # of lines defined in MAP++!"
+            << " refAttachmentPt size " << refAttachmentPt_.size()
+            << ", MAP.size_lines() = " << nLines_
+            << endl;
         
         // If there are connecting nodes, nLines_ != refAttachmentPt_.size()
     }
     if (nFairleads_ != refAttachmentPt_.size())
     {
-        // FatalIOErrorInFunction(*this)
         FatalErrorInFunction
-            << "Number of refAttachmentPt unequal to # of fairleads defined in MAP++! refAttachmentPt size: "
-            << refAttachmentPt_.size() << ", # nFairleads " << nFairleads_
+            << "Number of refAttachmentPt unequal to # of fairleads defined in MAP++!"
+            << " refAttachmentPt size " << refAttachmentPt_.size()
+            << ", # nFairleads " << nFairleads_
             << exit(FatalError);
     }
 
@@ -178,6 +180,7 @@ void Foam::sixDoFRigidBodyMotionRestraints::map3R::initializeMAP(const Time& tim
     if (writeVTK_)
     {
         mkDir("Mooring/VTK");
+        
         if (!sDoFRBMRCoeffs_.found("nodesPerLine"))
         {
             nodesPerLine_ = List<label>(nLines_, nNodes_);
@@ -185,8 +188,9 @@ void Foam::sixDoFRigidBodyMotionRestraints::map3R::initializeMAP(const Time& tim
         else if (nodesPerLine_.size() != nLines_)
         {
             FatalErrorInFunction
-                << "Entries of nodesPerLine unequal to # of lines defined in MAP++! nodesPerLine size: "
-                << nodesPerLine_.size() << ", # nLines " << nLines_
+                << "Entries of nodesPerLine unequal to # of lines defined in MAP++!"
+                << " nodesPerLine size " << nodesPerLine_.size()
+                << ", # nLines " << nLines_
                 << exit(FatalError);
         }
     }
@@ -271,7 +275,7 @@ void Foam::sixDoFRigidBodyMotionRestraints::map3R::restrain
         {
             if (time.outputTime() && t >= vtkStartTime_)
             {
-                Info<< "Write mooring VTK ..." << endl;
+                Info<< "Write mooring VTK .." << endl;
                 writeVTK(time);
             }
         }

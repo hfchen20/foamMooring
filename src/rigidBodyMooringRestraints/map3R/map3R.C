@@ -88,13 +88,15 @@ Foam::RBD::restraints::map3R::map3R
     curTime_ = -1;
     iteration_ = 0;
 
-    Info<< "Create map3R (quasi-static mooring code MAP++) ..." << endl;
+    Info<< "Create map3R (quasi-static mooring code MAP++) .."
+        << endl;
     
     // If different bodies are present
     if (coeffs_.found("bodies") )
     {
         // size of bodies_ = nAttachments_
-        Info<< "Multiple bodies specified in map3R restraint: " << bodies_ << endl;
+        Info<< "Multiple bodies specified in map3R restraint: " << bodies_
+            << endl;
     }
 
     if (writeVTK_)
@@ -111,7 +113,7 @@ Foam::RBD::restraints::map3R::map3R
 
 Foam::RBD::restraints::map3R::~map3R()
 {
-    if (initialized_)
+    if (initialized_ && Pstream::master())
     {
         // Close MAP++
         map_.closeMAP();
@@ -158,40 +160,49 @@ void Foam::RBD::restraints::map3R::initializeMAP(const Time& time) const
 
     if (nLines_ != refAttachmentPt_.size())
     {
-        Info<< "Warning: Number of refAttachmentPt unequal to # of lines defined in MAP++! refAttachmentPt size: "
-            << refAttachmentPt_.size() << ", MAP.size_lines() = " << nLines_ << endl;
+        Info<< "Warning: Number of refAttachmentPt unequal to # of lines defined in MAP++!"
+            << " refAttachmentPt size " << refAttachmentPt_.size()
+            << ", MAP.size_lines() = " << nLines_
+            << endl;
         
         // If there are connecting nodes, nLines_ != refAttachmentPt_.size()
     }
     if (nFairleads_ != refAttachmentPt_.size())
     {
-        // FatalIOErrorInFunction(*this)
         FatalErrorInFunction
-            << "Number of refAttachmentPt unequal to # of fairleads defined in MAP++! refAttachmentPt size: "
-            << refAttachmentPt_.size() << ", # nFairleads " << nFairleads_
+            << "Number of refAttachmentPt unequal to # of fairleads defined in MAP++!"
+            << " refAttachmentPt size " << refAttachmentPt_.size()
+            << ", # nFairleads " << nFairleads_
             << exit(FatalError);
     }
-
-    if (writeForces_)
+    
+    if (Pstream::master())
     {
-        mps_.reset( new OFstream(outputFile_) );
-        // Writing header
-        mps_() << "Time history of fairlead forces (cmpts) from MAP++. Total # fairleads: " << nFairleads_ << endl;
-    }
-
-    if (writeVTK_)
-    {
-        mkDir("Mooring/VTK");
-        if (!coeffs_.found("nodesPerLine"))
+        if (writeForces_)
         {
-            nodesPerLine_ = List<label>(nLines_, nNodes_);
+            mps_.reset( new OFstream(outputFile_) );
+            // Writing header
+            mps_() 
+                << "Time history of fairlead forces (cmpts) from MAP++. Total # fairleads: "
+                << nFairleads_ << endl;
         }
-        else if (nodesPerLine_.size() != nLines_)
+
+        if (writeVTK_)
         {
-            FatalErrorInFunction
-                << "Entries of nodesPerLine unequal to # of lines defined in MAP++! nodesPerLine size: "
-                << nodesPerLine_.size() << ", # nLines " << nLines_
-                << exit(FatalError);
+            mkDir("Mooring/VTK");
+
+            if (!coeffs_.found("nodesPerLine"))
+            {
+                nodesPerLine_ = List<label>(nLines_, nNodes_);
+            }
+            else if (nodesPerLine_.size() != nLines_)
+            {
+                FatalErrorInFunction
+                    << "Entries of nodesPerLine unequal to # of lines defined in MAP++!"
+                    << " nodesPerLine size " << nodesPerLine_.size()
+                    << ", # nLines " << nLines_
+                    << exit(FatalError);
+            }
         }
     }
 }
@@ -272,7 +283,7 @@ void Foam::RBD::restraints::map3R::restrain
     {
         if (t >= vtkStartTime_ && time.outputTime())
         {
-            Info<< "Write mooring VTK ..." << endl;
+            Info<< "Write mooring VTK .." << endl;
             writeVTK(time);
         }
     }
@@ -293,19 +304,20 @@ void Foam::RBD::restraints::map3R::updateMAPState(const Time& time) const
     map_.updateMAP(time.value(), &fairPos[0][0], &fairForce[0][0]);
 }
 
+
 void Foam::RBD::restraints::map3R::writeVTK(const Time& time) const
 {
     double coord[max(nodesPerLine_)][3];
-    //pointField coord(nodesPerLine_, Zero);
     
     fileName name("Mooring/VTK/map3_");
-    // OFstream mps(name + time.timeName() + "_.vtk");
     OFstream mps(name + Foam::name(++vtkCounter_) + ".vtk");
     mps.precision(4);
 
     // Writing header
-    mps << "# vtk DataFile Version 3.0" << nl << "MAP++ vtk output time=" << time.timeName() 
-        << nl << "ASCII" << nl << "DATASET POLYDATA" << endl;
+    mps << "# vtk DataFile Version 3.0" << nl
+        << "MAP++ vtk output time=" << time.timeName() 
+        << nl << "ASCII" << nl << "DATASET POLYDATA"
+        << endl;
  
     // Writing points
     mps << "\nPOINTS " << sum(nodesPerLine_) << " float" << endl;
@@ -362,7 +374,6 @@ bool Foam::RBD::restraints::map3R::read
         if (coeffs_.found("nodesPerLine"))
         {
             coeffs_.lookup("nodesPerLine") >> nodesPerLine_;
-            //coeffs_.readEntry("nodesPerLine", nodesPerLine_);
         }
 
         outerCorrector_ = coeffs_.getOrDefault<scalar>("outerCorrector", 3);
@@ -374,13 +385,12 @@ bool Foam::RBD::restraints::map3R::read
     bodyIDs_ = List<label>(nAttachments, bodyID_);
     bodyIndices_ = List<label>(nAttachments, bodyIndex_);
     
-    // If different bodies are attached to moody moorings:
     if (coeffs_.found("bodies"))
     {
         coeffs_.lookup("bodies") >> bodies_;
         // size of bodies_ = nAttachments_
     
-        for(int ii=0; ii<nAttachments; ii++) 			
+        for(int ii=0; ii<nAttachments; ii++)
         {
             bodyIDs_[ii] = model_.bodyID(bodies_[ii]);
             bodyIndices_[ii] = model_.master(bodyIDs_[ii]);
@@ -402,7 +412,6 @@ void Foam::RBD::restraints::map3R::write
     os.writeEntry("summaryFile", summaryFile_);
     os.writeEntry("outputFile", outputFile_);
     os.writeEntry("waterDepth", depth_);
-    //os.writeEntry("numberOfLines", nLines_);
 
     if (int(bodies_.size())>0)
     {
@@ -415,7 +424,7 @@ void Foam::RBD::restraints::map3R::write
     if (writeVTK_)
     {
         os.writeEntry("vtkStartTime", vtkStartTime_);
-        //os.writeEntry("vtkInterval", vtkInterval_);
+        
         if (coeffs_.found("nNodes"))
         {
             os.writeEntry("nNodes", nNodes_);

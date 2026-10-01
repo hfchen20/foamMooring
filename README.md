@@ -3,6 +3,8 @@
 ![](https://img.shields.io/badge/OpenFOAM-v2012-brightgreen) 
 ![](https://img.shields.io/badge/v2212-brightgreen)
 ![](https://img.shields.io/badge/v2312-brightgreen)
+![](https://img.shields.io/badge/v2412-brightgreen)
+![](https://img.shields.io/badge/v2512-brightgreen)
 
 ![](https://img.shields.io/badge/MoorDyn-v1,v2-brightgreen) ![](https://img.shields.io/badge/Moody-v2-brightgreen)
 
@@ -18,7 +20,7 @@ GitHub mirror: https://github.com/hfchen20/foamMooring
 - Most restraints support runtime generation of legacy VTK files (including vtk.series).
 - You can compile only part of the library (i.e., certain restraints) if that suits your needs.
 - No need to change and re-compile the built-in motion libraries and flow solvers.
-- Tested on OpenFOAM v2012 ~ v2312, mostly with overset grid solver `overInterDyMFoam`.
+- Tested on OpenFOAM v2012 ~ v2512, mostly with overset grid solver `overInterDyMFoam`.
 - Should also work with `interFoam` (deforming mesh) and other variants `waveFoam` and `olaFlow`.
 - Even `overPimpleDyMFoam` ...
 

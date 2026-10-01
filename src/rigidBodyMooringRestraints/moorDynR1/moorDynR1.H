@@ -30,7 +30,7 @@ Group
     grpRigidBodyDynamicsRestraints
 
 Description
-    sixDoFRigidBodyMotionRestraints model.  Mooring dynamics resolved.
+    MoorDyn v1 restraint
 
     Calling MoorDyn: a lumped-mass based mooring dynamics model by
     M. Hall and A. Goupee, “Validation of a lumped-mass mooring line model with

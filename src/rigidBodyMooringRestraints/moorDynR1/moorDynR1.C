@@ -163,10 +163,6 @@ void Foam::RBD::restraints::moorDynR1::restrain
     Info<< "X[6]: " << vector(X[0], X[1], X[2]) << ", " << vector(X[3], X[4], X[5])
         << endl;
 
-    // Call LinesCalc() to obtain forces and moments, Flines(1x6)
-    // LinesCalc(double X[], double XD[], double Flines[], double* t_in, double* dt_in)
-    //LinesCalc(X, XD, Flines, &tprev, &deltaT);
-
     //FairleadsCalc2(double rFairIn[], double rdFairIn[], double fFairIn[], double* t_in, double *dt_in);
     FairleadsCalc2(&fairPos[0][0], &fairVel[0][0], &fairForce[0][0], &tprev, &deltaT);
 
@@ -207,7 +203,7 @@ bool Foam::RBD::restraints::moorDynR1::read
     bodyIDs_ = List<label>(nAttachments, bodyID_);
     bodyIndices_ = List<label>(nAttachments, bodyIndex_);
     
-    // If different bodies are attached to moody moorings:
+    // If different bodies are attached
     if (coeffs_.found("bodies") )
     {
         coeffs_.lookup("bodies") >> bodies_;
@@ -232,7 +228,10 @@ void Foam::RBD::restraints::moorDynR1::write
     restraint::write(os);
 
     if (int(bodies_.size())>0)
+    {
         os.writeEntry("bodies",bodies_);
+    }
+    
     os.writeEntry("refAttachmentPt", refAttachmentPt_);
 }
 
