@@ -6,3 +6,7 @@
 	path = thirdParty/MoorDyn
 	url = https://github.com/FloatingArrayDesign/MoorDyn.git
 	branch = master
+[submodule "thirdParty/CableDyn"]
+	path = thirdParty/CableDyn
+	url = https://github.com/SMI-Lab-Inha/CableDyn.git
+	branch = main

@@ -5,4 +5,10 @@ cd "${0%/*}" || exit                                # Run from this directory
 
 cleanCase0
 
+rm -rf 0/motionScale
+rm -rf Mooring/*.out
+rm -rf Mooring/VTK
+rm -rf Mooring/restart*
+rm -rf Mooring/*.ic
+
 #------------------------------------------------------------------------------

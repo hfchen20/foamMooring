@@ -18,10 +18,10 @@ ID    Type      X       Y       Z       Mass   Volume  CdA    Ca
 ---------------------- LINES ----------------------------------------
 ID   LineType   AttachA  AttachB  UnstrLen  NumSegs  LineOutputs
 (#)   (name)     (#)      (#)       (m)       (-)     (-)
-1     main       1        5         1.455     40      p
-2     main       2        6         1.455     40      p
-3     main       3        7         1.455     40      p
-4     main       4        8         1.455     40      p
+1     main       1        5         1.455     20      -
+2     main       2        6         1.455     20      -
+3     main       3        7         1.455     20      -
+4     main       4        8         1.455     20      -
 ---------------------- OPTIONS -----------------------------------------
 0.00002       dtM           time step to use in mooring integration (s)
 RK2           tScheme       time step to use in mooring integration (s)

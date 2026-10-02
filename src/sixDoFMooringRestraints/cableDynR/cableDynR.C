@@ -1,0 +1,291 @@
+/*---------------------------------------------------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     |
+    \\  /    A nd           | www.openfoam.com
+     \\/     M anipulation  |
+-------------------------------------------------------------------------------
+    Copyright (C) 2019-2020 OpenCFD Ltd.
+-------------------------------------------------------------------------------
+License
+    This file is part of OpenFOAM.
+
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+    for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
+
+References
+    Chen, H., & Hall, M. (2022). CFD simulation of floating body motion with
+    mooring dynamics: Coupling MoorDyn with OpenFOAM. Applied Ocean
+    Research, 124, 103210. https://doi.org/10.1016/j.apor.2022.103210
+    
+    Chen, H., Medina, T. A., & Cercos-Pita, J. L. (2024). CFD simulation of multiple
+    moored floating structures using OpenFOAM: An open-access mooring restraints 
+    library. Ocean Engineering, 303, 117697.
+    https://doi.org/10.1016/j.oceaneng.2024.117697
+
+\*---------------------------------------------------------------------------*/
+
+#include "cableDynR.H"
+#include "addToRunTimeSelectionTable.H"
+#include "sixDoFRigidBodyMotion.H"
+#include "fvMesh.H"
+#include "OFstream.H"
+#include "quaternion.H"
+
+// include CableDyn header
+#include "CableDyn_CAPI.h"
+
+// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
+
+namespace Foam
+{
+namespace sixDoFRigidBodyMotionRestraints
+{
+    defineTypeNameAndDebug(cableDynR, 0);
+
+    addToRunTimeSelectionTable
+    (
+        sixDoFRigidBodyMotionRestraint,
+        cableDynR,
+        dictionary
+    );
+}
+}
+
+
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+
+Foam::sixDoFRigidBodyMotionRestraints::cableDynR::cableDynR
+(
+    const word& name,
+    const dictionary& sDoFRBMRDict
+)
+:
+    sixDoFRigidBodyMotionRestraint(name, sDoFRBMRDict)
+{
+    read(sDoFRBMRDict);
+    initialized_ = false;
+
+    Info<< "Create mooring restraint using CableDyn.";
+
+    int major, minor, patch, abi, err = CD_C_OK;
+    CableDyn_GetVersion(&major, &minor, &patch, &abi);
+
+    if (abi != CABLEDYN_CAPI_ABI_VERSION)
+    {
+        FatalErrorInFunction
+            << " library speaks C ABI " << abi 
+            << ", header expects " << CABLEDYN_CAPI_ABI_VERSION
+            << exit(FatalError);
+    }
+    else
+    {
+        Info<< " Version: major " << major << ", minor " << minor
+            << endl;
+    }
+
+    CableDyn_Create(&handle_, &err);
+}
+
+
+// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
+
+Foam::sixDoFRigidBodyMotionRestraints::cableDynR::~cableDynR()
+{
+    if (handle_ && initialized_)
+    {
+        int err = CD_C_OK;
+        CableDyn_Close(&handle_, &err);
+    }
+}
+
+
+// * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
+
+
+void Foam::sixDoFRigidBodyMotionRestraints::cableDynR::restrain
+(
+    const sixDoFRigidBodyMotion& motion,
+    vector& restraintPosition,
+    vector& restraintForce,
+    vector& restraintMoment
+) const
+{
+    scalar deltaT = motion.time().deltaTValue();
+    scalar t = motion.time().value();
+//     scalar tprev = t-deltaT;
+
+    point CoR = motion.centreOfRotation();
+    
+//     point CoM = motion.centreOfMass();
+//     vector rotationAngle
+//     (
+//        quaternion(motion.orientation()).eulerAngles(quaternion::XYZ)
+//     );
+
+//     vector v = motion.v();
+//     vector omega = motion.omega();
+
+//     double X[6], XD[6];
+//     for (int ii=0; ii<3; ii++)
+//     {
+//        X[ii] = CoM[ii];
+//        X[ii+3] = rotationAngle[ii];
+//        XD[ii] = v[ii];
+//        XD[ii+3] = omega[ii];
+//     }
+
+    int err = CD_C_OK; // status = 1
+    char msg[1024];
+
+    bool converged, stalled;
+    int n_iter;
+
+    if (!initialized_)
+    {
+        // Initialize CableDyn
+        const char* deck = inputFile_.c_str();
+        CableDyn_InitDeck(handle_, deck, static_cast<int>(strlen(deck)), &err); //  (int)strlen(deck)
+        /* parse + static solve */
+        
+        if (err != CD_C_OK)
+        {
+            CableDyn_GetLastError(handle_, msg, static_cast<int>(sizeof msg)); // (int)sizeof msg
+            
+            FatalErrorInFunction
+                << "CableDyn error " << err
+                << " " << string(msg)
+                << exit(FatalError);
+        }
+        
+        const int n = CableDyn_NCoupledDOF(handle_, &err);
+        
+        Info<< "CableDyn initialized! " 
+            << CableDyn_NLines(handle_, &err) << " lines "
+            << CableDyn_NPoints(handle_, &err) << " points "
+            //<< n << " coupled DOFs "
+            << endl;
+        
+        Info<< "CableDyn_NCoupledDOF = " << n
+            << " while we have " << refAttachmentPt_.size() << " attchment pts"
+            << ", cplPtStartIndex = " << cplPtStartIndex_
+            << endl;
+
+        initialized_ = true;
+    }
+
+    const scalar nFair = refAttachmentPt_.size();
+    //const int ndof = 3*nFair;
+    
+    const int ndof = CableDyn_NCoupledDOF(handle_, &err);
+    const label nPts = int(ndof/3);
+
+    pointField fairPos = vectorField(nPts, Zero);
+    vectorField fairVel = vectorField(nPts, Zero);
+    vectorField fairAcc = vectorField(nPts, Zero);
+    vectorField fairForce = vectorField(nPts, Zero);
+    
+    // populate coupled dofs, could fetch fairlead coordinate if not specified in restraint
+    // fetch anchor positions as cabledyn api requires these in coupled dofs
+    // todo: fetch once and save for later use
+    CableDyn_GetCoupledMotion
+    (
+        handle_, 
+        &fairPos[0][0], &fairVel[0][0], &fairAcc[0][0],
+        ndof, &err
+    );
+    
+    // update coupled dofs at fairleads: pos, vel, accel
+    // should skip anchor points
+    for (int ii = 0; ii<nFair; ++ii)
+    {
+        point p = refAttachmentPt_[ii];
+        
+        // fairlead point index in cabledyn
+        label fpIndex = ii + cplPtStartIndex_;
+        
+        // current position transformed from original global coordinate
+        fairPos[fpIndex] = motion.transform(p);
+        
+        // velocity instantaneous fairlead position
+        fairVel[fpIndex] = motion.velocity(fairPos[fpIndex]);
+        
+        // acceleration
+        // todo: either direct calculation or differencing from velocity
+        //fairAcc[fpIndex] = motion.acceleration(p);
+        
+        Info<< "Pt[" << fpIndex << "] " //<< fairPos[fpIndex]
+            << " vel " << fairVel[fpIndex] << " acc " << fairAcc[fpIndex]
+            << endl;
+    }
+    
+    CableDyn_Step
+    (
+        handle_, deltaT, 
+        &fairPos[0][0], &fairVel[0][0], &fairAcc[0][0],
+        ndof, &converged, &stalled, &n_iter, &err
+    );
+
+    CableDyn_CalcOutput(handle_, &fairForce[0][0], ndof, &err);
+    
+    for(int pt=cplPtStartIndex_; pt<nPts; pt++)
+    {
+        restraintForce += fairForce[pt];
+
+        restraintMoment += (fairPos[pt] - CoR) ^ fairForce[pt];
+
+        Info<< "Pt[" << pt << "] " << fairPos[pt]
+            << " force " << fairForce[pt]
+            //<< " moment " << moment
+            << endl;
+    }
+
+    // Since moment is already calculated, set to
+    // centreOfRotation to be sure of no spurious moment
+    restraintPosition = motion.centreOfRotation();
+
+    if (motion.report())
+    {
+        Info<< t << ": force " << restraintForce
+            << ", moment " << restraintMoment
+            << endl;
+    }
+}
+
+
+bool Foam::sixDoFRigidBodyMotionRestraints::cableDynR::read
+(
+    const dictionary& sDoFRBMRDict
+)
+{
+    sixDoFRigidBodyMotionRestraint::read(sDoFRBMRDict);
+
+    sDoFRBMRCoeffs_.readEntry("inputFile", inputFile_);
+    sDoFRBMRCoeffs_.readEntry("cplPtStartIndex", cplPtStartIndex_);
+    sDoFRBMRCoeffs_.readEntry("refAttachmentPt", refAttachmentPt_);
+    
+    return true;
+}
+
+
+void Foam::sixDoFRigidBodyMotionRestraints::cableDynR::write
+(
+    Ostream& os
+) const
+{
+    os.writeEntry("inputFile", inputFile_);
+    os.writeEntry("cplPtStartIndex", cplPtStartIndex_);
+    os.writeEntry("refAttachmentPt", refAttachmentPt_);
+}
+
+// ************************************************************************* //

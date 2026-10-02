@@ -8,13 +8,14 @@ rm –r $FOAM_USER_LIBBIN/cmake
 rm –r $FOAM_USER_LIBBIN/../include 
 rm -rf thirdParty/MoorDyn.build
 
-# compile MAP++
+# CableDyn
+#rm -rf thirdParty/CableDyn/build
+#rm -rf thirdParty/CableDyn/install
+
+# clean MAP++
 #(cd map-plus-plus/src; make clean)
 
-# copy precompiled Moody library
-#cp moody-2.0.1-Linux/lib/libmoody.so $FOAM_USER_LIBBIN
-
-# compile mooring restraints
+# clean mooring restraints
 ( cd src/sixDoFMooringRestraints && wclean )
 ( cd src/rigidBodyMooringRestraints && wclean )
 

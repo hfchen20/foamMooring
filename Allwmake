@@ -14,8 +14,8 @@ cd thirdParty
 #   Compile MoorDyn v1
 # ----------------------------------------------------------
 echo ""
-echo "compile MoorDyn v1"
-echo ""
+echo "Compile MoorDyn v1"
+echo "======================================="
 
 cd MoorDyn_v1/compileSO
 make -j
@@ -34,10 +34,11 @@ cd ../..
 configure_moordyn_v2 () {
     cmake -DBUILD_TESTING=OFF -DEXTERNAL_EIGEN=OFF -DFORTRAN_WRAPPER=OFF -DMATLAB_WRAPPER=OFF -DPYTHON_WRAPPER=OFF -DUSE_VTK=$1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$FOAM_USER_LIBBIN/.. ../MoorDyn
     return $?
-} 
+}
 
 echo ""
-echo "compile MoorDyn v2 with VTK"
+echo "Compile MoorDyn v2 with VTK"
+echo "======================================="
 echo ""
 
 MOORDYN2_HAVE_VTK=true
@@ -50,14 +51,14 @@ set -e
 if [ $CMAKE_RESULT -ne 0 ]; then
     MOORDYN2_HAVE_VTK=false
     echo ""
-    echo "compile MoorDyn v2 without VTK"
+    echo "Compile MoorDyn v2 without VTK"
     echo ""
     configure_moordyn_v2 OFF
 fi
 
 make -j
 make install
-cd ../..
+cd .. # still in thirdParty
 
 # Set MoorDyn v2 vtk flag
 if [[ "$MOORDYN2_HAVE_VTK" = true ]]; then
@@ -65,10 +66,32 @@ if [[ "$MOORDYN2_HAVE_VTK" = true ]]; then
 fi
 
 # ----------------------------------------------------------
+#   Compile CableDyn
+# ----------------------------------------------------------
+echo ""
+echo "Compile CableDyn"
+echo "======================================="
+
+cd CableDyn
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j
+cmake --install build --prefix install
+# if install to $FOAM_USER_LIBBIN/.., so goes to lib64 subfolder
+# cmake --install build --prefix $FOAM_USER_LIBBIN/..
+
+# create a symlink
+#ln -s install/lib64/libcabledyn.so $FOAM_USER_LIBBIN
+cp install/lib64/* $FOAM_USER_LIBBIN
+
+# back to repo root
+cd ../..
+
+# ----------------------------------------------------------
 #   Compile  MAP++
 # ----------------------------------------------------------
 echo ""
 echo "SKIP compile MAP++"
+echo "======================================="
 echo ""
 #(cd map-plus-plus/src; make && cp libmap-1.30.00.so $FOAM_USER_LIBBIN)
 
@@ -81,7 +104,8 @@ cp moody-2.0.1-Linux/lib/libmoody.so $FOAM_USER_LIBBIN
 #   Compile sixDoFMooringRestraints
 # ----------------------------------------------------------
 echo ""
-echo "compile sixDoF mooring restraints"
+echo "Compile sixDoF mooring restraints"
+echo "======================================="
 echo ""
 ( cd src/sixDoFMooringRestraints && wmake libso )
 
@@ -89,10 +113,11 @@ echo ""
 #   Compile rigidBodyMooringRestraints
 # ----------------------------------------------------------
 echo ""
-echo "compile rigid body mooring restraints"
+echo "Compile rigid body mooring restraints"
+echo "======================================="
 echo ""
 ( cd src/rigidBodyMooringRestraints && wmake libso )
 
-echo ""
+echo "====================="
 echo " Compilation done!"
-echo ""
+echo "====================="

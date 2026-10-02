@@ -78,7 +78,8 @@ Foam::sixDoFRigidBodyMotionRestraints::moodyR::moodyR
     
     initialized_ = false;
 
-    Info<< "Create moodyR, a mooring dynamics restraint (Palm et al. 2017)" << endl;
+    Info<< "Create moodyR, a mooring dynamics restraint (Palm et al. 2017)"
+        << endl;
     
     if (mode_ == word("externalPoint"))
     {
@@ -246,7 +247,9 @@ bool Foam::sixDoFRigidBodyMotionRestraints::moodyR::read
     sDoFRBMRCoeffs_.readEntry("couplingMode", mode_);
     nCouplingDof_ = sDoFRBMRCoeffs_.getOrDefault<scalar>("nCouplingDof", 6);
     if (mode_ == word("externalPoint"))
+    {
         sDoFRBMRCoeffs_.readEntry("refAttachmentPt", refAttachmentPt_);
+    }
     waveKinematics_ = sDoFRBMRCoeffs_.getOrDefault<Switch>("waveKinematics", false);
     twoD_ = sDoFRBMRCoeffs_.getOrDefault<Switch>("twoD", false);
 
@@ -263,12 +266,15 @@ void Foam::sixDoFRigidBodyMotionRestraints::moodyR::write
     os.writeEntry("couplingMode", mode_);
     os.writeEntry("nCouplingDof", nCouplingDof_);
     if (mode_ == word("externalPoint"))
+    {
         os.writeEntry("refAttachmentPt", refAttachmentPt_);
+    }
     os.writeEntry("waveKinematics", waveKinematics_);
     os.writeEntry("twoD", twoD_);
     os.writeEntry("nNodes", nNodes_);
 
 }
+
 
 void Foam::sixDoFRigidBodyMotionRestraints::moodyR::updateWaveKinematics
 (

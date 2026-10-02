@@ -71,11 +71,49 @@ rigidBodyMotionCoeffs
     
     restraints
     {
+        cableDynR
+        {
+            type              cableDynR;
+            body              floatingObject;
+            inputFile         "Mooring/cabledyn.txt";
+            cplPtstartIndex   4;
+            refAttachmentPt
+            (
+                (-0.1      0.1    -0.062)
+                (-0.1     -0.1    -0.062)
+                ( 0.1      0.1    -0.062)
+                ( 0.1     -0.1    -0.062)    
+            );
+        }
+        
+        /*
+        moorDynR2_pt
+        {
+            type               moorDynR2;
+            body               floatingObject;
+            couplingMode       "POINT";
+            inputFile          "Mooring/lines_v2_point.txt";
+            refAttachmentPt
+            (
+                (-0.1      0.1    -0.062)
+                (-0.1     -0.1    -0.062)
+                ( 0.1      0.1    -0.062)
+                ( 0.1     -0.1    -0.062)  
+            );
+            writeMooringVTK    true;
+            vtkPrefix          "mdv2_pt";
+            vtkStartTime       0;
+            outerCorrector     1;
+        }
+        */
+        
+        /* Example mooring restraints
+           map3R || moodyR || moorDynR1 || moorDynR2
+           
         moodyR
         {
-            type               moodyR;
-            body               floatingObject;
-            
+            type              moodyR;
+            body              floatingObject;
             inputFile         "Mooring/boxWu_exPoint.m";
             refAttachmentPt
             (
@@ -86,9 +124,6 @@ rigidBodyMotionCoeffs
             );
         }
         
-        /* Example mooring restraints as defined in libsixDoFMooring
-           map3R || moodyR || moorDynR1 || moorDynR2
-           
         moorDynR1
         {
             type               moorDynR1;
@@ -106,7 +141,7 @@ rigidBodyMotionCoeffs
         {
             type               moorDynR2;
             body               floatingObject;
-            couplingMode       "POINT"; // optional
+            couplingMode       "POINT";
             inputFile          "Mooring/lines_v2_point.txt";
             refAttachmentPt
             (
@@ -127,10 +162,7 @@ rigidBodyMotionCoeffs
             body               floatingObject;
             couplingMode       "BODY";
             inputFile          "Mooring/lines_v2.txt";
-            bodies
-            (
-                floatingObject
-            );
+            bodies             (floatingObject);
             writeMooringVTK    true;
             vtkPrefix         "mdv2_pt";
             vtkStartTime       0;

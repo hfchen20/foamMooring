@@ -107,8 +107,8 @@ solvers
 PIMPLE
 {
     momentumPredictor   no;
-    nOuterCorrectors    3;
-    nCorrectors         1;
+    nOuterCorrectors    1;
+    nCorrectors         2;
     nNonOrthogonalCorrectors 1;
     correctPhi          yes;
     moveMeshOuterCorrectors yes;
