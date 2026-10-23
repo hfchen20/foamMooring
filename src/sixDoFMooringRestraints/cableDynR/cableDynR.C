@@ -168,85 +168,83 @@ void Foam::sixDoFRigidBodyMotionRestraints::cableDynR::restrain
                 << exit(FatalError);
         }
         
-        const int n = CableDyn_NCoupledDOF(handle_, &err);
+        const int ndof = CableDyn_NCoupledDOF(handle_, &err);
         
         Info<< "CableDyn initialized! " 
             << CableDyn_NLines(handle_, &err) << " lines "
             << CableDyn_NPoints(handle_, &err) << " points "
-            //<< n << " coupled DOFs "
             << endl;
         
-        Info<< "CableDyn_NCoupledDOF = " << n
+        Info<< "CableDyn_NCoupledDOF = " << ndof
             << " while we have " << refAttachmentPt_.size() << " attchment pts"
             << ", cplPtStartIndex = " << cplPtStartIndex_
             << endl;
 
         initialized_ = true;
+        
+        nCpldPts_ = int(ndof/3);
+
+        cpldPos_.resize(nCpldPts_, Zero);
+        cpldVel_.resize(nCpldPts_, Zero);
+        cpldAcc_.resize(nCpldPts_, Zero);
+
+        // populate coupled vectors, could fetch here fairlead coordinates
+        // if not specified in restraint
+        // fetch anchor positions as well, required by cabledyn
+        CableDyn_GetCoupledMotion
+        (
+            handle_, 
+            &cpldPos_[0][0], &cpldVel_[0][0], &cpldAcc_[0][0],
+            ndof, &err
+        );
     }
 
-    const scalar nFair = refAttachmentPt_.size();
-    //const int ndof = 3*nFair;
-    
-    const int ndof = CableDyn_NCoupledDOF(handle_, &err);
-    const label nPts = int(ndof/3);
-
-    pointField fairPos = vectorField(nPts, Zero);
-    vectorField fairVel = vectorField(nPts, Zero);
-    vectorField fairAcc = vectorField(nPts, Zero);
-    vectorField fairForce = vectorField(nPts, Zero);
-    
-    // populate coupled dofs, could fetch fairlead coordinate if not specified in restraint
-    // fetch anchor positions as cabledyn api requires these in coupled dofs
-    // todo: fetch once and save for later use
-    CableDyn_GetCoupledMotion
-    (
-        handle_, 
-        &fairPos[0][0], &fairVel[0][0], &fairAcc[0][0],
-        ndof, &err
-    );
+    const scalar nfair = refAttachmentPt_.size(); 
+    const int ndof = nCpldPts_*3;
     
     // update coupled dofs at fairleads: pos, vel, accel
-    // should skip anchor points
-    for (int ii = 0; ii<nFair; ++ii)
+    // skip anchor points
+    for (int ii = 0; ii<nfair; ++ii)
     {
         point p = refAttachmentPt_[ii];
         
-        // fairlead point index in cabledyn
+        // cpldlead point index in cabledyn
         label fpIndex = ii + cplPtStartIndex_;
         
         // current position transformed from original global coordinate
-        fairPos[fpIndex] = motion.transform(p);
+        cpldPos_[fpIndex] = motion.transform(p);
         
-        // velocity instantaneous fairlead position
-        fairVel[fpIndex] = motion.velocity(fairPos[fpIndex]);
+        // velocity
+        cpldVel_[fpIndex] = motion.velocity(cpldPos_[fpIndex]);
         
         // acceleration
         // todo: either direct calculation or differencing from velocity
-        //fairAcc[fpIndex] = motion.acceleration(p);
+        //cpldAcc_[fpIndex] = motion.acceleration(p);
         
-        Info<< "Pt[" << fpIndex << "] " //<< fairPos[fpIndex]
-            << " vel " << fairVel[fpIndex] << " acc " << fairAcc[fpIndex]
+        Info<< "Pt[" << fpIndex << "] " //<< cpldPos[fpIndex]
+            << " vel " << cpldVel_[fpIndex] << " acc " << cpldAcc_[fpIndex]
             << endl;
     }
     
     CableDyn_Step
     (
         handle_, deltaT, 
-        &fairPos[0][0], &fairVel[0][0], &fairAcc[0][0],
+        &cpldPos_[0][0], &cpldVel_[0][0], &cpldAcc_[0][0],
         ndof, &converged, &stalled, &n_iter, &err
     );
 
-    CableDyn_CalcOutput(handle_, &fairForce[0][0], ndof, &err);
+    // mooring forces on body at coupled points
+    vectorField force(nCpldPts_, Zero);
+    CableDyn_CalcOutput(handle_, &force[0][0], ndof, &err);
     
-    for(int pt=cplPtStartIndex_; pt<nPts; pt++)
+    for(int pt=cplPtStartIndex_; pt<nCpldPts_; pt++)
     {
-        restraintForce += fairForce[pt];
+        restraintForce += force[pt];
 
-        restraintMoment += (fairPos[pt] - CoR) ^ fairForce[pt];
+        restraintMoment += (cpldPos_[pt] - CoR) ^ force[pt];
 
-        Info<< "Pt[" << pt << "] " << fairPos[pt]
-            << " force " << fairForce[pt]
-            //<< " moment " << moment
+        Info<< "Pt[" << pt << "] " << cpldPos_[pt]
+            << " force " << force[pt]
             << endl;
     }
 

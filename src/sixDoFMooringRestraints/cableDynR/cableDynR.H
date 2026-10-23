@@ -85,11 +85,23 @@ class cableDynR
         //- Void pointer to CableDyn handler
         void* handle_=NULL;
         
-        //- Number of coupling Dofs
-        label nCouplingDof_;
+        //- Number of coupled points in CableDyn, anchors included
+        mutable label nCpldPts_;
         
         //- Flag true if CableDyn is initialized
         mutable bool initialized_;
+        
+        //- CableDyn coupled vector: point position
+        //  includes both anchor and fairlead points
+        mutable pointField cpldPos_;
+        
+        //- CableDyn coupled vector: point velocity
+        //  includes both anchor and fairlead points
+        mutable pointField cpldVel_;
+        
+        //- CableDyn coupled vector: point acceleration
+        //  includes both anchor and fairlead points
+        mutable pointField cpldAcc_;
 
 
 public:

@@ -72,7 +72,22 @@ sixDoFRigidBodyMotionCoeffs
 
     restraints
     {
-        moorDynR2_pt
+        cableDynR
+        {
+            sixDoFRigidBodyMotionRestraint cableDynR;
+            inputFile           "Mooring/cabledyn.txt";
+            cplPtStartIndex      4;
+            refAttachmentPt
+            (
+                (-0.1      0.1    -0.077)
+                (-0.1     -0.1    -0.077)
+                ( 0.1      0.1    -0.077)
+                ( 0.1     -0.1    -0.077)
+            );
+        }
+        
+        
+        /*moorDynR2_pt
         {
             sixDoFRigidBodyMotionRestraint  moorDynR2;
             couplingMode       "POINT";
@@ -90,19 +105,7 @@ sixDoFRigidBodyMotionCoeffs
             outerCorrector     1;
         }
         
-        /*cableDynR
-        {
-            sixDoFRigidBodyMotionRestraint cableDynR;
-            inputFile           "Mooring/cabledyn.txt";
-            cplPtStartIndex      4;
-            refAttachmentPt
-            (
-                (-0.1      0.1    -0.077)
-                (-0.1     -0.1    -0.077)
-                ( 0.1      0.1    -0.077)
-                ( 0.1     -0.1    -0.077)
-            );
-        }*/
+        */
 
         /* Example mooring restraints as defined in libsixDoFMooring
           moorDynR1 || moorDynR2 || map3R || moodyR

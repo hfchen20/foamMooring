@@ -85,20 +85,8 @@ Foam::RBD::restraints::cableDynR::cableDynR
         Info<< " Version: major " << major << ", minor " << minor
             << endl;
     }
-    //CableDyn_GetVersionString(char *version, int version_len);
-    // char version[50];
-    // int version_len;
-    // CableDyn_GetVersionString(version, version_len);
-    // Info<< "  version: " << string(version) << endl;
 
     CableDyn_Create(&handle_, &err);
-
-    // CableDyn_InitDeck(h, deck, (int)strlen(deck), &err); /* parse + static solve */
-
-    // could get attachment pts from this (static solution)
-    // CableDyn_GetCoupledMotion(h, q, v, a, n, &err);
-
-    // const int n = CableDyn_NCoupledDOF(h, &err);
 
     // If different bodies are attached
     // if (coeffs_.found("bodies") )
@@ -160,15 +148,14 @@ void Foam::RBD::restraints::cableDynR::restrain
                 << exit(FatalError);
         }
         
-        const int n = CableDyn_NCoupledDOF(handle_, &err);
+        const int ndof = CableDyn_NCoupledDOF(handle_, &err);
         
         Info<< "CableDyn initialized! " 
             << CableDyn_NLines(handle_, &err) << " lines "
             << CableDyn_NPoints(handle_, &err) << " points "
-            //<< n << " coupled DOFs "
             << endl;
         
-        Info<< "CableDyn_NCoupledDOF = " << n
+        Info<< "CableDyn_NCoupledDOF = " << ndof
             << " while we have " << refAttachmentPt_.size() << " attchment pts"
             << ", cplPtStartIndex = " << cplPtStartIndex_
             << endl;
@@ -183,42 +170,30 @@ void Foam::RBD::restraints::cableDynR::restrain
         // }
 
         initialized_ = true;
+        
+        nCpldPts_ = int(ndof/3);
+
+        cpldPos_.resize(nCpldPts_, Zero);
+        cpldVel_.resize(nCpldPts_, Zero);
+        cpldAcc_.resize(nCpldPts_, Zero);
+
+        // populate coupled vectors, could fetch here fairlead coordinates
+        // if not specified in restraint
+        // fetch anchor positions as well, required by cabledyn
+        CableDyn_GetCoupledMotion
+        (
+            handle_, 
+            &cpldPos_[0][0], &cpldVel_[0][0], &cpldAcc_[0][0],
+            ndof, &err
+        );
     }
 
-    const scalar nFair = refAttachmentPt_.size();
-    //const int ndof = 3*nFair;
+    const label nfair = refAttachmentPt_.size(); 
+    const label ndof = nCpldPts_*3;
     
-    const int ndof = CableDyn_NCoupledDOF(handle_, &err);
-    const label nPts = int(ndof/3);
-
-    // could get attachment pts from this (after static init)
-    // CableDyn_GetCoupledMotion(h, q, v, a, n, &err);
-
-    pointField fairPos = vectorField(nPts, vector::zero);
-    vectorField fairVel = vectorField(nPts, vector::zero);
-    vectorField fairAcc = vectorField(nPts, vector::zero);
-    vectorField fairForce = vectorField(nPts, vector::zero);
-    
-    // populate coupled dofs
-    // could fetch fairlead coordinate if not specified in restraint
-    // fetch anchor positions as cabledyn api requires these in coupled dofs
-    // todo: fetch once and save for later use
-    CableDyn_GetCoupledMotion
-    (
-        handle_, 
-        &fairPos[0][0], &fairVel[0][0], &fairAcc[0][0],
-        ndof, &err
-    );
-    
-    // Info<< "CableDyn_GetCoupledMotion" << nl
-    //     << "  pos " << fairPos << nl
-    //     << "  vel " << fairVel << nl
-    //     << "  acc " << fairAcc << nl
-    //     << endl;
-    
-    // update coupled dofs at fairleads: pos, vel, accel
+    // update coupled vectors: pos, vel, accel
     // should skip anchor points
-    for (int ii = 0; ii<nFair; ++ii)
+    for (int ii = 0; ii<nfair; ++ii)
     {
         point p = refAttachmentPt_[ii];
         
@@ -226,48 +201,47 @@ void Foam::RBD::restraints::cableDynR::restrain
         label fpIndex = ii + cplPtStartIndex_;
 
         // Transform local points to last motion state
-        fairPos[fpIndex] = bodyPoint(bodyIDs_[ii], p);
+        cpldPos_[fpIndex] = bodyPoint(bodyIDs_[ii], p);
 
         // fairlead point velocity
-        fairVel[fpIndex] = model_.v(bodyIDs_[ii], p).l();
+        cpldVel_[fpIndex] = model_.v(bodyIDs_[ii], p).l();
 
         // fairlead point acceleration
-        fairAcc[fpIndex] = pointAcceleration(bodyIDs_[ii], p);
+        cpldAcc_[fpIndex] = pointAcceleration(bodyIDs_[ii], p);
         
         if (first)
         {
-            fairAcc[fpIndex] -= model_.g();
+            cpldAcc_[fpIndex] -= model_.g();
         }
-        
-        // Info<< "Pt[" << fpIndex << "]: pos " << fairPos[fpIndex]
-        //     << " vel " << fairVel[fpIndex] << " acc " << fairAcc[fpIndex]
-        //     << endl;
     }
+    
     if (first) first = false;
     
     CableDyn_Step
     (
         handle_, deltaT, 
-        &fairPos[0][0], &fairVel[0][0], &fairAcc[0][0],
+        &cpldPos_[0][0], &cpldVel_[0][0], &cpldAcc_[0][0],
         ndof, &converged, &stalled, &n_iter, &err
     );
 
-    CableDyn_CalcOutput(handle_, &fairForce[0][0], ndof, &err);
+    // mooring forces on body at coupled points
+    vectorField mforce(nCpldPts_, Zero);
+    CableDyn_CalcOutput(handle_, &mforce[0][0], ndof, &err);
 
-    // Sum forces and calculate moments
-    for(int pt=cplPtStartIndex_; pt<nPts; pt++)
+    // Sum fairlead forces and calculate moments
+    for(int pt=cplPtStartIndex_; pt<nCpldPts_; pt++)
     {
-        vector force = fairForce[pt];
+        vector force = mforce[pt];
         
-        vector moment = fairPos[pt] ^ force;
+        vector moment = cpldPos_[pt] ^ force;
 
         // Accumulate the force for the restrained body
         // fx[bodyIndex_] += spatialVector(moment, force);
 
         fx[bodyIndices_[pt-cplPtStartIndex_]] += spatialVector(moment, force);
-
-        Info<< "Pt[" << pt << "] " << fairPos[pt]
-            << " vel " << fairVel[pt] << " acc " << fairAcc[pt]
+        
+        Info<< "Pt[" << pt << "] " << cpldPos_[pt]
+            << " vel " << cpldVel_[pt] << " acc " << cpldAcc_[pt]
             << " force " << force
             //<< " moment " << moment
             << endl;

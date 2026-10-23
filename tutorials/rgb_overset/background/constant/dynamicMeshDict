@@ -76,7 +76,7 @@ rigidBodyMotionCoeffs
             type              cableDynR;
             body              floatingObject;
             inputFile         "Mooring/cabledyn.txt";
-            cplPtstartIndex   4;
+            cplPtStartIndex   4; // fairlead start index
             refAttachmentPt
             (
                 (-0.1      0.1    -0.062)

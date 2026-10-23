@@ -108,6 +108,21 @@ class cableDynR
         
         //- Start index of fairlead points in CableDyn model
         label cplPtStartIndex_;
+        
+        //- Number of coupled points in CableDyn, anchors included
+        mutable label nCpldPts_;
+        
+        //- CableDyn coupled vector: point position
+        //  includes both anchor and fairlead points
+        mutable pointField cpldPos_;
+        
+        //- CableDyn coupled vector: point velocity
+        //  includes both anchor and fairlead points
+        mutable pointField cpldVel_;
+        
+        //- CableDyn coupled vector: point acceleration
+        //  includes both anchor and fairlead points
+        mutable pointField cpldAcc_;
 
 
 
